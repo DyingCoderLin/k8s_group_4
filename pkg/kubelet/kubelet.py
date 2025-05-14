@@ -10,11 +10,12 @@ class Kubelet():
 
         self.consumer = Consumer(config.consumer_config())
         self.consumer.subscribe([config.topic])
+        print(f'[INFO]Subscribe kafka({config.kafka_server}) topic {config.topic}')
 
     def run(self):
         while True:
             sleep(5.0)
-            self.thread = Thread(target=self._consume_messages)
+            self.thread = Thread(target=self.consume_messages)
 
             for pod in self.pods_cache:
                 pod.restart_crash()
@@ -22,10 +23,16 @@ class Kubelet():
     def consume_messages(self):
         while True:
             msg = self.consumer.poll(timeout=1.0)
-            if msg is not None and not msg.error():
-                self.update_pod(msg.key(), json.loads(msg.value().decode('utf-8')))
+            print(f'[INFO]Receive an message with key = {msg.key()}')
 
-    def handle_msg(self, type, data):
+            if msg is not None:
+                if not msg.error():
+                    print(f'[INFO]Receive an message with key = {msg.key()}')
+                    self.update_pod(msg.key(), json.loads(msg.value().decode('utf-8')))
+                else:
+                    print(f'[ERROR]Message error')
+
+    def update_pod(self, type, data):
         if type == 'ADD':
             config = PodConfig(data)
             self.pods_cache.append(Pod(config))

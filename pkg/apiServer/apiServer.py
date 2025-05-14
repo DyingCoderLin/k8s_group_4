@@ -1,5 +1,6 @@
 import etcd3
 import json
+import pickle
 import docker
 from docker.errors import APIError
 from flask import Flask, request
@@ -12,6 +13,7 @@ from pkg.config.etcdConfig import EtcdConfig
 from pkg.config.overlayConfig import OverlayConfig
 from pkg.config.kafkaConfig import KafkaConfig
 from pkg.config.nodeConfig import NodeConfig
+from pkg.config.podConfig import PodConfig
 
 class ApiServer():
     def __init__(self, uri_config : URIConfig, etcd_config: EtcdConfig, overlay_config: OverlayConfig, kafka_config : KafkaConfig):
@@ -25,6 +27,12 @@ class ApiServer():
         self.etcd = etcd3.client(host=etcd_config.HOST, port=etcd_config.PORT)
         self.docker = docker.DockerClient(base_url='npipe:////./pipe/docker_engine', version='1.25', timeout=5)
         self.kafka = Producer({'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER})
+
+        # --- 调试时使用 ---
+        keys = self.etcd.get_all()
+        for value, metadata in keys:
+            key = metadata.key.decode('utf-8')
+            self.etcd.delete(key)
 
         self.bind(uri_config)
         try: self.overlay_network = self.docker.networks.create(**overlay_config().dockerapi_args())
@@ -50,24 +58,34 @@ class ApiServer():
     def index(self):
         return 'ApiServer Demo'
 
+    def get(self, key, ret_meta = False):
+        val, meta = self.etcd.get(key)
+        val = [] if val is None else pickle.loads(val)
+        if ret_meta:
+            return val, meta
+        else:
+            return val
+
+    def put(self, key, val):
+        val = pickle.dumps(val)
+        self.etcd.put(key, val)
+
     def add_node(self, name : str):
         node_json = request.json
-        print(node_json)
         new_node_config = NodeConfig(node_json)
 
-        nodes = self.etcd.get(self.etcd_config.NODES_KEY)
+        nodes = self.get(self.etcd_config.NODES_KEY)
         ips = [node.subnet_ip for node in nodes]
-        for subnet in self.overlay_config.SUBMETS:
+        for subnet in self.overlay_config.SUBNETS:
             if subnet["Subnet"] not in ips:
-                new_node_config.subnet_ip = subnet["Subnet"]
                 nodes.append(new_node_config)
-                self.etcd.put(self.etcd_config.NODES_KEY, nodes)
+                self.put(self.etcd_config.NODES_KEY, nodes)
 
                 return {
-                    subnet_ip: subnet["Subnet"],
-                    overlay_name: self.overlay_config.NAME,
-                    kafka_server: self.kafka_config.BOOTSTRAP_SERVER,
-                    kafka_topic: self.kafka_config.POD_TOPIC.format(name)
+                    'subnet_ip': subnet["Subnet"],
+                    'overlay_name': self.overlay_config.NAME,
+                    'kafka_server': self.kafka_config.BOOTSTRAP_SERVER,
+                    'kafka_topic': self.kafka_config.POD_TOPIC.format(name = name)
                 }
 
         print('[ERROR]No subnet ip left.')
@@ -83,39 +101,42 @@ class ApiServer():
         new_pod_config = PodConfig(pod_json)
 
         # 写etcd
-        pods = self.etcd.get(self.etcd_config.PODS_KEY.format(namespace = namespace))
+        pods = self.get(self.etcd_config.PODS_KEY.format(namespace = namespace))
         pods.append(new_pod_config)
-        self.etcd.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
+        self.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
 
         # TODO: 给scheduler队列推消息
         # TODO: 接收scheduler回复的Node_id
-        nodes = self.etcd.get(self.etcd_config.NODES_KEY)
+        nodes = self.get(self.etcd_config.NODES_KEY)
         node_id = nodes[0].id
 
         # 写etcd Node_id
-        pods = self.etcd.get(self.etcd_config.PODS_KEY.format(namespace = namespace))
+        pods = self.get(self.etcd_config.PODS_KEY.format(namespace = namespace))
         for i, pod in enumerate(pods):
             if pod.name == new_pod_config.name:
                 pods[i].node_id = node_id
                 break
-        self.etcd.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
+        self.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
 
         # TODO: 给scheduler回ACK
 
         # 给kubelet队列推消息
-        nodes = self.etcd.get(self.etcd_config.NODES_KEY)
+        nodes = self.get(self.etcd_config.NODES_KEY)
         for node in nodes:
             if node.id == node_id:
-                topic = self.kafka_config.POD_TOPIC.format(node.name)
-        producer.produce(topic, json.dump(pod_json).encode('utf-8'))
+                topic = self.kafka_config.POD_TOPIC.format(name = node.name)
+                break
+        self.kafka.produce(topic, key='ADD', value=json.dumps(pod_json).encode('utf-8'))
+        print(f'[INFO]Producing one message to topic {topic}')
 
         # 写etcd status
-        pods = self.etcd.get(self.etcd_config.PODS_KEY.format(namespace=namespace))
+        pods = self.get(self.etcd_config.PODS_KEY.format(namespace=namespace))
         for i, pod in enumerate(pods):
             if pod.name == new_pod_config.name:
                 pods[i].status = POD_STATUS.RUNNING
                 break
-        self.etcd.put(self.etcd_config.PODS_KEY.format(namespace=namespace), pods)
+        self.put(self.etcd_config.PODS_KEY.format(namespace=namespace), pods)
+        return ''
 
     def update_pod(self):
         pass

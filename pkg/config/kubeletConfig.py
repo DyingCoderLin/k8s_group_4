@@ -7,7 +7,7 @@ class KubeletConfig():
         self.subnet_ip = subnet_ip
 
         self.kafka_server = kafka_server
-        self.topic = topic_pre + node_id
+        self.topic = kafka_topic
 
     def consumer_config(self):
         return {

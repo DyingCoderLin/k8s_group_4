@@ -17,7 +17,6 @@ class Node():
 
     def run(self):
         uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(name = self.config.name)
-        print(uri)
         register_response = requests.post(uri, json=self.config.json)
 
         if register_response.status_code == 200:
@@ -26,8 +25,8 @@ class Node():
             kubelet_config = KubeletConfig(**self.config.kubelet_config_args())
             self.kubelet = Kubelet(kubelet_config)
             self.status = STATUS.ONLINE
-            self.kubelet.run()
             print(f"[INFO]Successfully register to ApiServer.")
+            self.kubelet.run()
         else:
             print(f"[ERROR]Cannot register to ApiServer with code {register_response.status_code}")
             return

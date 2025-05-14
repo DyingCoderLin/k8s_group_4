@@ -4,7 +4,9 @@ class NodeConfig():
     def __init__(self, arg_json):
         # --- static information ---
         self.id = uuid1()
-        self.name = arg_json.get('metadata').get('name')
+        metadata = arg_json.get('metadata')
+        self.name = metadata.get('name')
+        self.apiserver = metadata.get('ip')
 
         self.json = arg_json
 

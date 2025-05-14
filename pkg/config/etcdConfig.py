@@ -1,6 +1,6 @@
 class EtcdConfig:
     # Etcd 地址
-    HOST = 'localhost'
+    HOST = '10.119.11.171'
     PORT = '2379'
 
     # -------------------- 资源键值定义 --------------------

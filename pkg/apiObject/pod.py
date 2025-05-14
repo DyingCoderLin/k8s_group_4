@@ -68,19 +68,28 @@ if __name__ == '__main__':
     print('[INFO]Testing Pod.')
     print('[INFO]使用pod-1.yaml作为测试配置，测试Pod的创建和删除。目前没有使用volume绑定')
     import yaml
+    import requests
     from pkg.config.podConfig import PodConfig
+    from pkg.config.uriConfig import URIConfig
 
     with open('../../testFile/pod-1.yaml', 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
 
-    podConfig = PodConfig(data)
-    pod = Pod(podConfig)
-    print(f'[INFO]初始化Pod，status: {pod.status}')
-    pod.stop()
-    print(f'[INFO]关闭Pod，status: {pod.status}')
-    pod.start()
-    print(f'[INFO]启动Pod，status: {pod.status}')
-    pod.stop()
-    print(f'[INFO]关闭Pod，status: {pod.status}')
-    pod.remove()
-    print(f'[INFO]Pod删除，可以在本地docker desktop查看，容器已经被删除')
+    dist = True
+    if dist:
+        uri = URIConfig.PREFIX + URIConfig.POD_SPEC_URL.format(
+            namespace= data['metadata']['namespace'], name = data['metadata']['name'])
+        response = requests.post(uri, json=data)
+        print(response)
+    else:
+        podConfig = PodConfig(data)
+        pod = Pod(podConfig)
+        print(f'[INFO]初始化Pod，status: {pod.status}')
+        pod.stop()
+        print(f'[INFO]关闭Pod，status: {pod.status}')
+        pod.start()
+        print(f'[INFO]启动Pod，status: {pod.status}')
+        pod.stop()
+        print(f'[INFO]关闭Pod，status: {pod.status}')
+        pod.remove()
+        print(f'[INFO]Pod删除，可以在本地docker desktop查看，容器已经被删除')
