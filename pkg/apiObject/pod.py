@@ -1,4 +1,5 @@
 import docker
+import platform
 
 class STATUS():
     STOPPED = 'STOPPED'
@@ -9,13 +10,20 @@ class Pod():
     def __init__(self, config):
         self.config = config
         self.status = STATUS.RUNNING
-
-        self.client = docker.DockerClient(
-            base_url='npipe:////./pipe/docker_engine',
-            version='1.25',
-            timeout=5
-        )
-
+        
+        if platform == "Windows":
+            self.client = docker.DockerClient(
+                base_url='npipe:////./pipe/docker_engine',
+                version='1.25',
+                timeout=5
+            )
+        else:
+            self.client = docker.DockerClient(
+                base_url='unix://var/run/docker.sock',
+                version='1.25',
+                timeout=5
+            )
+            
         self.client.networks.prune()
 
         # --- 不使用overlay网络 ---

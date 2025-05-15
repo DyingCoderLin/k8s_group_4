@@ -11,3 +11,7 @@ class EtcdConfig:
 
     PODS_KEY = "/api/v1/namespaces/<namespace>/pods"
     PODS_VALUE = "List[PodConfig]"
+    
+    # HPA相关
+    HPA_KEY = "/api/v1/namespaces/<namespace>/hpa"
+    HPA_VALUE = "List[HorizontalPodAutoscalerConfig]"
