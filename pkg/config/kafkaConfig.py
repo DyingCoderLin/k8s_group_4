@@ -1,6 +1,7 @@
 class KafkaConfig:
     # Kafka 地址
-    BOOTSTRAP_SERVER = "47.103.11.77:9092"
+    # BOOTSTRAP_SERVER = "47.103.11.77:9092"
+    BOOTSTRAP_SERVER = "localhost:9092"
 
     # -------------------- 资源主题定义 --------------------
     # 与Node的kubelet组件交互

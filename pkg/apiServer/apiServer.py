@@ -5,6 +5,7 @@ import docker
 from docker.errors import APIError
 from flask import Flask, request
 from confluent_kafka import Producer
+import platform
 
 from pkg.apiObject.pod import STATUS as POD_STATUS
 
@@ -25,7 +26,11 @@ class ApiServer():
 
         self.app = Flask(__name__)
         self.etcd = etcd3.client(host=etcd_config.HOST, port=etcd_config.PORT)
-        self.docker = docker.DockerClient(base_url='npipe:////./pipe/docker_engine', version='1.25', timeout=5)
+
+        if platform.system() == 'Windows':
+            self.docker = docker.DockerClient(base_url='npipe:////./pipe/docker_engine', version='1.25', timeout=5)
+        else:
+            self.docker = docker.DockerClient(base_url='unix://var/run/docker.sock', version='1.25', timeout=5)
         self.kafka = Producer({'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER})
 
         # --- 调试时使用 ---
