@@ -11,8 +11,10 @@ class Kubelet():
         self.consumer = Consumer(config.consumer_config())
         self.consumer.subscribe([config.topic])
         print(f'[INFO]Subscribe kafka({config.kafka_server}) topic {config.topic}')
+        
 
     def run(self):
+        print("enter run")
         while True:
             sleep(5.0)
             self.thread = Thread(target=self.consume_messages)
@@ -34,6 +36,7 @@ class Kubelet():
 
     def update_pod(self, type, data):
         if type == 'ADD':
+            print("receive an ADD message")
             config = PodConfig(data)
             self.pods_cache.append(Pod(config))
         elif type == 'UPDATE':
@@ -62,7 +65,7 @@ if __name__ == '__main__':
     kubelet = Kubelet(kubelet_config)
     with open('../../testFile/pod-3.yaml', 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
-
+    print(f"data = {data}")
     podConfig = PodConfig(data)
     # pod = Pod(podConfig)
     # kubelet.pods_cache.append(pod)
