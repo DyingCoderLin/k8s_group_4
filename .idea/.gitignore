@@ -8,6 +8,7 @@
 /dataSources.local.xml
 /zookeeper
 /kafka
-/zookeeper-data
-/zookeeper-logs
-/__pycache__/
+/yamls/zookeeper-data
+/yamls/zookeeper-logs
+/pkg/apiServer/__pycache__/
+/pkg/config/__pycache__/
