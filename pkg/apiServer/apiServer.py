@@ -203,7 +203,7 @@ class ApiServer():
             result.append({
                 'name': rs.name,
                 'namespace': rs.namespace,
-                'replicas': f'{rs.current_replicas}/{rs.desired_replicas}',
+                'replicas': f'{rs.current_replicas}/{rs.replica_count}',
                 'selector': rs.selector,
                 'labels': rs.labels,
                 'status': rs.status
@@ -223,7 +223,7 @@ class ApiServer():
             result.append({
                 'name': rs.name,
                 'namespace': rs.namespace,
-                'replicas': f'{rs.current_replicas}/{rs.desired_replicas}',
+                'replicas': f'{rs.current_replicas}/{rs.replica_count}',
                 'selector': rs.selector,
                 'labels': rs.labels,
                 'status': rs.status
@@ -239,16 +239,19 @@ class ApiServer():
         
         for rs in replica_sets:
             if rs.name == name:
-                result = {
-                    'name': rs.name,
-                    'namespace': rs.namespace,
-                    'replicas': f'{rs.current_replicas}/{rs.desired_replicas}',
-                    'selector': rs.selector,
-                    'labels': rs.labels,
-                    'pod_instances': rs.pod_instances,
-                    'status': rs.status
-                }
-                return json.dumps(result)
+                print(f'[INFO]Found ReplicaSet: {rs}')
+                # result = {
+                #     'name': rs.name,
+                #     'namespace': rs.namespace,
+                #     'replicas': f'{rs.current_replicas}/{rs.replica_count}',
+                #     'selector': rs.selector,
+                #     'labels': rs.labels,
+                #     'pod_instances': rs.pod_instances,
+                #     'status': rs.status
+                # }
+                # return json.dumps(result)
+                # return json.dumps(vars(rs))
+                return json.dumps(rs.to_dict() if hasattr(rs, 'to_dict') else vars(rs))
         
         return json.dumps({'error': f'ReplicaSet {name} not found in namespace {namespace}'}), 404
 
@@ -259,6 +262,7 @@ class ApiServer():
         
         try:
             rs_json = request.json
+            print(f'[INFO]Received JSON: {rs_json}')
             if isinstance(rs_json, str):
                 rs_json = json.loads(rs_json)
             
@@ -273,6 +277,8 @@ class ApiServer():
             rs_config.status = 'PENDING'
             rs_config.current_replicas = 0
             rs_config.pod_instances = []
+            
+            print(f'[INFO]ReplicaSetConfig created: {rs_config}')
             
             # 存储到etcd
             key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
@@ -390,6 +396,25 @@ class ApiServer():
         except Exception as e:
             print(f'[ERROR]Failed to delete ReplicaSet: {str(e)}')
             return json.dumps({'error': str(e)}), 500
+        
+    def get_global_hpas(self):
+        """获取所有HPA"""
+        print('[INFO]Get global HPAs')
+        key = self.etcd_config.HPA_KEY
+        hpas = self.get(key)
+        # 格式化输出
+        result = []
+        for hpa in hpas:
+            result.append({
+                'name': hpa.name,
+                'namespace': hpa.namespace,
+                'target': f'{hpa.target_kind}/{hpa.target_name}',
+                'min_replicas': hpa.min_replicas,
+                'max_replicas': hpa.max_replicas,
+                'current_replicas': getattr(hpa, 'current_replicas', 0),
+                'metrics': hpa.metrics
+            })
+        return json.dumps(result)
         
     def get_hpas(self, namespace=None):
         """获取HPA列表"""

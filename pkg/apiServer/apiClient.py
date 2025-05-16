@@ -2,6 +2,8 @@ import requests
 import json
 from requests.exceptions import RequestException
 import time
+import socket
+import sys
 
 class ApiClient:
     """
@@ -18,6 +20,16 @@ class ApiClient:
             max_retries: 最大重试次数
             retry_delay: 重试延迟(秒)
         """
+        if sys.platform == "darwin":
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                # 连接到一个外部地址，不需要真正发送数据
+                s.connect(("8.8.8.8", 80))
+                local_ip = s.getsockname()[0]
+                host = local_ip
+            finally:
+                s.close()
+        
         self.base_url = f"http://{host}:{port}"
         self.max_retries = max_retries
         self.retry_delay = retry_delay
