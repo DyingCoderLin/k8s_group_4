@@ -23,6 +23,7 @@ class Pod():
                 version='1.25',
                 timeout=5
             )
+        print(f'[INFO]enter docker client, base_url: {self.client.base_url}')
             
         self.client.networks.prune()
 
@@ -87,6 +88,10 @@ if __name__ == '__main__':
     if dist:
         uri = URIConfig.PREFIX + URIConfig.POD_SPEC_URL.format(
             namespace= data['metadata']['namespace'], name = data['metadata']['name'])
+        print(f'[INFO]请求地址: {uri}')
+        # podConfig = PodConfig(data)
+        # pod = Pod(podConfig)
+        # pod.start()
         response = requests.post(uri, json=data)
         print(response)
     else:

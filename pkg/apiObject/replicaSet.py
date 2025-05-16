@@ -147,6 +147,8 @@ class ReplicaSet:
             print(f"[ERROR]ReplicaSet {name} not found in namespace {namespace}")
             return None
         
+        print(f"[INFO]获取ReplicaSet配置: {rs_config_dict}")
+        
         # 创建ReplicaSetConfig
         rs_config = ReplicaSetConfig(rs_config_dict)
         
@@ -319,7 +321,7 @@ def test_replica_set():
     import time
     
     # 测试配置文件路径
-    config_file = "test-replicaset.yaml"
+    config_file = "../../testFile/test-replicaset.yaml"
     
     # 如果测试配置文件存在，则加载它
     if os.path.exists(config_file):
@@ -381,6 +383,8 @@ def test_replica_set():
         # 测试2: 获取ReplicaSet
         print("\n[TEST]2. 获取ReplicaSet...")
         retrieved_rs = ReplicaSet.get(rs.namespace, rs.name)
+        print(f"rs.name: {rs.name}")
+        print(f"retrieved_rs.name: {retrieved_rs.name}")
         assert retrieved_rs is not None, "获取ReplicaSet失败"
         assert retrieved_rs.name == rs.name, "获取的ReplicaSet名称不匹配"
         print("[PASS]获取ReplicaSet成功")
