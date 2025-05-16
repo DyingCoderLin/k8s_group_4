@@ -18,7 +18,7 @@ docker run -d \
 
 ## kafka一键安装
 打开代理将无法访问远端kafka
-
+- 下面为docker-compose.yml文件
 ```
 version: '3'
 services:
@@ -77,3 +77,13 @@ services:
       - kafka
 
 ```
+- 使用方式：
+```
+vim docker-compose.yml # 然后把文件粘贴进去
+mkdir ./zookeeper ./kafka
+sudo chown -R 1001:1001 ./zookeeper
+sudo chown -R 1001:1001 ./kafka
+sudo docker-compose up -d
+```
+- 此时kafka和zookeeper都正常启动
+    - 可使用docker ps -a查看运行情况
