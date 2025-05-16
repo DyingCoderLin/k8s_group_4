@@ -1,5 +1,5 @@
 Flask
-confluent-kafka
+confluent-kafka==2.10.0
 etcd3
 protobuf==3.18.1
 requests
