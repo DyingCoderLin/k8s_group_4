@@ -13,5 +13,6 @@ class KubeletConfig():
         return {
             'bootstrap.servers': self.kafka_server,
             'group.id': self.node_id,
-            'auto.offset.reset': 'earliest'
+            'auto.offset.reset': 'latest',
+            'enable.auto.commit': False,
         }

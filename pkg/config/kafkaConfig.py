@@ -6,4 +6,4 @@ class KafkaConfig:
 
     # -------------------- 资源主题定义 --------------------
     # 与Node的kubelet组件交互
-    POD_TOPIC = "/api/v1/nodes/{name}"
+    POD_TOPIC = "api.v1.nodes.{name}"

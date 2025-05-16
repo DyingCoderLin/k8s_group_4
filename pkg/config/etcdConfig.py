@@ -1,5 +1,6 @@
 class EtcdConfig:
     # Etcd 地址
+
     # HOST = '10.119.11.171'
     # HOST = '10.119.15.182'
     HOST='10.181.22.193' #mac
