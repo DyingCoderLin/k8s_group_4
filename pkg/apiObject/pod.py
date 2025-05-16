@@ -36,7 +36,7 @@ class Pod():
         # --- 使用overlay网络 ---
         self.containers = [self.client.containers.run(image = 'busybox', name = 'pause', detach = True,
                                    command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-                                   network = self.config.overlay_name, ip=self.config.subnet_ip)]
+                                   network = self.config.overlay_name)]
 
         for container in self.config.containers:
             self.containers.append(self.client.containers.run(**container.dockerapi_args(),

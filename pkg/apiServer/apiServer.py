@@ -4,7 +4,8 @@ import pickle
 import docker
 from docker.errors import APIError
 from flask import Flask, request
-from confluent_kafka import Producer
+from confluent_kafka import Producer, KafkaException
+from confluent_kafka.admin import AdminClient, NewTopic
 import platform
 
 from pkg.apiObject.pod import STATUS as POD_STATUS
@@ -33,7 +34,8 @@ class ApiServer():
             self.docker = docker.DockerClient(base_url='npipe:////./pipe/docker_engine', version='1.25', timeout=5)
         else:
             self.docker = docker.DockerClient(base_url='unix://var/run/docker.sock', version='1.25', timeout=5)
-        self.kafka = Producer({'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER})
+        self.kafka = AdminClient({'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER})
+        self.kafka_producer = Producer({'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER})
 
         # --- 调试时使用 ---
         keys = self.etcd.get_all()
@@ -116,11 +118,22 @@ class ApiServer():
                 nodes.append(new_node_config)
                 self.put(self.etcd_config.NODES_KEY, nodes)
 
+                try:
+                    kafka_topic = self.kafka_config.POD_TOPIC.format(name = name)
+                    fs = self.kafka.create_topics([NewTopic(kafka_topic, num_partitions=1, replication_factor=1)])
+                    for topic, f in fs.items():
+                        f.result()
+                        print(f"[INFO]Topic '{topic}' created successfully.")
+                    self.kafka_producer.produce(topic, key='HEARTBEAT', value=json.dumps({}).encode('utf-8'))
+                except KafkaException as e:
+                    if not e.args[0].code() == 36:
+                        raise
+
                 return {
                     'subnet_ip': subnet["Subnet"],
                     'overlay_name': self.overlay_config.NAME,
                     'kafka_server': self.kafka_config.BOOTSTRAP_SERVER,
-                    'kafka_topic': self.kafka_config.POD_TOPIC.format(name = name)
+                    'kafka_topic': kafka_topic
                 }
 
         print('[ERROR]No subnet ip left.')
@@ -161,7 +174,7 @@ class ApiServer():
             if node.id == node_id:
                 topic = self.kafka_config.POD_TOPIC.format(name = node.name)
                 break
-        self.kafka.produce(topic, key='ADD', value=json.dumps(pod_json).encode('utf-8'))
+        self.kafka_producer.produce(topic, key='ADD', value=json.dumps(pod_json).encode('utf-8'))
         print(f'[INFO]Producing one message to topic {topic}')
 
         # 写etcd status

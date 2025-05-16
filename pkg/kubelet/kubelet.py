@@ -1,7 +1,10 @@
+import json
 from time import sleep
 from confluent_kafka import Consumer, KafkaError
-from pkg.config.podConfig import PodConfig
 from threading import Thread
+
+from pkg.apiObject.pod import Pod
+from pkg.config.podConfig import PodConfig
 
 class Kubelet():
     def __init__(self, config):
@@ -13,9 +16,10 @@ class Kubelet():
         print(f'[INFO]Subscribe kafka({config.kafka_server}) topic {config.topic}')
 
     def run(self):
+        self.consume_messages()
+        # self.thread = Thread(target=self.consume_messages)
         while True:
             sleep(5.0)
-            self.thread = Thread(target=self.consume_messages)
 
             for pod in self.pods_cache:
                 pod.restart_crash()
@@ -23,12 +27,15 @@ class Kubelet():
     def consume_messages(self):
         while True:
             msg = self.consumer.poll(timeout=1.0)
-            print(f'[INFO]Receive an message with key = {msg.key()}')
 
             if msg is not None:
                 if not msg.error():
-                    print(f'[INFO]Receive an message with key = {msg.key()}')
-                    self.update_pod(msg.key(), json.loads(msg.value().decode('utf-8')))
+                    print(f'[INFO]Receive an message with key = {msg.key().decode('utf-8')}')
+                    try:
+                        self.update_pod(msg.key().decode('utf-8'), json.loads(msg.value().decode('utf-8')))
+                    except:
+                        pass
+                    self.consumer.commit(asynchronous=False)
                 else:
                     print(f'[ERROR]Message error')
 
@@ -36,6 +43,7 @@ class Kubelet():
         if type == 'ADD':
             config = PodConfig(data)
             self.pods_cache.append(Pod(config))
+            print('[INFO]Kubelet create pod.')
         elif type == 'UPDATE':
             config = PodConfig(data)
             for i, pod in enumerate(self.pods_cache):
