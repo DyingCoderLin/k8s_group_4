@@ -9,6 +9,20 @@ class URIString(str):
 class URIConfig:
     # URI 协议方案
     HOST = 'localhost'
+    
+    import sys
+    if sys.platform == "darwin":
+        import socket
+        
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # 连接到一个外部地址，不需要真正发送数据
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            HOST = local_ip
+        finally:
+            s.close()
+        
     PORT = 5050
     PREFIX = f'http://{HOST}:{PORT}'
 
