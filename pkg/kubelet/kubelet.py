@@ -44,21 +44,29 @@ class Kubelet():
         if type == 'ADD':
             print("receive an ADD message")
             config = PodConfig(data)
+            print(f'[INFO]Kubelet add pod config: {config}.')
             self.pods_cache.append(Pod(config))
             print('[INFO]Kubelet create pod.')
         elif type == 'UPDATE':
+            # update又是在做什么？
+            print("receive an UPDATE message")
             config = PodConfig(data)
-            for i, pod in enumerate(self.pods_cache):
-                if pod.name == config.name:
-                    self.pods_cache[i] = Pod(config)
-                    return
-            print('[WARNING]Pod not found.')
+            # 确保交互正确
+            print(f'[INFO]Kubelet update pod config: {config}.')
+            # for i, pod in enumerate(self.pods_cache):
+            #     if pod.name == config.name:
+            #         self.pods_cache[i] = Pod(config)
+            #         return
+            # print('[WARNING]Pod not found.')
         elif type == 'DELETE':
+            print("receive an DELETE message")
+            # delete逻辑完全没有实现，需要实现
             config = PodConfig(data)
-            for i, pod in enumerate(self.pods_cache):
-                if pod.name == config.name:
-                    self.pods_cache[i] = Pod(config)
-                    return
+            print(f'[INFO]Kubelet delete pod config: {config}.')
+            # for i, pod in enumerate(self.pods_cache):
+            #     if pod.name == config.name:
+            #         self.pods_cache[i] = Pod(config)
+            #         return
         elif type == 'GET':
             pass
 
@@ -67,10 +75,15 @@ if __name__ == '__main__':
     import yaml
     from pkg.apiObject.pod import Pod
     from pkg.config.kubeletConfig import KubeletConfig
+    from pkg.config.globalConfig import GlobalConfig
+    import os
 
     kubelet_config = KubeletConfig()
     kubelet = Kubelet(kubelet_config)
-    with open('../../testFile/pod-3.yaml', 'r', encoding='utf-8') as file:
+    global_config = GlobalConfig()
+    test_yaml = os.path.join(global_config.TEST_FILE_PATH, 'pod-3.yaml')
+    
+    with open(test_yaml, 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
     print(f"data = {data}")
     podConfig = PodConfig(data)

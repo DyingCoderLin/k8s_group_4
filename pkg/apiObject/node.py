@@ -33,10 +33,16 @@ class Node():
 
 if __name__ == '__main__':
     print('[INFO]Testing Node.')
-    print('[INFO]使用node-1.yaml作为测试配置，测试Node的注册')
-    import yaml
 
-    with open('../../testFile/node-1.yaml', 'r', encoding='utf-8') as file:
+    import yaml
+    from pkg.config.globalConfig import GlobalConfig
+    import os
+    global_config = GlobalConfig()
+    file_yaml = "node-1.yaml"
+    test_yaml = os.path.join(global_config.TEST_FILE_PATH, file_yaml)
+    print(f'[INFO]使用{file_yaml}作为测试配置，测试Node的创建和删除。目前没有使用volume绑定')
+    print(f'[INFO]请求地址: {test_yaml}')
+    with open(test_yaml, 'r', encoding='utf-8') as file:
         data = yaml.safe_load(file)
     node_config = NodeConfig(data)
     node = Node(node_config, URIConfig)

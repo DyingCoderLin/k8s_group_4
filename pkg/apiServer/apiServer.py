@@ -56,7 +56,8 @@ class ApiServer():
         # node相关
         self.app.route(config.NODE_SPEC_URL, methods=['POST'])(self.add_node)
         # pod相关
-        self.app.route(config.GLOBAL_PODS_URL, methods=['GET'])(self.get_pods)
+        self.app.route(config.GLOBAL_PODS_URL, methods=['GET'])(self.get_global_pods)
+        self.app.route(config.PODS_URL, methods=['GET'])(self.get_pods)
         self.app.route(config.POD_SPEC_URL, methods=['GET'])(self.get_pod)
         self.app.route(config.POD_SPEC_URL, methods=['POST'])(self.add_pod)
         self.app.route(config.POD_SPEC_URL, methods=['PUT'])(self.update_pod)
@@ -64,7 +65,7 @@ class ApiServer():
         
         # replicaSet相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的rs，读取某个namespace下的rs，读取某个rs
-        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=['GET'])(self.get_replica_sets)
+        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=['GET'])(self.get_global_replica_sets)
         # 这个有确定的namespace
         self.app.route(config.REPLICA_SETS_URL, methods=['GET'])(self.get_replica_sets)
         # 这个有确定的namespace和name
@@ -137,19 +138,65 @@ class ApiServer():
                 }
 
         print('[ERROR]No subnet ip left.')
-
-    def get_pods(self):
+        
+    def get_global_pods(self):
         print('[INFO]Get global pods.')
+        key = self.etcd_config.PODS_KEY
+        pods = self.get(key)
+        
+        # 格式化输出
+        result = []
+        for pod in pods:
+            # result.append({
+            #     'name': pod.name,
+            #     'namespace': pod.namespace,
+            #     'status': pod.status,
+            #     'node_id': pod.node_id,
+            #     'labels': pod.labels,
+            #     'owner_reference': pod.owner_reference
+            # })
+            result.append({pod.name: pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)})
+        
+        return json.dumps(result)
+
+    def get_pods(self, namespace : str):
+        print('[INFO]Get pods in namespace %s' % namespace)
+        key = self.etcd_config.PODS_KEY.format(namespace = namespace)
+        pods = self.get(key)
+        # 格式化输出
+        result = []
+        for pod in pods:
+            result.append({pod.name: pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)})
+        return json.dumps(result)
 
     def get_pod(self, namespace : str, name : str):
-        pass
+        # pass
+        print('[INFO]Get pod %s in namespace %s' % (name, namespace))
+        key = self.etcd_config.PODS_KEY.format(namespace = namespace)
+        pods = self.get(key)
+        for pod in pods:
+            if pod.name == name:
+                return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
+        return json.dumps({'error': 'Pod not found'}), 404
 
     def add_pod(self, namespace : str, name : str):
         pod_json = request.json
+        # print(f'[INFO]Received JSON: {pod_json}')
         new_pod_config = PodConfig(pod_json)
+        
+        # 通过etcd获取所有的pod
 
         # 写etcd
         pods = self.get(self.etcd_config.PODS_KEY.format(namespace = namespace))
+        
+        # lcl mark: create会出现的bug：没有确保没有重名的pod出现
+        # 再标一句，如果add_pod考虑update的话，我写的这个逻辑应该也有问题，但这里先不进一步考虑
+        for pod in pods:
+            if pod.name == new_pod_config.name:
+                return json.dumps({'error': 'Pod name already exists'}), 409
+            
+        
+        # 确保pod的namespace和name匹配
         pods.append(new_pod_config)
         self.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
 
@@ -178,18 +225,23 @@ class ApiServer():
         print(f'[INFO]Producing one message to topic {topic}')
 
         # 写etcd status
+        # print("to here")
+        # 下面这一段代码会莫名其妙执行PodConfig的init并导致标签丢失
         pods = self.get(self.etcd_config.PODS_KEY.format(namespace=namespace))
         for i, pod in enumerate(pods):
             if pod.name == new_pod_config.name:
                 pods[i].status = POD_STATUS.RUNNING
                 break
         self.put(self.etcd_config.PODS_KEY.format(namespace=namespace), pods)
-        return ''
+        # print("to here2")
+        return json.dumps({'message': 'Pod created successfully'}), 200
 
     def update_pod(self):
+        print('[INFO]Receive update pod in ApiServer')
         pass
 
     def delete_pod(self):
+        print('[INFO]Receive delete pod in ApiServer')
         pass
     
     def get_global_replica_sets(self):
@@ -200,14 +252,15 @@ class ApiServer():
         # 格式化输出
         result = []
         for rs in replica_sets:
-            result.append({
-                'name': rs.name,
-                'namespace': rs.namespace,
-                'replicas': f'{rs.current_replicas}/{rs.replica_count}',
-                'selector': rs.selector,
-                'labels': rs.labels,
-                'status': rs.status
-            })
+            # result.append({
+            #     'name': rs.name,
+            #     'namespace': rs.namespace,
+            #     'replicas': f'{rs.current_replicas}/{rs.replica_count}',
+            #     'selector': rs.selector,
+            #     'labels': rs.labels,
+            #     'status': rs.status
+            # })
+            result.append({rs.name: rs.to_dict() if hasattr(rs, 'to_dict') else vars(rs)})
         
         return json.dumps(result)
     
@@ -220,14 +273,15 @@ class ApiServer():
         # 格式化输出
         result = []
         for rs in replica_sets:
-            result.append({
-                'name': rs.name,
-                'namespace': rs.namespace,
-                'replicas': f'{rs.current_replicas}/{rs.replica_count}',
-                'selector': rs.selector,
-                'labels': rs.labels,
-                'status': rs.status
-            })
+            # result.append({
+            #     'name': rs.name,
+            #     'namespace': rs.namespace,
+            #     'replicas': f'{rs.current_replicas}/{rs.replica_count}',
+            #     'selector': rs.selector,
+            #     'labels': rs.labels,
+            #     'status': rs.status
+            # })
+            result.append({rs.name: rs.to_dict() if hasattr(rs, 'to_dict') else vars(rs)})
         
         return json.dumps(result)
     
@@ -259,6 +313,14 @@ class ApiServer():
     def create_replica_set(self, namespace, name):
         """创建一个新的ReplicaSet"""
         print(f'[INFO]Create ReplicaSet {name} in namespace {namespace}')
+        # 存储到etcd
+        key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
+        replica_sets = self.get(key)
+        
+        # 检查是否已存在
+        for rs in replica_sets:
+            if rs.name == name:
+                return json.dumps({'error': f'ReplicaSet {name} already exists'}), 409
         
         try:
             rs_json = request.json
@@ -272,26 +334,59 @@ class ApiServer():
             
             # 创建ReplicaSetConfig
             rs_config = ReplicaSetConfig(rs_json)
+            rs_config.selector = rs_config.selector or {}
             
             # 初始化运行时状态
-            rs_config.status = 'PENDING'
-            rs_config.current_replicas = 0
+            # rs_config.status = 'PENDING'
+            # rs_config.current_replicas = 0
+            rs_config.status = []
+            rs_config.current_replicas = []  # 当前实际的副本数量，应该是一个数组，因为会控制多个Pod
             rs_config.pod_instances = []
             
+            # 首先要使用get_pods获取同namespace的，然后通过selector进一步筛选
+            pod_configs = self.get(self.etcd_config.PODS_KEY.format(namespace=namespace))
+            print(f'[INFO]Pods in namespace {namespace}: {pod_configs}')
+            # 通过selector找到对应的pod_configs
+            selector_app = rs_config.get_selector_app()
+            selector_env = rs_config.get_selector_env()
+            print(f'[INFO]Selector app: {selector_app}, env: {selector_env}')
+            # if not pod_configs:
+            #     print(f'[WARNING]No pods found in namespace {namespace}')
+            if pod_configs and (selector_app or selector_env): # 如果有selector
+                for pod in pod_configs:
+                    print(f"pod.labels.app: {pod.get_app_label()}, pod.labels.env: {pod.get_env_label()}")
+                    if selector_app and pod.get_app_label() != selector_app:
+                        print(f'[INFO]Pod {pod.name} does not match selector app {selector_app}')
+                        continue
+                    if selector_env and pod.get_env_label() != selector_env:
+                        print(f'[INFO]Pod {pod.name} does not match selector env {selector_env}')
+                        continue
+                    # 如果pod符合selector条件，添加到pod_configs
+                    print(f'[INFO]Adding pod {pod.name} to ReplicaSet {name}')
+                    rs_config.add_pod_group(pod.name)
+            else: # 如果没有selector，直接添加所有pod_configs
+                print(f'[INFO]No selector provided, adding all pods in namespace {namespace}')
+                for pod in pod_configs:
+                    # replica_sets.append(pod_config.name)
+                    rs_config.add_pod_group(pod.name)
+            if not rs_config.pod_instances:
+                print (f'[WARNING]No pods found in namespace {namespace} with selector {selector_app} or {selector_env}')
+            else:
+                # 如果有pod_instances，更新ReplicaSet的current_replicas数组
+                groups = rs_config.get_all_groups()
+                for group in groups:
+                    rs_config.current_replicas.append(len(group))
+                        
             print(f'[INFO]ReplicaSetConfig created: {rs_config}')
-            
-            # 存储到etcd
-            key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
-            replica_sets = self.get(key)
-            
-            # 检查是否已存在
-            for rs in replica_sets:
-                if rs.name == name:
-                    return json.dumps({'error': f'ReplicaSet {name} already exists'}), 409
-            
             # 添加
             replica_sets.append(rs_config)
             self.put(key, replica_sets)
+                
+            # for node in nodes:
+            #     if node.id == pod_configs[0].node_id:
+            #         topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+            #         break
+            # 最后，将rs_config传入给replicasetcontroller，让他以config为基础对replicaset进行管理
             
             return json.dumps({'message': f'ReplicaSet {name} created successfully'})
         except Exception as e:
@@ -304,6 +399,7 @@ class ApiServer():
         
         try:
             rs_json = request.json
+            print(f'[INFO]Update Replica set: Received JSON: {rs_json}')
             if isinstance(rs_json, str):
                 rs_json = json.loads(rs_json)
             
@@ -319,15 +415,18 @@ class ApiServer():
             for i, rs in enumerate(replica_sets):
                 if rs.name == name:
                     # 创建更新后的配置
-                    updated_config = ReplicaSetConfig(rs_json)
-                    
-                    # 保留原有的运行时信息
-                    updated_config.status = rs.status
-                    updated_config.current_replicas = rs.current_replicas
-                    updated_config.pod_instances = rs.pod_instances
+                    # updated_config = ReplicaSetConfig(rs_json)
+                    # 目前只更新运行时信息
+                    # 更新的运行时信息
+                    rs.status = rs_json.get('status', rs.status)
+                    rs.current_replicas = rs_json.get('current_replicas', rs.current_replicas)
+                    rs.pod_instances = rs_json.get('pod_instances', rs.pod_instances)
+                    # updated_config.status = rs.status
+                    # updated_config.current_replicas = rs.current_replicas
+                    # updated_config.pod_instances = rs.pod_instances
                     
                     # 更新
-                    replica_sets[i] = updated_config
+                    replica_sets[i] = rs
                     found = True
                     break
             
@@ -380,7 +479,7 @@ class ApiServer():
                 # 更新Pod列表
                 self.put(pods_key, updated_pods)
                 
-                # 向Kubelet发送删除消息
+                # 向Kubelet发送删除消息，这里不确定行不行，因为delete还没有实现
                 for pod in deleted_pods:
                     nodes = self.get(self.etcd_config.NODES_KEY)
                     for node in nodes:
