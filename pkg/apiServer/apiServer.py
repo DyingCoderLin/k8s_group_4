@@ -80,7 +80,7 @@ class ApiServer():
         # hpa相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的hpa，读取某个namespace下的hpa，读取某个hpa
         self.app.route(config.GLOBAL_HPA_URL, methods=['GET'])(self.get_global_hpas)
-        self.app.route(config.HPA_SPEC_URL, methods=['GET'])(self.get_hpas)
+        self.app.route(config.HPA_URL, methods=['GET'])(self.get_hpas)
         self.app.route(config.HPA_SPEC_URL, methods=['GET'])(self.get_hpa)
         # 创建hpa
         self.app.route(config.HPA_SPEC_URL, methods=['POST'])(self.create_hpa)
@@ -414,16 +414,20 @@ class ApiServer():
             found = False
             for i, rs in enumerate(replica_sets):
                 if rs.name == name:
-                    # 创建更新后的配置
-                    # updated_config = ReplicaSetConfig(rs_json)
-                    # 目前只更新运行时信息
-                    # 更新的运行时信息
-                    rs.status = rs_json.get('status', rs.status)
-                    rs.current_replicas = rs_json.get('current_replicas', rs.current_replicas)
-                    rs.pod_instances = rs_json.get('pod_instances', rs.pod_instances)
-                    # updated_config.status = rs.status
-                    # updated_config.current_replicas = rs.current_replicas
-                    # updated_config.pod_instances = rs.pod_instances
+                    # 目前只更新运行时信息和副本数量，且不会同时进行（一个大概率由hpa发起，一个大概率由rs controller发起）
+                    if rs.replica_count == rs_json.get('spec', {}).get('replicas', rs.replica_count):
+                        # 更新运行时信息
+                        rs.status = rs_json.get('status', rs.status)
+                        rs.current_replicas = rs_json.get('current_replicas', rs.current_replicas)
+                        rs.pod_instances = rs_json.get('pod_instances', rs.pod_instances)
+                        # print(f'[INFO]Updated ReplicaSet: {rs}')
+                        # updated_config.status = rs.status
+                        # updated_config.current_replicas = rs.current_replicas
+                        # updated_config.pod_instances = rs.pod_instances
+                    else:
+                        # 更新副本数量
+                        rs.replica_count = rs_json.get('spec', {}).get('replicas', rs.replica_count)
+                        # print(f'[INFO]Updated ReplicaSet replica count: {rs.replica_count}')
                     
                     # 更新
                     replica_sets[i] = rs
@@ -444,7 +448,7 @@ class ApiServer():
     def delete_replica_set(self, namespace, name):
         """删除ReplicaSet及其所有Pod"""
         print(f'[INFO]Delete ReplicaSet {name} in namespace {namespace}')
-        
+
         try:
             # 获取ReplicaSet
             key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
@@ -501,18 +505,12 @@ class ApiServer():
         print('[INFO]Get global HPAs')
         key = self.etcd_config.HPA_KEY
         hpas = self.get(key)
+        
         # 格式化输出
         result = []
         for hpa in hpas:
-            result.append({
-                'name': hpa.name,
-                'namespace': hpa.namespace,
-                'target': f'{hpa.target_kind}/{hpa.target_name}',
-                'min_replicas': hpa.min_replicas,
-                'max_replicas': hpa.max_replicas,
-                'current_replicas': getattr(hpa, 'current_replicas', 0),
-                'metrics': hpa.metrics
-            })
+            result.append({hpa.name: hpa.to_dict() if hasattr(hpa, 'to_dict') else vars(hpa)})
+        
         return json.dumps(result)
         
     def get_hpas(self, namespace=None):
@@ -534,18 +532,10 @@ class ApiServer():
         # 格式化输出
         result = []
         for hpa in hpas:
-            result.append({
-                'name': hpa.name,
-                'namespace': hpa.namespace,
-                'target': f'{hpa.target_kind}/{hpa.target_name}',
-                'min_replicas': hpa.min_replicas,
-                'max_replicas': hpa.max_replicas,
-                'current_replicas': getattr(hpa, 'current_replicas', 0),
-                'metrics': hpa.metrics
-            })
+            result.append({hpa.name: hpa.to_dict() if hasattr(hpa, 'to_dict') else vars(hpa)})
         
         return json.dumps(result)
-    
+
     def get_hpa(self, namespace, name):
         """获取特定HPA的详细信息"""
         print(f'[INFO]Get HPA {name} in namespace {namespace}')
@@ -554,20 +544,7 @@ class ApiServer():
         
         for hpa in hpas:
             if hpa.name == name:
-                result = {
-                    'name': hpa.name,
-                    'namespace': hpa.namespace,
-                    'target': f'{hpa.target_kind}/{hpa.target_name}',
-                    'min_replicas': hpa.min_replicas,
-                    'max_replicas': hpa.max_replicas,
-                    'current_replicas': hpa.current_replicas,
-                    'target_replicas': hpa.target_replicas,
-                    'metrics': hpa.metrics,
-                    'current_metrics': hpa.current_metrics,
-                    'last_scale_time': hpa.last_scale_time,
-                    'status': hpa.status
-                }
-                return json.dumps(result)
+                return json.dumps(hpa.to_dict() if hasattr(hpa, 'to_dict') else vars(hpa))
         
         return json.dumps({'error': f'HPA {name} not found in namespace {namespace}'}), 404
 
@@ -605,6 +582,7 @@ class ApiServer():
                 # 更新ReplicaSet的HPA控制状态
                 self.put(rs_key, replica_sets)
             
+            print(f'[INFO]HPAConfig created: {hpa_config} and target found: {target_found}')
             # 存储HPA
             key = self.etcd_config.HPA_KEY.format(namespace=namespace)
             hpas = self.get(key)
@@ -643,42 +621,41 @@ class ApiServer():
             found = False
             for i, hpa in enumerate(hpas):
                 if hpa.name == name:
+                    hpa
                     # 创建更新后的配置
-                    updated_config = HorizontalPodAutoscalerConfig(hpa_json)
+                    # updated_config = HorizontalPodAutoscalerConfig(hpa_json)
                     
-                    # 保留原有的运行时信息
-                    updated_config.status = hpa.status
-                    updated_config.current_replicas = hpa.current_replicas
-                    updated_config.target_replicas = hpa.target_replicas
-                    updated_config.current_metrics = hpa.current_metrics
-                    updated_config.last_scale_time = hpa.last_scale_time
+                    # 更新运行时信息
+                    hpa.current_replicas = hpa_json.get('current_replicas', hpa.current_replicas)
+                    hpa.target_replicas = hpa_json.get('target_replicas', hpa.target_replicas)
+                    hpa.current_metrics = hpa_json.get('current_metrics', hpa.current_metrics)
                     
-                    # 处理目标变更
-                    if hpa.target_kind != updated_config.target_kind or hpa.target_name != updated_config.target_name:
-                        # 旧目标移除HPA控制
-                        if hpa.target_kind == 'ReplicaSet':
-                            self._release_hpa_control(namespace, hpa.target_name)
+                    # 下面的部分是处理目标变更，但目前不支持目标变更
+                    # if hpa.target_name != hpa_json.get('target_name'):
+                    #     # 旧目标移除HPA控制
+                    #     if hpa.target_kind == 'ReplicaSet':
+                    #         self._release_hpa_control(namespace, hpa.target_name)
                         
-                        # 新目标添加HPA控制
-                        if updated_config.target_kind == 'ReplicaSet':
-                            rs_key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
-                            replica_sets = self.get(rs_key)
+                    #     # 新目标添加HPA控制
+                    #     if hpa_json.get('target_kind') == 'ReplicaSet':
+                    #         rs_key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
+                    #         replica_sets = self.get(rs_key)
                             
-                            target_found = False
-                            for rs in replica_sets:
-                                if rs.name == updated_config.target_name:
-                                    rs.hpa_controlled = True
-                                    target_found = True
-                                    break
+                    #         target_found = False
+                    #         for rs in replica_sets:
+                    #             if rs.name == hpa_json.get('target_name'):
+                    #                 rs.hpa_controlled = True
+                    #                 target_found = True
+                    #                 break
                             
-                            if not target_found:
-                                return json.dumps({'error': f'Target ReplicaSet {updated_config.target_name} not found'}), 404
+                    #         if not target_found:
+                    #             return json.dumps({'error': f'Target ReplicaSet {hpa_json.get['target_name']} not found'}), 404
                             
-                            # 更新ReplicaSet
-                            self.put(rs_key, replica_sets)
+                    #         # 更新ReplicaSet
+                    #         self.put(rs_key, replica_sets)
                     
                     # 更新HPA
-                    hpas[i] = updated_config
+                    hpas[i] = hpa
                     found = True
                     break
             

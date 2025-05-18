@@ -149,14 +149,14 @@ class ReplicaSet:
         
         print(f"[INFO]获取ReplicaSet配置: {rs_config_dict}")
         
-        # 创建ReplicaSetConfig
-        rs_config = ReplicaSetConfig(rs_config_dict)
+        # # 创建ReplicaSetConfig
+        # rs_config = ReplicaSetConfig(rs_config_dict)
         
-        # 创建ReplicaSet并设置API客户端
-        rs = ReplicaSet(rs_config)
-        rs.set_api_client(_api_client, _uri_config)
+        # # 创建ReplicaSet并设置API客户端
+        # rs = ReplicaSet(rs_config)
+        # rs.set_api_client(_api_client, _uri_config)
         
-        return rs
+        return rs_config_dict
 
     @staticmethod
     def list(namespace='default', api_client=None, uri_config=None):
@@ -170,23 +170,24 @@ class ReplicaSet:
         
         # 获取ReplicaSet列表
         rs_list_data = _api_client.get(path)
+        print(f"[INFO]获取ReplicaSet列表: {rs_list_data}")
         if not rs_list_data:
             return []
         
-        # 转换为ReplicaSet对象
-        replica_sets = []
+        # # 转换为ReplicaSet对象
+        # replica_sets = []
         
-        if isinstance(rs_list_data, list):
-            for rs_data in rs_list_data:
-                try:
-                    rs_config = ReplicaSetConfig(rs_data)
-                    rs = ReplicaSet(rs_config)
-                    rs.set_api_client(_api_client, _uri_config)
-                    replica_sets.append(rs)
-                except Exception as e:
-                    print(f"[ERROR]Failed to parse ReplicaSet: {e}")
+        # if isinstance(rs_list_data, list):
+        #     for rs_data in rs_list_data:
+        #         try:
+        #             rs_config = ReplicaSetConfig(rs_data)
+        #             rs = ReplicaSet(rs_config)
+        #             rs.set_api_client(_api_client, _uri_config)
+        #             replica_sets.append(rs)
+        #         except Exception as e:
+        #             print(f"[ERROR]Failed to parse ReplicaSet: {e}")
         
-        return replica_sets
+        return rs_list_data
 
     def update(self):
         """更新ReplicaSet"""
@@ -380,19 +381,19 @@ def test_replica_set():
         assert create_success, "创建ReplicaSet失败"
         print("[PASS]创建ReplicaSet成功")
         
-        return
+        # return
         
         # 等待API Server处理
-        print("[INFO]等待API Server处理...")
-        time.sleep(2)
+        print("[INFO]等待API Server和Replica Controller处理...")
+        time.sleep(10)
         
         # 测试2: 获取ReplicaSet
         print("\n[TEST]2. 获取ReplicaSet...")
         retrieved_rs = ReplicaSet.get(rs.namespace, rs.name)
         print(f"rs.name: {rs.name}")
-        print(f"retrieved_rs.name: {retrieved_rs.name}")
+        print(f"retrieved_rs.name: {retrieved_rs['metadata']['name']}")
         assert retrieved_rs is not None, "获取ReplicaSet失败"
-        assert retrieved_rs.name == rs.name, "获取的ReplicaSet名称不匹配"
+        assert retrieved_rs['metadata']['name'] == rs.name, "获取的ReplicaSet名称不匹配"
         print("[PASS]获取ReplicaSet成功")
         
         # 测试3: 列出ReplicaSet
@@ -409,16 +410,18 @@ def test_replica_set():
         
         # 等待缩放完成
         print("[INFO]等待缩放完成...")
-        time.sleep(5)
+        time.sleep(10)
         
         # 测试5: 验证Pod创建
         print("\n[TEST]5. 验证Pod创建...")
         updated_rs = ReplicaSet.get(rs.namespace, rs.name)
         assert updated_rs is not None, "获取更新后的ReplicaSet失败"
-        print(f"[INFO]当前Pod实例: {updated_rs.pod_instances}")
-        print(f"[INFO]当前副本数: {updated_rs.current_replicas}")
-        assert len(updated_rs.pod_instances) == updated_rs.current_replicas, "Pod实例数与副本数不匹配"
+        print(f"[INFO]当前Pod实例: {updated_rs['pod_instances']}")
+        print(f"[INFO]当前副本数: {updated_rs['current_replicas'][0]}")
+        assert len(updated_rs['pod_instances'][0]) == updated_rs['current_replicas'][0] and updated_rs['current_replicas'][0] == 3, "Pod创建数量不匹配"
         print("[PASS]验证Pod创建成功")
+        
+        return
         
         # 测试6: 删除ReplicaSet
         print("\n[TEST]6. 删除ReplicaSet...")
