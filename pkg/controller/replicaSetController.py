@@ -228,7 +228,8 @@ class ReplicaSetController:
                                 alive_pods.append(replica_name)
                                 
                     elif diff < 0:
-                        # 需要删除多余的Pod
+                        # 需要删除多余的Pod，这个还没测行不行，而且测试也会比较麻烦
+                        print(f"WARNING]Delete haven't been tested yet")
                         isModified = True
                         print(f"[INFO]Group {base_pod_name} has {abs(diff)} excess pods")
                         
