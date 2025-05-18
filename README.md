@@ -111,6 +111,7 @@ curl http://localhost:8080/api/v1.3/machine
 ```
 # docker/ 的 /表示获取整台机器的资源，所以也可以通过container id拿到具体某个docker的资源使用情况
 curl http://localhost:8080/api/v1.3/docker/
+curl 
 ```
 
 ## 运行环境创建
