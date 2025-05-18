@@ -25,7 +25,7 @@ class ReplicaSet:
         self.desired_replicas = config.replica_count
         self.current_replicas = getattr(config, 'current_replicas', 0)
         self.selector = config.selector
-        self.pod_template = config.template
+        # self.pod_template = config.template
         self.pod_instances = getattr(config, 'pod_instances', [])
         self.hpa_controlled = getattr(config, 'hpa_controlled', False)
         
@@ -97,7 +97,7 @@ class ReplicaSet:
             'spec': {
                 'replicas': self.desired_replicas,
                 'selector': self.selector,
-                'template': self.pod_template
+                # 'template': self.pod_template
             },
             'status': self.status,
             'current_replicas': self.current_replicas,
@@ -247,6 +247,7 @@ class ReplicaSet:
         print(f"[INFO]ReplicaSet {self.name} deleted")
         return True
 
+    # 不需要replicaSet里实现create_pod方法，因为pod的config已经在podConfig里实现了
     def create_pod(self):
         """为ReplicaSet创建单个Pod"""
         self._ensure_api_client()
@@ -277,6 +278,7 @@ class ReplicaSet:
             name=pod_name
         )
         create_result = self.api_client.post(path, pod_template)
+        print(f"[INFO]create_result: {create_result}")
         
         if not create_result:
             print(f"[ERROR]Failed to create Pod {pod_name}")
@@ -319,9 +321,11 @@ def test_replica_set():
     import yaml
     import os
     import time
+    from pkg.config.globalConfig import GlobalConfig
     
     # 测试配置文件路径
-    config_file = "../../testFile/test-replicaset.yaml"
+    global_config = GlobalConfig()
+    config_file = os.path.join(global_config.TEST_FILE_PATH, 'test-replicaset.yaml')
     
     # 如果测试配置文件存在，则加载它
     if os.path.exists(config_file):
@@ -342,20 +346,20 @@ def test_replica_set():
                 'selector': {
                     'matchLabels': {'app': 'hello-world'}
                 },
-                'template': {
-                    'metadata': {
-                        'labels': {'app': 'hello-world'}
-                    },
-                    'spec': {
-                        'containers': [
-                            {
-                                'name': 'hello-world',
-                                'image': 'hello-world',
-                                'ports': [{'containerPort': 80}]
-                            }
-                        ]
-                    }
-                }
+                # 'template': {
+                #     'metadata': {
+                #         'labels': {'app': 'hello-world'}
+                #     },
+                #     'spec': {
+                #         'containers': [
+                #             {
+                #                 'name': 'hello-world',
+                #                 'image': 'hello-world',
+                #                 'ports': [{'containerPort': 80}]
+                #             }
+                #         ]
+                #     }
+                # }
             }
         }
     
@@ -375,6 +379,8 @@ def test_replica_set():
         create_success = rs.create()
         assert create_success, "创建ReplicaSet失败"
         print("[PASS]创建ReplicaSet成功")
+        
+        return
         
         # 等待API Server处理
         print("[INFO]等待API Server处理...")

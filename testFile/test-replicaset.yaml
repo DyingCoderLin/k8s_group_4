@@ -1,3 +1,4 @@
+# 后续应该添加kind参数，不需要显式地进行分配
 metadata:
   name: hello-world-rs
   namespace: default
@@ -8,13 +9,15 @@ spec:
   selector:
     matchLabels:
       app: hello-world
-  template:
-    metadata:
-      labels:
-        app: hello-world
-    spec:
-      containers:
-      - name: hello
-        image: hello-world
-        ports:
-        - containerPort: 80
+
+# 不需要支持template这个属性，不给自己找麻烦
+  # template:
+  #   metadata:
+  #     labels:
+  #       app: hello-world
+  #   spec:
+  #     containers:
+  #     - name: hello
+  #       image: hello-world
+  #       ports:
+  #       - containerPort: 80
