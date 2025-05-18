@@ -1,8 +1,5 @@
 import datetime
-import time
-import json
 import requests
-import threading
 from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
@@ -34,7 +31,6 @@ class HorizontalPodAutoscaler:
         
         # 指标和调整参数
         self.metrics = config.metrics
-        self.cooldown_seconds = 60  # 冷却时间，防止频繁扩缩
         
         # 运行时状态
         self.status = STATUS.PENDING
@@ -47,10 +43,6 @@ class HorizontalPodAutoscaler:
         # API通信
         self.api_client = None
         self.uri_config = None
-        
-        # 开关
-        self.running = False
-        self.controller_thread = None
 
     def set_api_client(self, api_client, uri_config=None):
         """设置API客户端，用于与API Server通信"""
@@ -219,9 +211,6 @@ class HorizontalPodAutoscaler:
 
     def delete(self):
         """删除HPA"""
-        # 如果控制器正在运行，先停止
-        self.stop_controller()
-        
         self._ensure_api_client()
         
         # 构建API路径
@@ -391,295 +380,12 @@ class HorizontalPodAutoscaler:
         except Exception as e:
             print(f"[ERROR]Error getting pod container IDs: {e}")
             return []
-        
-    def evaluate_metrics(self, target_resource):
-        """评估当前指标，计算需要的副本数"""
-        cpu_target = None
-        memory_target = None
-        
-        # 查找CPU和内存指标的目标值
-        for metric in self.metrics:
-            if metric.get('type') == 'Resource':
-                resource_name = metric.get('resource', {}).get('name', '').lower()
-                target_data = metric.get('resource', {}).get('target', {})
-                
-                if resource_name == 'cpu' and 'averageUtilization' in target_data:
-                    cpu_target = target_data.get('averageUtilization')
-                elif resource_name == 'memory' and 'averageUtilization' in target_data:
-                    memory_target = target_data.get('averageUtilization')
-        
-        # 如果没有设置目标，返回当前副本数
-        if cpu_target is None and memory_target is None:
-            print("[INFO]No valid metric targets found")
-            return target_resource.current_replicas
-        
-        # 获取所有容器的指标
-        avg_cpu_usage = 0
-        avg_memory_usage = 0
-        container_count = 0
-        
-        # 遍历ReplicaSet控制的所有Pod
-        pod_instances = target_resource.pod_instances or []
-        
-        if not pod_instances:
-            print("[INFO]No pods found for this ReplicaSet")
-            return 1  # 默认返回1个副本
-        
-        for group in pod_instances:
-            for pod_name in group:
-                container_ids = self.get_pod_container_ids(pod_name)
-                for container_id in container_ids:
-                    # 获取CPU使用率
-                    cpu_usage = self.get_cpu_usage_percentage(container_id)
-                    if cpu_usage is not None:
-                        avg_cpu_usage += cpu_usage
-                    
-                    # 获取内存使用率
-                    memory_usage = self.get_memory_usage_percentage(container_id)
-                    if memory_usage is not None:
-                        avg_memory_usage += memory_usage
-                    
-                    container_count += 1
-        
-        # 计算平均值
-        if container_count > 0:
-            avg_cpu_usage /= container_count
-            avg_memory_usage /= container_count
-        
-        # 保存当前指标
-        self.current_metrics = {
-            'cpu': avg_cpu_usage,
-            'memory': avg_memory_usage
-        }
-        
-        # 计算基于CPU和内存的需要副本数
-        cpu_replicas = target_resource.current_replicas
-        memory_replicas = target_resource.current_replicas
-        
-        # 计算基于CPU的需要副本数
-        if cpu_target is not None and avg_cpu_usage > 0:
-            cpu_replicas = int(round((avg_cpu_usage / cpu_target) * target_resource.current_replicas))
-        
-        # 计算基于内存的需要副本数
-        if memory_target is not None and avg_memory_usage > 0:
-            memory_replicas = int(round((avg_memory_usage / memory_target) * target_resource.current_replicas))
-        
-        # 取两者的最大值
-        new_replicas = max(cpu_replicas, memory_replicas)
-        new_replicas = max(new_replicas, self.min_replicas)  # 不低于最小值
-        new_replicas = min(new_replicas, self.max_replicas)  # 不超过最大值
-        
-        print(f"[INFO]Metrics - CPU: {avg_cpu_usage:.1f}% (target: {cpu_target}%), Memory: {avg_memory_usage:.1f}% (target: {memory_target}%)")
-        print(f"[INFO]Replicas calculation - Current: {target_resource.current_replicas}, New: {new_replicas}")
-        
-        return new_replicas
-
-    def scale_target(self, target_replicas):
-        """调整目标资源的副本数量"""
-        # 获取目标资源
-        target = self.get_target_resource()
-        if not target:
-            print(f"[ERROR]Target {self.target_kind} {self.target_name} not found")
-            return False
-        
-        # 检查当前副本数
-        current_replicas = 0
-        if hasattr(target, 'current_replicas'):
-            if isinstance(target.current_replicas, list):
-                current_replicas = target.current_replicas[0] if target.current_replicas else 0
-            else:
-                current_replicas = target.current_replicas
-                
-        if current_replicas == target_replicas:
-            return True  # 已经是目标数量，无需调整
-        
-        # 检查冷却期
-        if self.last_scale_time and (datetime.datetime.now() - self.last_scale_time).total_seconds() < self.cooldown_seconds:
-            print(f"[INFO]In cooldown period, skipping scaling")
-            return False  # 冷却期内，不进行调整
-        
-        # 执行扩缩容
-        print(f"[INFO]Scaling {self.target_kind} {self.target_name} from {current_replicas} to {target_replicas} replicas")
-        scaling_success = target.scale(target_replicas)
-        
-        if scaling_success:
-            # 更新HPA状态
-            self.last_scale_time = datetime.datetime.now()
-            self.current_replicas = current_replicas
-            self.target_replicas = target_replicas
-            self.status = STATUS.SCALING
-            self.update()
-            return True
-        
-        return False
-
-    # 控制器方法
-    def run_controller(self):
-        """运行HPA控制器逻辑"""
-        self._ensure_api_client()
-        
-        while self.running:
-            try:
-                # 获取目标资源
-                target = self.get_target_resource()
-                if not target:
-                    print(f"[ERROR]Target {self.target_kind} {self.target_name} not found, pausing controller")
-                    time.sleep(30)  # 等待30秒后重试
-                    continue
-                
-                # 评估指标，计算需要的副本数
-                new_replicas = self.evaluate_metrics(target)
-                
-                # 当前副本数
-                current_replicas = 0
-                if hasattr(target, 'current_replicas'):
-                    if isinstance(target.current_replicas, list):
-                        current_replicas = target.current_replicas[0] if target.current_replicas else 0
-                    else:
-                        current_replicas = target.current_replicas
-                
-                # 更新HPA状态
-                self.current_replicas = current_replicas
-                
-                # 如果需要调整副本数
-                if new_replicas != current_replicas:
-                    self.scale_target(new_replicas)
-                else:
-                    # 非扩缩阶段，更新状态为RUNNING
-                    if self.status != STATUS.RUNNING:
-                        self.status = STATUS.RUNNING
-                        self.update()
-            
-            except Exception as e:
-                print(f"[ERROR]Error in HPA controller: {e}")
-                self.status = STATUS.FAILED
-                self.update()
-            
-            # 等待下一个检查周期
-            time.sleep(15)  # 每15秒检查一次
-
-    def start_controller(self):
-        """启动HPA控制器"""
-        if self.running:
-            print(f"[INFO]HPA controller for {self.name} is already running")
-            return
-        
-        print(f"[INFO]Starting HPA controller for {self.name}")
-        self.running = True
-        self.controller_thread = threading.Thread(target=self.run_controller)
-        self.controller_thread.daemon = True
-        self.controller_thread.start()
-        
-        # 更新状态
-        self.status = STATUS.RUNNING
-        self.update()
-
-    def stop_controller(self):
-        """停止HPA控制器"""
-        if not self.running:
-            return
-        
-        print(f"[INFO]Stopping HPA controller for {self.name}")
-        self.running = False
-        if self.controller_thread:
-            self.controller_thread.join(timeout=5)
-            self.controller_thread = None
-        
-        # 更新状态
-        self.status = STATUS.PENDING
-        self.update()
-
-# HPA控制器主类
-class HPAController:
-    def __init__(self, api_client=None, uri_config=None):
-        self.api_client = api_client or ApiClient()
-        self.uri_config = uri_config or URIConfig()
-        self.hpas = {}  # 存储所有活动的HPA
-        self.running = False
-        self.controller_thread = None
-    
-    def sync_hpas(self):
-        """同步所有HPA"""
-        # 获取所有命名空间的所有HPA
-        all_hpas = []
-        
-        # 先尝试获取所有HPA
-        global_hpas = self.api_client.get('/v1/hpas')
-        if global_hpas:
-            for hpa_data in global_hpas:
-                if isinstance(hpa_data, dict) and list(hpa_data.keys())[0]:
-                    hpa_name = list(hpa_data.keys())[0]
-                    namespace = hpa_data[hpa_name].get('namespace', 'default')
-                    all_hpas.append((namespace, hpa_name))
-        
-        # 更新控制的HPA列表
-        current_hpas = set()
-        
-        for namespace, name in all_hpas:
-            # 添加到当前HPA集合
-            hpa_key = f"{namespace}/{name}"
-            current_hpas.add(hpa_key)
-            
-            # 如果不在已管理的HPA中，添加并启动控制器
-            if hpa_key not in self.hpas:
-                hpa = HorizontalPodAutoscaler.get(namespace, name, self.api_client, self.uri_config)
-                if hpa:
-                    self.hpas[hpa_key] = hpa
-                    hpa.start_controller()
-        
-        # 移除不再存在的HPA
-        keys_to_remove = []
-        for hpa_key in self.hpas:
-            if hpa_key not in current_hpas:
-                self.hpas[hpa_key].stop_controller()
-                keys_to_remove.append(hpa_key)
-                
-        for key in keys_to_remove:
-            del self.hpas[key]
-    
-    def run(self):
-        """运行HPA控制管理器"""
-        self.running = True
-        
-        while self.running:
-            try:
-                # 同步HPA列表
-                self.sync_hpas()
-                
-                # 每30秒同步一次
-                time.sleep(30)
-            except Exception as e:
-                print(f"[ERROR]Error in HPA controller manager: {e}")
-                time.sleep(60)  # 出错时等待较长时间再重试
-    
-    def start(self):
-        """启动HPA控制管理器"""
-        if self.controller_thread and self.controller_thread.is_alive():
-            print("[INFO]HPA controller manager is already running")
-            return
-            
-        print("[INFO]Starting HPA controller manager")
-        self.controller_thread = threading.Thread(target=self.run)
-        self.controller_thread.daemon = True
-        self.controller_thread.start()
-    
-    def stop(self):
-        """停止HPA控制管理器"""
-        print("[INFO]Stopping HPA controller manager")
-        self.running = False
-        
-        # 停止所有HPA控制器
-        for hpa in self.hpas.values():
-            hpa.stop_controller()
-        
-        if self.controller_thread:
-            self.controller_thread.join(timeout=5)
-            self.controller_thread = None
 
 def test_hpa():
     """测试HPA功能"""
     import yaml
     import os
+    import time
     from pkg.config.globalConfig import GlobalConfig
     
     # 测试配置文件路径
@@ -722,17 +428,6 @@ def test_hpa():
             return
             
         print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
-        
-        # 启动HPA控制器
-        print("\n[TEST]启动HPA控制器...")
-        hpa.start_controller()
-        print("[INFO]HPA控制器已启动，等待60秒观察扩缩容...")
-        time.sleep(60)
-        
-        # 停止HPA控制器
-        print("\n[TEST]停止HPA控制器...")
-        hpa.stop_controller()
-        print("[PASS]HPA控制器已停止")
         
         # 删除HPA
         print("\n[TEST]删除HPA...")

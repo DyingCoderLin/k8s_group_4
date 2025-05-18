@@ -8,93 +8,733 @@
  * Running on http://127.0.0.1:5050
  * Running on http://10.181.22.193:5050
 [33mPress CTRL+C to quit[0m
-202.120.40.82 - - [18/May/2025 23:45:24] "POST /api/v1/nodes/node-01 HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:27] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:32] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:37] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:43] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:46] "POST /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:46] "GET /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:48] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:49] "POST /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:52] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:52] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:53] "GET /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:53] "POST /api/v1/namespaces/default/pods/pod1-cot02c HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:53] "PUT /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:58] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:58] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:59] "GET /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:59] "GET /apis/v1/namespaces/default/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:45:59] "PUT /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:03] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:08] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:09] "GET /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:13] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:18] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:23] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:28] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:33] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:38] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:43] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:48] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-[INFO]Get global ReplicaSets.
+202.120.40.82 - - [19/May/2025 00:01:12] "POST /api/v1/nodes/node-01 HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:15] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:20] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:25] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:26] "POST /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:26] "GET /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:30] "POST /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:30] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:31] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:31] "GET /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:31] "POST /api/v1/namespaces/default/pods/pod1-qvwqch HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:31] "PUT /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:36] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:36] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "GET /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "GET /apis/v1/namespaces/default/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "PUT /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "GET /api/v1/namespaces/default/pods/pod1 HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "POST /api/v1/namespaces/default/pods/pod1-9sr8tx HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:41] "PUT /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:46] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:46] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:51] "GET /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:51] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:51] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:56] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:56] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:59] "POST /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:01:59] "GET /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1" 200 -
 [INFO]Get global ReplicaSets.
 [INFO]Get global ReplicaSets.
 [INFO]Get global ReplicaSets.
 [INFO]Producing one message to topic api.v1.nodes.node-01
 [INFO]Get pod pod1 in namespace default
-[INFO]Get global ReplicaSets.
 [INFO]Create ReplicaSet hello-world-rs in namespace default
 [INFO]Received JSON: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
 [DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
-[INFO]Pods in namespace default: [<pkg.config.podConfig.PodConfig object at 0x106792030>]
+[INFO]Pods in namespace default: [<pkg.config.podConfig.PodConfig object at 0x10303dbe0>]
 [INFO]Selector app: hello-world, env: None
 pod.labels.app: hello-world, pod.labels.env: None
 [INFO]Adding pod pod1 to ReplicaSet hello-world-rs
-[INFO]ReplicaSetConfig created: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x106792150>
+[INFO]ReplicaSetConfig created: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x10303c9e0>
 [INFO]Get global ReplicaSets.
 [DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [4], 'pod_instances': [['pod1']], 'hpa_controlled': False}
 [INFO]Get pods in namespace default
 [INFO]Get pod pod1 in namespace default
 [INFO]Producing one message to topic api.v1.nodes.node-01
 [INFO]Update ReplicaSet hello-world-rs in namespace default
-[INFO]Update Replica set: Received JSON: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-cot02c']], 'hpa_controlled': False}
+[INFO]Update Replica set: Received JSON: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
 [DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [4], 'pod_instances': [['pod1']], 'hpa_controlled': False}
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-cot02c']], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
 [INFO]Get pods in namespace default
 [INFO]Get ReplicaSet hello-world-rs in namespace default
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-cot02c']], 'hpa_controlled': False}
-[INFO]Found ReplicaSet: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x106792780>
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
+[INFO]Found ReplicaSet: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x10303e420>
 [INFO]Get all ReplicaSets in namespace default
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-cot02c']], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
 [INFO]Update ReplicaSet hello-world-rs in namespace default
 [INFO]Update Replica set: Received JSON: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-cot02c']], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 2, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
+[INFO]Get pods in namespace default
+[INFO]Get pod pod1 in namespace default
+[INFO]Producing one message to topic api.v1.nodes.node-01
+[INFO]Update ReplicaSet hello-world-rs in namespace default
+[INFO]Update Replica set: Received JSON: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [2], 'pod_instances': [['pod1', 'pod1-qvwqch']], 'hpa_controlled': False}
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[INFO]Get pods in namespace default
 [INFO]Get ReplicaSet hello-world-rs in namespace default
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
-[INFO]Found ReplicaSet: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x1067925d0>
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[INFO]Found ReplicaSet: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x10303f650>
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[INFO]Get pods in namespace default
+[INFO]Create HPA hello-world-hpa in namespace default
+[DEBUG] HPAConfig init: {'metadata': {'name': 'hello-world-hpa', 'namespace': 'default'}, 'spec': {'scaleTargetRef': {'apiVersion': 'apps/v1', 'kind': 'ReplicaSet', 'name': 'hello-world-rs'}, 'minReplicas': 3, 'maxReplicas': 6, 'metrics': [{'type': 'Resource', 'resource': {'name': 'cpu', 'target': {'type': 'Utilization', 'averageUtilization': 40}}}, {'type': 'Resource', 'resource': {'name': 'memory', 'target': {'type': 'Utilization', 'averageUtilization': 50}}}]}}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': False}
+[INFO]HPAConfig created: HPA(hello-world-hpa, target=ReplicaSet:hello-world-rs, min=3, max=6) and target found: True
+[INFO]Get HPA hello-world-hpa in namespace default
+[INFO]Update HPA hello-world-hpa in namespace default202.120.40.82 - - [19/May/2025 00:02:00] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:00] "GET /apis/v1/namespaces/default/replicasets/hello-world-rs HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:00] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:01] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:01] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:02] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:02] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:04] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:04] "[35m[1mPUT /apis/v1/namespaces/default/hpas/hello-world-hpa HTTP/1.1[0m" 500 -
+202.120.40.82 - - [19/May/2025 00:02:06] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:06] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:12] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:12] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:17] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:17] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:22] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:22] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:27] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:27] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:32] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:32] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:38] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:38] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:43] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:43] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:48] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:48] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:53] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:53] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:59] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:02:59] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:04] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:04] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:09] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:09] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:14] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:14] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:19] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:19] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:24] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+
+[INFO]Get ReplicaSet hello-world-rs in namespace default
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Found ReplicaSet: <pkg.config.replicaSetConfig.ReplicaSetConfig object at 0x102fff950>
+[INFO]Update HPA hello-world-hpa in namespace default
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Update HPA hello-world-hpa in namespace default
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
+[INFO]Update HPA hello-world-hpa in namespace default
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
+[INFO]Update HPA hello-world-hpa in namespace default
+[INFO]Update HPA hello-world-hpa in namespace default
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
+[ERROR]Failed to update HPA: 'HorizontalPodAutoscalerConfig' object has no attribute 'target_replicas'
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
 [INFO]Get global ReplicaSets.
-[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': [], 'current_replicas': [], 'pod_instances': [], 'hpa_controlled': False}202.120.40.82 - - [18/May/2025 23:46:53] "GET /apis/v1/replicasets HTTP/1.1" 200 -
-202.120.40.82 - - [18/May/2025 23:46:58] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default202.120.40.82 - - [19/May/2025 00:03:24] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:30] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:30] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:35] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:35] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:40] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:40] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:46] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:46] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:51] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:51] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:56] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:03:56] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:01] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:01] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:06] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:06] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:11] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:11] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:18] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:18] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:23] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:23] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:28] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:28] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:33] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:33] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:38] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:38] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:44] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:44] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:49] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:49] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:54] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:04:54] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:00] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:00] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:05] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:05] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:10] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:10] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}202.120.40.82 - - [19/May/2025 00:05:15] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:15] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:20] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:20] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:26] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:26] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:31] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:31] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:36] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:36] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:41] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:41] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:46] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:46] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:51] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:51] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:56] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:05:56] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:01] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:01] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:06] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:06] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:11] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:11] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:16] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:16] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:21] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:21] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:26] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:26] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:31] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:31] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:36] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:36] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:42] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:42] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:47] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:47] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:52] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:52] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:57] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:06:57] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}202.120.40.82 - - [19/May/2025 00:07:02] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:02] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:07] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:07] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:12] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:12] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:17] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:17] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:22] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:22] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:27] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:27] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:32] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:32] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:37] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:37] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:42] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:42] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:47] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:47] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:53] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:53] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:58] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:07:58] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:03] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:03] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:08] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:08] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:13] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:13] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:18] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:18] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:23] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:23] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:28] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:28] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:33] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:33] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:38] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:38] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:43] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:43] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}202.120.40.82 - - [19/May/2025 00:08:48] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:48] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:53] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:53] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:58] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:08:59] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:04] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:04] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:09] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:09] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:14] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:14] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:19] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:19] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:24] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:24] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:29] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:29] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:34] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:34] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:39] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:39] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:44] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:44] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:49] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:49] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:54] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:54] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:59] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:09:59] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:04] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:05] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:10] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:10] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:15] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:15] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:20] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:20] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:25] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:25] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:30] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:30] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}202.120.40.82 - - [19/May/2025 00:10:35] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:35] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:40] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:40] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:45] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:45] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:50] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:50] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:55] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:10:55] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:00] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:00] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:05] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:05] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:10] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:10] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:16] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:16] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:21] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:21] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:26] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:26] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:31] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:31] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:36] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:36] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:41] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:41] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:47] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:47] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:52] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:53] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:58] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:11:58] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:03] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:03] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:08] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:08] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:13] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:13] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:18] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:18] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}
+[INFO]Get pods in namespace default
+[INFO]Get global ReplicaSets.
+[DEBUG]ReplicaSetConfig init: {'metadata': {'name': 'hello-world-rs', 'namespace': 'default', 'labels': {'app': 'hello-world'}}, 'spec': {'replicas': 3, 'selector': {'matchLabels': {'app': 'hello-world'}}}, 'status': ['Ready'], 'current_replicas': [3], 'pod_instances': [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']], 'hpa_controlled': True}202.120.40.82 - - [19/May/2025 00:12:23] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:23] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:28] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:28] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:33] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:33] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:38] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:38] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:43] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:43] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:48] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:48] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:53] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [19/May/2025 00:12:53] "GET /api/v1/namespaces/default/pods HTTP/1.1" 200 -

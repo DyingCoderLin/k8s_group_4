@@ -1,10 +1,10 @@
-from pkg.apiObject.hpa import HPAController
+from pkg.controller.hpaController import HPAController
 from pkg.config.uriConfig import URIConfig
-from pkg.apiServer.apiClient import ApiClient
 
 def main():
-    # 创建并启动HPA控制器管理器
-    controller = HPAController(ApiClient(), URIConfig())
+    """启动HPA控制器"""
+    # 创建并启动控制器
+    controller = HPAController(URIConfig())
     controller.start()
     
     try:
