@@ -698,3 +698,2659 @@
 [INFO]No changes needed for ReplicaSet hello-world-rs
 [INFO]Found 1 ReplicaSets
 [INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs
+[INFO]Found 1 ReplicaSets
+[INFO]Reconciling ReplicaSet hello-world-rs in namespace default
+[INFO]Processing group with base pod pod1
+[INFO]Original alive pods in group pod1: ['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']
+[INFO]Updated group pod1: [['pod1', 'pod1-qvwqch', 'pod1-9sr8tx']]
+[INFO]No changes needed for ReplicaSet hello-world-rs

@@ -250,6 +250,7 @@ class HPAController:
                 
                 # 如果HPA不在已管理的字典中，获取并添加
                 if hpa_key not in self.hpas:
+                    # 这里的hpa就是一个HPA的API对象
                     hpa = HorizontalPodAutoscaler.get(namespace, hpa_name, self.api_client, self.uri_config)
                     if hpa:
                         self.hpas[hpa_key] = hpa

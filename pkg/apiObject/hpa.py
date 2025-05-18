@@ -4,6 +4,7 @@ from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.apiObject.replicaSet import ReplicaSet
+from typing import Optional
 
 class STATUS:
     PENDING = 'PENDING'
@@ -38,7 +39,9 @@ class HorizontalPodAutoscaler:
         self.target_replicas = 0
         self.current_metrics = {}
         self.last_scale_time = None
-        self.cadvisor_base_url = f"http://{URIConfig.HOST}:8080"
+        # self.cadvisor_base_url = f"http://{URIConfig.HOST}:8080"
+        # 非常重要！在mac上因为无法运行cadvisor，所以使用必须使用云主机上的cadvisor docker，只是用来测试获取的正确性的
+        self.cadvisor_base_url = f"http://10.119.15.182:8080"
         
         # API通信
         self.api_client = None
@@ -256,11 +259,24 @@ class HorizontalPodAutoscaler:
         except Exception as e:
             print(f"[ERROR]Error getting container metrics: {e}")
             return None
+        
+    def get_machine_realtime_metrics(self):
+        """获取机器的指标数据"""
+        try:
+            url = f"{self.cadvisor_base_url}/api/v1.3/docker/"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                return response.json()
+            
+            return None
+        except Exception as e:
+            print(f"[ERROR]Error getting container metrics: {e}")
+            return None
             
     def get_machine_info(self):
-        """获取机器信息，用于计算CPU核心数等"""
+        """获取机器信息，包括 CPU 核心数等"""
         try:
-            url = f"{self.cadvisor_base_url}/api/v1.3/machine"
+            url = f"{self.cadvisor_base_url}/api/v2.0/machine"
             response = requests.get(url, timeout=5)
             if response.status_code == 200:
                 return response.json()
@@ -270,115 +286,132 @@ class HorizontalPodAutoscaler:
         except Exception as e:
             print(f"[ERROR]Error getting machine info: {e}")
             return None
-    
-    def get_cpu_usage_percentage(self, container_id):
-        """获取CPU使用率百分比"""
-        metrics = self.get_container_metrics(container_id)
-        if not metrics:
-            return None
         
+    def get_machine_metrics_summary(self):
+        """获取机器的指标摘要数据 (v2.0 API)"""
         try:
-            # 获取机器信息
-            machine_info = self.get_machine_info()
-            if not machine_info:
-                return None
+            url = f"{self.cadvisor_base_url}/api/v2.0/summary"
+            response = requests.get(url, timeout=5)
+            if response.status_code == 200:
+                return response.json()
             
-            # 获取CPU总核心数
-            num_cores = machine_info.get('num_cores', 1)
-            
-            # 获取最近的两个时间点的数据
-            stats = metrics.get('stats', [])
-            if len(stats) < 2:
+            print(f"[ERROR]Failed to get metrics summary, status: {response.status_code}")
+            return None
+        except Exception as e:
+            print(f"[ERROR]Error getting metrics summary: {e}")
+            return None
+    
+    def get_cpu_usage_percentage(self, container_id=None):
+        """获取CPU使用率百分比 - 使用 v2.0 API"""
+        try:
+            # 获取摘要数据
+            summary = self.get_machine_metrics_summary()
+            if not summary:
+                print("[ERROR]未获取到指标摘要数据")
                 return None
                 
-            current = stats[-1]
-            previous = stats[-2]
+            # v2.0 API 中的 CPU 使用率已经是百分比形式
+            # 获取根容器 ("/") 的数据，或者使用特定容器路径
+            container_path = "/" if container_id is None else f"/docker/{container_id}"
             
-            # 计算CPU使用率
-            current_usage = current.get('cpu', {}).get('usage', {}).get('total', 0)
-            previous_usage = previous.get('cpu', {}).get('usage', {}).get('total', 0)
-            
-            # 转换为纳秒
-            cpu_usage_ns = current_usage - previous_usage
-            
-            # 计算时间间隔
-            current_time = current.get('timestamp', '')
-            previous_time = previous.get('timestamp', '')
-            
-            # 解析时间戳
-            from datetime import datetime
-            current_dt = datetime.strptime(current_time, '%Y-%m-%dT%H:%M:%S.%fZ')
-            previous_dt = datetime.strptime(previous_time, '%Y-%m-%dT%H:%M:%S.%fZ')
-            interval_s = (current_dt - previous_dt).total_seconds()
-            
-            if interval_s <= 0:
+            if container_path not in summary:
+                print(f"[ERROR]在摘要中未找到容器路径: {container_path}")
                 return None
             
-            # 计算CPU使用率百分比
-            cpu_percent = (cpu_usage_ns / (interval_s * 1e9 * num_cores)) * 100
-            return cpu_percent
+            # 获取最新 CPU 使用率（百分比）
+            cpu_percent = summary[container_path].get("latest_usage", {}).get("cpu")
+            
+            # 如果 latest_usage 中没有 CPU 数据，尝试使用 minute_usage
+            if cpu_percent is None:
+                minute_data = summary[container_path].get("minute_usage", {})
+                if minute_data.get("percent_complete", 0) > 0 and minute_data.get("cpu", {}).get("present", False):
+                    cpu_percent = minute_data.get("cpu", {}).get("mean")
+            
+            if cpu_percent is None:
+                print("[ERROR]未找到有效的 CPU 使用率数据")
+                return None
+                
+            print(f"[DEBUG]CPU使用率: {cpu_percent:.2f}%")
+            return float(cpu_percent)
             
         except Exception as e:
-            print(f"[ERROR]Error calculating CPU usage: {e}")
+            print(f"[ERROR]计算CPU使用率时出错: {e}")
+            import traceback
+            print(f"[ERROR]详细错误: {traceback.format_exc()}")
             return None
-    
-    def get_memory_usage_percentage(self, container_id):
-        """获取内存使用率百分比"""
-        metrics = self.get_container_metrics(container_id)
-        if not metrics:
-            return None
-        
+
+    def get_memory_usage_percentage(self, container_id=None):
+        """获取内存使用率百分比 - 使用 v2.0 API"""
         try:
-            # 获取最近的数据点
-            stats = metrics.get('stats', [])
-            if not stats:
+            # 获取摘要数据
+            summary = self.get_machine_metrics_summary()
+            if not summary:
+                print("[ERROR]未获取到指标摘要数据")
                 return None
                 
-            current = stats[-1]
+            # 获取机器信息，用于计算内存总量
+            machine_info = self.get_machine_info()
+            if not machine_info or "memory_capacity" not in machine_info:
+                print("[ERROR]未获取到机器内存容量信息")
+                return None
+                
+            total_memory = machine_info.get("memory_capacity")
             
-            # 获取当前内存使用量
-            memory_usage = current.get('memory', {}).get('usage', 0)
+            # 获取根容器 ("/") 的数据，或者使用特定容器路径
+            container_path = "/" if container_id is None else f"/docker/{container_id}"
             
-            # 获取限制
-            memory_limit = current.get('memory', {}).get('limit', 0)
-            
-            if memory_limit <= 0:
+            if container_path not in summary:
+                print(f"[ERROR]在摘要中未找到容器路径: {container_path}")
                 return None
             
+            # 获取最新内存使用量（字节）
+            memory_usage = summary[container_path].get("latest_usage", {}).get("memory")
+            
+            # 如果 latest_usage 中没有内存数据，尝试使用 minute_usage
+            if memory_usage is None:
+                minute_data = summary[container_path].get("minute_usage", {})
+                if minute_data.get("percent_complete", 0) > 0 and minute_data.get("memory", {}).get("present", False):
+                    memory_usage = minute_data.get("memory", {}).get("mean")
+            
+            if memory_usage is None or total_memory <= 0:
+                print("[ERROR]未找到有效的内存使用数据或总内存容量")
+                return None
+                
             # 计算内存使用率百分比
-            memory_percent = (memory_usage / memory_limit) * 100
+            memory_percent = (float(memory_usage) / float(total_memory)) * 100
+            print(f"[DEBUG]内存使用率: {memory_percent:.2f}% (使用: {memory_usage} 字节, 总量: {total_memory} 字节)")
             return memory_percent
             
         except Exception as e:
-            print(f"[ERROR]Error calculating memory usage: {e}")
+            print(f"[ERROR]计算内存使用率时出错: {e}")
+            import traceback
+            print(f"[ERROR]详细错误: {traceback.format_exc()}")
             return None
 
-    def get_pod_container_ids(self, pod_name):
-        """获取Pod的容器ID列表"""
+    def get_pod_container_path(self, pod_name):
+        """获取与 Pod 名称相关的容器路径"""
         try:
-            # 获取所有容器
-            url = f"{self.cadvisor_base_url}/api/v1.3/docker"
+            # 对 v2.0 API，我们需要获取所有容器列表
+            url = f"{self.cadvisor_base_url}/api/v2.0/ps"
             response = requests.get(url, timeout=5)
             if response.status_code != 200:
-                print(f"[ERROR]Failed to get containers, status: {response.status_code}")
+                print(f"[ERROR]Failed to get container processes, status: {response.status_code}")
                 return []
                 
-            all_containers = response.json()
-            
-            # 筛选出属于指定Pod的容器
+            containers_info = response.json()
             pod_containers = []
-            for container_id, container_data in all_containers.items():
-                # 检查容器名称是否包含Pod名称
-                if 'aliases' in container_data:
-                    for alias in container_data.get('aliases', []):
-                        if pod_name in alias:
-                            pod_containers.append(container_id)
-                            break
+            
+            # 遍历容器信息，查找与 Pod 名称匹配的容器
+            for container in containers_info:
+                # 容器名称通常包含 Pod 名称
+                if pod_name in container.get("name", ""):
+                    container_path = f"/docker/{container.get('id', '')}"
+                    pod_containers.append(container_path)
             
             return pod_containers
             
         except Exception as e:
-            print(f"[ERROR]Error getting pod container IDs: {e}")
+            print(f"[ERROR]Error getting pod container paths: {e}")
             return []
 
 def test_hpa():
@@ -402,12 +435,52 @@ def test_hpa():
         return
     
     try:
+        # 测试CPU和内存指标获取
+        print("[TEST]获取CPU和内存指标...")        
         # 创建HPA配置
         hpa_config = HorizontalPodAutoscalerConfig(config_dict)
         
         # 创建HPA对象
         hpa = HorizontalPodAutoscaler(hpa_config)
         
+        # 获取机器信息
+        print("[TEST]获取机器信息...")
+        machine_info = hpa.get_machine_info()
+        if machine_info:
+            print(f"[INFO]机器内存容量: {machine_info.get('memory_capacity')} 字节")
+            print(f"[INFO]CPU核心数: {machine_info.get('num_cores', '未知')}")
+        else:
+            print("[WARN]无法获取机器信息")
+        
+        # 获取指标摘要
+        print("[TEST]获取指标摘要...")
+        metrics_summary = hpa.get_machine_metrics_summary()
+        if metrics_summary:
+            # 只打印根容器的信息以避免过多输出
+            root_metrics = metrics_summary.get("/", {})
+            print(f"[INFO]根容器时间戳: {root_metrics.get('timestamp', '未知')}")
+            print(f"[INFO]根容器最新CPU使用率: {root_metrics.get('latest_usage', {}).get('cpu')}%")
+            print(f"[INFO]根容器最新内存使用量: {root_metrics.get('latest_usage', {}).get('memory')} 字节")
+        else:
+            print("[WARN]无法获取指标摘要")
+        
+        # 获取CPU和内存使用率
+        cpu_percent = hpa.get_cpu_usage_percentage()
+        memory_percent = hpa.get_memory_usage_percentage()
+        
+        if cpu_percent is not None:
+            print(f"[INFO]CPU使用率: {cpu_percent:.2f}%")
+        else:
+            print("[WARN]无法获取CPU使用率")
+            
+        if memory_percent is not None:
+            print(f"[INFO]内存使用率: {memory_percent:.2f}%")
+        else:
+            print("[WARN]无法获取内存使用率")
+            
+        return
+        
+        # 以下是创建、获取、删除HPA的测试，暂不执行
         # 设置API客户端
         hpa.set_api_client(ApiClient())
         
@@ -442,6 +515,8 @@ def test_hpa():
         
     except Exception as e:
         print(f"[ERROR]测试过程中出错: {e}")
+        import traceback
+        print(f"[ERROR]详细错误: {traceback.format_exc()}")
 
 if __name__ == '__main__':
     print("[INFO]Testing HPA functionality")
