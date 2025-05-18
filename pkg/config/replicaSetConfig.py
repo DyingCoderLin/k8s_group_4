@@ -16,20 +16,20 @@ class ReplicaSetConfig():
         
         # --- running information ---
         # 这些信息在一开始被创建的时候不会被赋值，但是需要预先留出
-        print(f"[DEBUG] __init__ received status: {arg_json.get('status')}")
-        print(f"[DEBUG] __init__ received current_replicas: {arg_json.get('current_replicas')}")
-        print(f"[DEBUG] __init__ received pod_instances: {arg_json.get('pod_instances')}")
+        # print(f"[DEBUG] __init__ received status: {arg_json.get('status')}")
+        # print(f"[DEBUG] __init__ received current_replicas: {arg_json.get('current_replicas')}")
+        # print(f"[DEBUG] __init__ received pod_instances: {arg_json.get('pod_instances')}")
         self.status = arg_json.get('status', [])
         self.current_replicas = arg_json.get('current_replicas', [])
         self.pod_instances = arg_json.get('pod_instances', [])
         self.hpa_controlled = arg_json.get('hpa_controlled', False)
-        print(f"[DEBUG] __init__ self attribute, status: {self.status}")
-        print(f"[DEBUG] __init__ self attribute, current_replicas: {self.current_replicas}")
-        print(f"[DEBUG] __init__ self attribute, pod_instances: {self.pod_instances}")
+        # print(f"[DEBUG] __init__ self attribute, status: {self.status}")
+        # print(f"[DEBUG] __init__ self attribute, current_replicas: {self.current_replicas}")
+        # print(f"[DEBUG] __init__ self attribute, pod_instances: {self.pod_instances}")
         
     # 重命名方法，不要覆盖特殊方法__dict__
     def to_dict(self):
-        print(f"[DEBUG]ReplicaSetConfig to_dict: {self.__dict__}")
+        # print(f"[DEBUG]ReplicaSetConfig to_dict: {self.__dict__}")
         return {
             'metadata': {
                 'name': self.name,

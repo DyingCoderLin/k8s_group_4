@@ -5,7 +5,7 @@
 https://docker-py.readthedocs.io/en/stable/networks.html
 
 
-## 首先需要启动etcd和kafka两个docker
+## 首先需要启动etcd, kafka, cadviser两个docker
 ### etcd一键安装
 ```docker
 docker run -d \
@@ -88,6 +88,30 @@ docker run -d \
   ```
 - 此时kafka和zookeeper都正常启动
     - 可使用docker ps -a查看运行情况
+
+### cadvisor一键启动
+- 注：cadvisor仅能在amd64平台上启动（未知能否在windows上启动）
+```
+sudo docker run \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:ro \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker/:/var/lib/docker:ro \
+  --volume=/dev/disk/:/dev/disk:ro \
+  --publish=8080:8080 \
+  --detach=true \
+  --name=cadvisor \
+  google/cadvisor:latest
+```
+- 访问硬件资源uri：
+```
+curl http://localhost:8080/api/v1.3/machine
+```
+- 访问当前使用资源uri：
+```
+# docker/ 的 /表示获取整台机器的资源，所以也可以通过container id拿到具体某个docker的资源使用情况
+curl http://localhost:8080/api/v1.3/docker/
+```
 
 ## 运行环境创建
 - 创建虚拟环境（也可以选择在本机上直接运行）并配置python包

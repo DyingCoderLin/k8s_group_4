@@ -66,10 +66,10 @@ class URIConfig:
     DNS_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/dns/<name>")
 
     # HPA 相关
-    GLOBAL_HPA_URL = URIString("/apis/v1/hpa")
-    HPA_URL = URIString("/apis/v1/namespaces/<namespace>/hpa")
-    HPA_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/hpa/<name>")
-    HPA_SPEC_STATUS_URL = URIString("/apis/v1/namespaces/<namespace>/hpa/<name>/status")
+    GLOBAL_HPA_URL = URIString("/apis/v1/hpas")
+    HPA_URL = URIString("/apis/v1/namespaces/<namespace>/hpas")
+    HPA_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/hpas/<name>")
+    HPA_SPEC_STATUS_URL = URIString("/apis/v1/namespaces/<namespace>/hpas/<name>/status")
 
     # Function 相关
     GLOBAL_FUNCTIONS_URL = URIString("/apis/v1/functions")

@@ -1,0 +1,25 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: default
+  name: hello-world-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: ReplicaSet # 标明管控的对象类型
+    name: hello-world-rs # 需要管控的对象名称
+  minReplicas: 3
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 40
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 50
