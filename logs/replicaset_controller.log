@@ -1,0 +1,13 @@
+[INFO]ReplicaSetController starting...
+[INFO]API Client initialized with base URL: http://10.181.22.193:5050
+[INFO]ReplicaSetController main loop started
+[INFO]ReplicaSetController started
+[INFO]Controller is running. Press CTRL+C to stop.
+[INFO]No ReplicaSets found
+[INFO]No ReplicaSets found
+
+[INFO]Shutting down...
+[INFO]Stopping ReplicaSetController...
+[INFO]ReplicaSetController main loop terminated
+[INFO]ReplicaSetController stopped
+[INFO]ReplicaSetController is not running

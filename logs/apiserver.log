@@ -1,0 +1,14 @@
+[INFO]ApiServer starting...
+[INFO]Overlay network exists, skip creating.
+[INFO]ApiServer init success.
+[INFO]ApiServer running...
+ * Serving Flask app 'apiServer'
+ * Debug mode: off
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5050
+ * Running on http://10.181.22.193:5050
+[33mPress CTRL+C to quit[0m
+202.120.40.82 - - [18/May/2025 21:33:31] "POST /api/v1/nodes/node-01 HTTP/1.1" 200 -
+202.120.40.82 - - [18/May/2025 21:33:34] "GET /apis/v1/replicasets HTTP/1.1" 200 -
+202.120.40.82 - - [18/May/2025 21:33:39] "GET /apis/v1/replicasets HTTP/1.1" 200 -

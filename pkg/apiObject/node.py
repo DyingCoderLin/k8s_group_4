@@ -33,7 +33,6 @@ class Node():
 
 if __name__ == '__main__':
     print('[INFO]Testing Node.')
-
     import yaml
     from pkg.config.globalConfig import GlobalConfig
     import os
