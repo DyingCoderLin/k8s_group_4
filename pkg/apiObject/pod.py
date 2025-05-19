@@ -118,7 +118,8 @@ if __name__ == '__main__':
         print(f'[INFO]请求地址: {uri}')
         response = requests.get(uri)
         print(f'[INFO]获取pod的返回值: {response}')
-        response_config = PodConfig(response.json())
+        # response_config = PodConfig(response.json())
+        response_config = response
         # print(f"pod.label.app: {response_config.get_app_label()},pod.label.env: {response_config.get_env_label()}")
     else:
         podConfig = PodConfig(data)

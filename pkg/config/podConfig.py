@@ -45,13 +45,13 @@ class PodConfig():
             },
             'overlay_name': self.overlay_name,
             'subnet_ip': self.subnet_ip,
-            'node_id': self.node_id,
+            'node_id': str(self.node_id),
             'status': self.status
         }
-    def __getstate__(self):
-        return self.to_dict()
-    def __setstate__(self, state):
-        self.__init__(state)
+    # def __getstate__(self):
+    #     return self.to_dict()
+    # def __setstate__(self, state):
+    #     self.__init__(state)
         # 重新初始化容器配置
         # self.containers = [ContainerConfig(self.volume, container) for container in state['spec']['containers']]
         
