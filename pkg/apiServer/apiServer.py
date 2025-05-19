@@ -166,11 +166,11 @@ class ApiServer():
         
         # 格式化输出
         result = []
-        print({hasattr(pod, 'to_dict')})
+        # print({hasattr(pod, 'to_dict')})
         for pod in pods:
             result.append({pod.name: pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)})
         # return json.dumps(result)
-        return pickle.dumps(result)
+        return json.dumps(result)
 
     def get_pod(self, namespace : str, name : str):
         # pass
@@ -180,9 +180,10 @@ class ApiServer():
         for pod in pods:
             if pod.name == name:
                 # return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
-                return pickle.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
+                print(f'[INFO]Found pod: {pod.to_dict()}')
+                return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
         # return json.dumps({'error': 'Pod not found'}), 404
-        return pickle.dumps({'error': 'Pod not found'}), 404
+        return json.dumps({'error': 'Pod not found'}), 404
 
     def add_pod(self, namespace : str, name : str):
         pod_json = request.json
