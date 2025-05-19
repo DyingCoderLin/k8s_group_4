@@ -45,14 +45,23 @@ class Pod():
         print(f'[INFO]Pod init, pause container: {self.containers[0].name}')
         print(f"container num: {len(self.config.containers)}")
         for container in self.config.containers:
-            print(f'[INFO]Pod init, container: {container.name}')
-            print(f'[INFO]Pod init, container args: {container.dockerapi_args()}')
-            print(f'[INFO]pause_docker_name: {pause_docker_name}')
-            
-            self.containers.append(self.client.containers.run(**container.dockerapi_args(),
-            detach = True, network_mode = f'container:{pause_docker_name}'))
-            
-            print(f'[INFO]container {container.name} created, id: {self.containers[-1].id}')
+            try:
+                container_args = container.dockerapi_args()
+                if 'cpu_quota' in container_args and isinstance(container_args['cpu_quota'], float):
+                    container_args['cpu_quota'] = int(container_args['cpu_quota'])
+                print(f'[INFO]container args: {container_args}')
+                new_container = self.client.containers.run(
+                    **container_args,
+                    detach=True, 
+                    network_mode=f'container:{pause_docker_name}'
+                )
+                self.containers.append(new_container)
+                print(f'[INFO]container {container.name} created, id: {self.containers[-1].id}')
+            except Exception as e:
+                print(f'[ERROR]Failed to create container {container.name}: {str(e)}')
+                # 可选：添加更详细的错误信息
+                import traceback
+                print(f'[DEBUG]详细错误: {traceback.format_exc()}')
 
     def start(self):
         for container in self.containers:
