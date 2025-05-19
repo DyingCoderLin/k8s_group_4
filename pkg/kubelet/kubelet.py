@@ -14,11 +14,12 @@ class Kubelet():
         self.consumer = Consumer(config.consumer_config())
         self.consumer.subscribe([config.topic])
         print(f'[INFO]Subscribe kafka({config.kafka_server}) topic {config.topic}')
-        
 
     def run(self):
         self.consume_messages()
-        # self.thread = Thread(target=self.consume_messages)
+        self.thread = Thread(target=self.restart_crash)
+
+    def restart_crash(self):
         while True:
             sleep(5.0)
 
@@ -32,43 +33,74 @@ class Kubelet():
             if msg is not None:
                 if not msg.error():
                     print(f'[INFO]Receive an message with key = {msg.key().decode('utf-8')}')
-                    try:
-                        self.update_pod(msg.key().decode('utf-8'), json.loads(msg.value().decode('utf-8')))
-                    except:
-                        pass
+                    # try:
+                    self.update_pod(msg.key().decode('utf-8'), json.loads(msg.value().decode('utf-8')))
+                    # except Exception as e:
+                    #     print(f'[ERROR]Error processing msg: {e}')
                     self.consumer.commit(asynchronous=False)
                 else:
                     print(f'[ERROR]Message error')
 
     def update_pod(self, type, data):
+        if type in ['ADD', 'UPDATE', 'DELETE', 'GET']:
+            print(f'[INFO]Kubelet {type} pod with data: {data}')
+        else:
+            print(f'[ERROR]Unknown kubelet operation {type}.')
+
         if type == 'ADD':
-            print("receive an ADD message")
             config = PodConfig(data)
-            print(f'[INFO]Kubelet add pod config: {config}.')
-            self.pods_cache.append(Pod(config))
-            print('[INFO]Kubelet create pod.')
+            # 从kubelet缓存的Pod信息检查命名是否冲突
+            for pod in self.pods_cache:
+                if pod.config.namespace == config.namespace and pod.config.name == config.name:
+                    print(f'[ERROR]Pod name "{config.namespace}:{config.name}" already exists')
+                    return
+            try: # 尝试创建docker，可能出现名称重复、客户端未连接等容器运行时错误
+                new_pod = Pod(config)
+            except Exception as e:
+                print(f'[ERROR]Docker create fail: {e}')
+                return
+
+            self.pods_cache.append(new_pod)
+            print(f'[INFO]Kubelet create pod "{config.namespace}:{config.name}".')
+
         elif type == 'UPDATE':
-            # update又是在做什么？
-            print("receive an UPDATE message")
             config = PodConfig(data)
-            # 确保交互正确
-            print(f'[INFO]Kubelet update pod config: {config}.')
-            # for i, pod in enumerate(self.pods_cache):
-            #     if pod.name == config.name:
-            #         self.pods_cache[i] = Pod(config)
-            #         return
-            # print('[WARNING]Pod not found.')
+            # lcl: update又是在做什么？
+            # wcc: 别急
+            for i, pod in enumerate(self.pods_cache):
+                if pod.config.namespace == config.namespace and pod.config.name == config.name:
+                    try: # 在旧容器删除过程中出现了容器运行时错误
+                        self.pods_cache[i].remove()
+                        del self.pods_cache[i]
+                    except Exception as e:
+                        print(f'[ERROR]Docker rm fail: {e}')
+                        return
+                    try: # 在新容器创建过程中出现容器运行时错误
+                        self.pods_cache.append(Pod(config))
+                    except Exception as e:
+                        print(f'[ERROR]Docker create fail: {e}')
+                        return
+                    print(f'[INFO]Pod "{config.namespace}:{config.name}" updated.')
+                    return
+            # 从kubelet的缓存信息中无法找到对应的Pod
+            print(f'[WARNING]Pod "{config.namespace}:{config.name}" not found.')
+
         elif type == 'DELETE':
-            print("receive an DELETE message")
-            # delete逻辑完全没有实现，需要实现
-            config = PodConfig(data)
-            print(f'[INFO]Kubelet delete pod config: {config}.')
-            # for i, pod in enumerate(self.pods_cache):
-            #     if pod.name == config.name:
-            #         self.pods_cache[i] = Pod(config)
-            #         return
-        elif type == 'GET':
-            pass
+            namespace, name = data['namespace'], data['name']
+            # lcl: delete逻辑完全没有实现，需要实现
+            # wcc: 别急
+            for i, pod in enumerate(self.pods_cache):
+                if pod.config.namespace == namespace and pod.config.name == name:
+                    try:  # 在旧容器删除过程中出现了容器运行时错误
+                        self.pods_cache[i].remove()
+                        del self.pods_cache[i]
+                    except Exception as e:
+                        print(f'[ERROR]Docker rm fail: {e}')
+                        return
+                    print(f'[INFO]Pod "{namespace}:{name}" deleted.')
+                    return
+            # 从kubelet的缓存信息中无法找到对应的Pod
+            print(f'[WARNING]Pod "{namespace}:{name}" not found.')
 
 if __name__ == '__main__':
     print('[INFO]Testing kubelet.')

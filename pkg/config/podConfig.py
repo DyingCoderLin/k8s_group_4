@@ -3,16 +3,14 @@ from pkg.config.containerConfig import ContainerConfig
 class PodConfig():
     def __init__(self, arg_json):
         # --- static information ---
-        # print(f"[DEBUG]PodConfig init: {arg_json}")
         metadata = arg_json.get('metadata')
-        # print(f"[DEBUG]PodConfig metadata: {metadata}")
         self.name = metadata.get('name')
         self.namespace = metadata.get('namespace', 'default')
-        # 之前遗漏了labels属性，添加上，方便selector进行
+        # lcl: 之前遗漏了labels属性，添加上，方便selector进行
+        # wcc: 是的忘了。label的key不固定是app和env，只能保存一个json
         self.labels = metadata.get('labels', {})
         self.app = self.labels.get('app', None)
         self.env = self.labels.get('env', None)
-        # wo(f"labels: {self.labels}, app: {self.app}, env: {self.env}")
 
         spec = arg_json.get('spec')
         volumes = spec.get('volumes', [])
@@ -48,10 +46,14 @@ class PodConfig():
             'node_id': self.node_id,
             'status': self.status
         }
-    def __getstate__(self):
-        return self.to_dict()
-    def __setstate__(self, state):
-        self.__init__(state)
+
+    # wcc: 别加这个
+    # def __getstate__(self):
+    #     return self.to_dict()
+
+    # wcc: 加这个函数会导致pickle.load不正确
+    # def __setstate__(self, state):
+    #     self.__init__(state)
         # 重新初始化容器配置
         # self.containers = [ContainerConfig(self.volume, container) for container in state['spec']['containers']]
         
@@ -60,6 +62,7 @@ class PodConfig():
         """
         从Pod的labels中获取app标签值
         如果labels不存在或app不存在，返回None
+        wcc: 不一定是app
         """
         # print(f'[INFO]podConfig.get_app_label: {self.labels}')
         if hasattr(self, 'labels') and self.labels:
