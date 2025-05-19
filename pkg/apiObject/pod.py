@@ -37,16 +37,21 @@ class Pod():
 
         # --- 使用overlay网络 ---
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
+        
         self.containers = [self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
                                    command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
                                    network = self.config.overlay_name)]
+        
         print(f'[INFO]Pod init, pause container: {self.containers[0].name}')
         print(f"container num: {len(self.config.containers)}")
         for container in self.config.containers:
             print(f'[INFO]Pod init, container: {container.name}')
             print(f'[INFO]Pod init, container args: {container.dockerapi_args()}')
+            print(f'[INFO]pause_docker_name: {pause_docker_name}')
+            
             self.containers.append(self.client.containers.run(**container.dockerapi_args(),
-            detach = True, network_mode = 'container:pause'))
+            detach = True, network_mode = f'container:{pause_docker_name}'))
+            
             print(f'[INFO]container {container.name} created, id: {self.containers[-1].id}')
 
     def start(self):
@@ -91,7 +96,8 @@ if __name__ == '__main__':
     import os
     config = GlobalConfig()
     # test_file = "pod-for-rs-1.yaml"
-    test_file = "pod-1.yaml"
+    # test_file = "pod-1.yaml"
+    test_file = "pod-1 copy.yaml"
     test_yaml = os.path.join(config.TEST_FILE_PATH, test_file)
     # test_yaml = os.path.join(config.TEST_FILE_PATH, 'pod-for-rs-1.yaml')
     print(f'[INFO]使用{test_file}作为测试配置，测试Pod的创建和删除。目前没有使用volume绑定')
@@ -119,7 +125,7 @@ if __name__ == '__main__':
         response = requests.get(uri)
         print(f'[INFO]获取pod的返回值: {response}')
         # response_config = PodConfig(response.json())
-        response_config = response
+        # response_config = response
         # print(f"pod.label.app: {response_config.get_app_label()},pod.label.env: {response_config.get_env_label()}")
     else:
         podConfig = PodConfig(data)
