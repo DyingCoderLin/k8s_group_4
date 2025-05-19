@@ -53,11 +53,16 @@ class ApiServer():
 
     def bind(self, config):
         self.app.route('/', methods=['GET'])(self.index)
+
         # node相关
+        # 注册一个新Node
         self.app.route(config.NODE_SPEC_URL, methods=['POST'])(self.add_node)
+
         # pod相关
+        # 获取全部Pod信息
         self.app.route(config.GLOBAL_PODS_URL, methods=['GET'])(self.get_global_pods)
         self.app.route(config.PODS_URL, methods=['GET'])(self.get_pods)
+        # 指定的Pod增删改查
         self.app.route(config.POD_SPEC_URL, methods=['GET'])(self.get_pod)
         self.app.route(config.POD_SPEC_URL, methods=['POST'])(self.add_pod)
         self.app.route(config.POD_SPEC_URL, methods=['PUT'])(self.update_pod)
@@ -138,7 +143,8 @@ class ApiServer():
                 }
 
         print('[ERROR]No subnet ip left.')
-        
+
+    # 查询系统中所有Pod
     def get_global_pods(self):
         print('[INFO]Get global pods.')
         key = self.etcd_config.PODS_KEY
@@ -159,6 +165,7 @@ class ApiServer():
         
         return json.dumps(result)
 
+    # 查询命名空间中所有Pod
     def get_pods(self, namespace : str):
         print('[INFO]Get pods in namespace %s' % namespace)
         key = self.etcd_config.PODS_KEY.format(namespace = namespace)
@@ -169,8 +176,8 @@ class ApiServer():
             result.append({pod.name: pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)})
         return json.dumps(result)
 
+    # 查询一个Pod
     def get_pod(self, namespace : str, name : str):
-        # pass
         print('[INFO]Get pod %s in namespace %s' % (name, namespace))
         key = self.etcd_config.PODS_KEY.format(namespace = namespace)
         pods = self.get(key)
@@ -179,9 +186,9 @@ class ApiServer():
                 return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
         return json.dumps({'error': 'Pod not found'}), 404
 
+    # 创建一个Pod
     def add_pod(self, namespace : str, name : str):
         pod_json = request.json
-        # print(f'[INFO]Received JSON: {pod_json}')
         new_pod_config = PodConfig(pod_json)
         
         # 通过etcd获取所有的pod
@@ -191,12 +198,13 @@ class ApiServer():
         
         # lcl mark: create会出现的bug：没有确保没有重名的pod出现
         # 再标一句，如果add_pod考虑update的话，我写的这个逻辑应该也有问题，但这里先不进一步考虑
+        # wcc: 我可以在Kubelet处进行名字检查
         for pod in pods:
             if pod.name == new_pod_config.name:
                 return json.dumps({'error': 'Pod name already exists'}), 409
-            
         
-        # 确保pod的namespace和name匹配
+        # lcl: 确保pod的namespace和name匹配
+        # wcc: 说实话，我觉得这个地方客户端可以保证，就是说url中的namespace和name应该是用yaml中的信息填入的
         pods.append(new_pod_config)
         self.put(self.etcd_config.PODS_KEY.format(namespace = namespace), pods)
 
@@ -215,7 +223,7 @@ class ApiServer():
 
         # TODO: 给scheduler回ACK
 
-        # 给kubelet队列推消息
+        # 创建Pod，给kubelet队列推消息
         nodes = self.get(self.etcd_config.NODES_KEY)
         for node in nodes:
             if node.id == node_id:
@@ -224,25 +232,70 @@ class ApiServer():
         self.kafka_producer.produce(topic, key='ADD', value=json.dumps(pod_json).encode('utf-8'))
         print(f'[INFO]Producing one message to topic {topic}')
 
-        # 写etcd status
-        # print("to here")
-        # 下面这一段代码会莫名其妙执行PodConfig的init并导致标签丢失
+        # 更新容器状态，写etcd status
+        # lcl: 下面这一段代码会莫名其妙执行PodConfig的init并导致标签丢失
+        # wcc: 我漏掉了label这一项，没有考虑到rs需要用。莫名其妙执行PodConfig的init还真是！这是为啥啊
         pods = self.get(self.etcd_config.PODS_KEY.format(namespace=namespace))
         for i, pod in enumerate(pods):
             if pod.name == new_pod_config.name:
                 pods[i].status = POD_STATUS.RUNNING
                 break
         self.put(self.etcd_config.PODS_KEY.format(namespace=namespace), pods)
-        # print("to here2")
         return json.dumps({'message': 'Pod created successfully'}), 200
 
-    def update_pod(self):
+    # 更新一个Pod
+    def update_pod(self, namespace : str, name : str):
         print('[INFO]Receive update pod in ApiServer')
-        pass
+        pod_json = request.json
+        this_pod, topic = None, None
 
-    def delete_pod(self):
+        key = self.etcd_config.PODS_KEY.format(namespace=namespace)
+        pods = self.get(key)
+        for pod in pods:
+            if pod.name == name:
+                this_pod = pod
+                break
+        if this_pod is None:
+            return json.dumps({'error': 'Pod not found'}), 404
+
+        nodes = self.get(self.etcd_config.NODES_KEY)
+        for node in nodes:
+            if node.id == this_pod.node_id:
+                topic = self.kafka_config.POD_TOPIC.format(name = node.name)
+                break
+        # 如果没有topic，说明node_id不匹配，只有可能是还没有分配
+        if topic is None:
+            return json.dumps({'error': 'Pod not initialized'}), 404
+
+        self.kafka_producer.produce(topic, key='UPDATE', value=json.dumps(pod_json).encode('utf-8'))
+        return json.dumps({'message': 'Pod update successfully'}), 200
+
+    # 删除一个Pod
+    def delete_pod(self, namespace : str, name : str):
         print('[INFO]Receive delete pod in ApiServer')
-        pass
+        data = {'namespace': namespace, 'name': name}
+
+        this_pod, topic = None, None
+
+        key = self.etcd_config.PODS_KEY.format(namespace=namespace)
+        pods = self.get(key)
+        for pod in pods:
+            if pod.name == name:
+                this_pod = pod
+                break
+        if this_pod is None:
+            return json.dumps({'error': 'Pod not found'}), 404
+
+        nodes = self.get(self.etcd_config.NODES_KEY)
+        for node in nodes:
+            if node.id == this_pod.node_id:
+                topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+                break
+        # 如果没有topic，说明node_id不匹配，只有可能是还没有分配
+        if topic is None:
+            return json.dumps({'error': 'Pod not initialized'}), 404
+        self.kafka_producer.produce(topic, key='DELETE', value=json.dumps(data).encode('utf-8'))
+        return json.dumps({'message': 'Pod delete successfully'}), 200
     
     def get_global_replica_sets(self):
         print('[INFO]Get global ReplicaSets.')
