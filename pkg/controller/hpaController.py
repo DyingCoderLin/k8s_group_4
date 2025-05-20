@@ -139,12 +139,6 @@ class HPAController:
                 elif memory_usage < memory_target:
                     pass  # 维持should_scale_down为True
             
-            # 保存当前指标
-            hpa.current_metrics = {
-                'cpu': cpu_usage,
-                'memory': memory_usage
-            }
-            
             # 决定新的副本数
             new_replicas = replica_count
             

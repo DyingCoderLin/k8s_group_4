@@ -634,7 +634,6 @@ class ApiServer():
                     
                     # 更新运行时信息
                     hpa.current_replicas = hpa_json.get('current_replicas', hpa.current_replicas)
-                    hpa.current_metrics = hpa_json.get('current_metrics', hpa.current_metrics)
                     
                     # 下面的部分是处理目标变更，但目前不支持目标变更
                     # if hpa.target_name != hpa_json.get('target_name'):

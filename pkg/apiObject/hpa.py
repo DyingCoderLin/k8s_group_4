@@ -36,7 +36,6 @@ class HorizontalPodAutoscaler:
         # 运行时状态
         self.status = STATUS.PENDING
         self.current_replicas = 0
-        self.current_metrics = {}
         self.last_scale_time = None
         # self.cadvisor_base_url = f"http://{URIConfig.HOST}:8080"
         # 非常重要！在mac上因为无法运行cadvisor，所以使用必须使用云主机上的cadvisor docker，只是用来测试获取的正确性的
@@ -77,7 +76,6 @@ class HorizontalPodAutoscaler:
             },
             'status': self.status,
             'current_replicas': self.current_replicas,
-            'current_metrics': self.current_metrics
         }
         
         # 处理last_scale_time (转换为ISO格式字符串)
@@ -140,8 +138,6 @@ class HorizontalPodAutoscaler:
                 hpa.status = hpa_config_dict['status']
             if 'current_replicas' in hpa_config_dict:
                 hpa.current_replicas = hpa_config_dict['current_replicas']
-            if 'current_metrics' in hpa_config_dict:
-                hpa.current_metrics = hpa_config_dict['current_metrics']
             if 'last_scale_time' in hpa_config_dict and hpa_config_dict['last_scale_time']:
                 try:
                     hpa.last_scale_time = datetime.datetime.fromisoformat(hpa_config_dict['last_scale_time'])
