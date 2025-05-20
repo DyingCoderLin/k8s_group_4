@@ -19,11 +19,14 @@ class HPAController:
         self.main_thread = None
         self.reconcile_interval = 15  # 调整检查间隔，单位秒
         self.hpas = {}  # 存储所有活动的HPA {namespace/name: hpa_object}
+        
+        # 节点信息缓存
+        self.node_cadvisor_urls = {}  # {node_id: cadvisor_url}
 
     def get_all_hpas(self):
         """获取所有HPA配置"""
         try:
-            url = self.uri_config.GLOBAL_HPAS_URL
+            url = self.uri_config.GLOBAL_HPA_URL
             response = self.api_client.get(url)
             if response:
                 print(f"[INFO]Found {len(response)} HPAs")
@@ -61,6 +64,21 @@ class HPAController:
             print(f"[ERROR]Error updating HPA {hpa.name}: {str(e)}")
         return False
 
+    def get_node_cadvisor_url(self, node_id):
+        """获取节点的cAdvisor URL (现在不使用，但预留接口)"""
+        # 如果已经缓存，直接返回
+        if node_id in self.node_cadvisor_urls:
+            return self.node_cadvisor_urls[node_id]
+            
+        # 实际实现中应该通过API获取节点IP，这里简化处理
+        # 例如：通过node_id查询节点信息获取IP
+        # 现在简单返回默认值
+        cadvisor_url = f"http://10.119.15.182:8080"  # 与hpa.py中保持一致，使用固定地址
+        
+        # 缓存URL
+        self.node_cadvisor_urls[node_id] = cadvisor_url
+        return cadvisor_url
+
     def evaluate_metrics(self, hpa, target_resource):
         """评估当前指标，计算需要的副本数"""
         cpu_target = None
@@ -87,33 +105,60 @@ class HPAController:
         avg_memory_usage = 0
         container_count = 0
         
-        # 遍历ReplicaSet控制的所有Pod
-        pod_instances = target_resource.pod_instances or []
+        try:
+            # 直接使用根路径获取整体机器的CPU和内存使用情况
+            # 这里使用hpa中的方法，不做进一步处理，直接调用根路径的数据
+            cpu_usage = hpa.get_cpu_usage_percentage()
+            memory_usage = hpa.get_memory_usage_percentage()
+            
+            if cpu_usage is not None:
+                avg_cpu_usage = cpu_usage  # 直接使用整机CPU使用率
+                
+            if memory_usage is not None:
+                avg_memory_usage = memory_usage  # 直接使用整机内存使用率
+                
+            # 设置container_count为1，避免除零错误
+            container_count = 1
         
-        if not pod_instances:
-            print("[INFO]No pods found for this ReplicaSet")
-            return 1  # 默认返回1个副本
-        
-        for group in pod_instances:
-            for pod_name in group:
-                container_ids = hpa.get_pod_container_ids(pod_name)
-                for container_id in container_ids:
-                    # 获取CPU使用率
-                    cpu_usage = hpa.get_cpu_usage_percentage(container_id)
-                    if cpu_usage is not None:
-                        avg_cpu_usage += cpu_usage
+        except Exception as e:
+            print(f"[ERROR]获取整机资源使用情况出错: {e}")
+            # 如果获取整机信息失败，尝试原来的方法获取单个容器
+            
+            # 遍历ReplicaSet控制的所有Pod
+            pod_instances = target_resource.pod_instances or []
+            
+            if not pod_instances:
+                print("[INFO]No pods found for this ReplicaSet")
+                return 1  # 默认返回1个副本
+            
+            for group in pod_instances:
+                for pod_name in group:
+                    # 使用新的获取容器路径的方法
+                    container_paths = hpa.get_pod_container_path(pod_name)
                     
-                    # 获取内存使用率
-                    memory_usage = hpa.get_memory_usage_percentage(container_id)
-                    if memory_usage is not None:
-                        avg_memory_usage += memory_usage
-                    
-                    container_count += 1
+                    for container_path in container_paths:
+                        # 从路径中提取容器ID
+                        container_id = container_path.replace('/docker/', '')
+                        
+                        # 获取CPU使用率
+                        cpu_usage = hpa.get_cpu_usage_percentage(container_id)
+                        if cpu_usage is not None:
+                            avg_cpu_usage += cpu_usage
+                        
+                        # 获取内存使用率
+                        memory_usage = hpa.get_memory_usage_percentage(container_id)
+                        if memory_usage is not None:
+                            avg_memory_usage += memory_usage
+                        
+                        container_count += 1
         
         # 计算平均值
         if container_count > 0:
             avg_cpu_usage /= container_count
             avg_memory_usage /= container_count
+        else:
+            print("[WARN]No valid containers found for resource metrics collection")
+            return target_resource.current_replicas
         
         # 保存当前指标
         hpa.current_metrics = {
@@ -127,11 +172,15 @@ class HPAController:
         
         # 计算基于CPU的需要副本数
         if cpu_target is not None and avg_cpu_usage > 0:
-            cpu_replicas = int(round((avg_cpu_usage / cpu_target) * target_resource.current_replicas))
+            cpu_ratio = avg_cpu_usage / cpu_target
+            cpu_replicas = int(round(cpu_ratio * target_resource.current_replicas))
+            print(f"[INFO]CPU使用比率: {cpu_ratio:.2f}, 建议副本数: {cpu_replicas}")
         
         # 计算基于内存的需要副本数
         if memory_target is not None and avg_memory_usage > 0:
-            memory_replicas = int(round((avg_memory_usage / memory_target) * target_resource.current_replicas))
+            memory_ratio = avg_memory_usage / memory_target
+            memory_replicas = int(round(memory_ratio * target_resource.current_replicas))
+            print(f"[INFO]内存使用比率: {memory_ratio:.2f}, 建议副本数: {memory_replicas}")
         
         # 取两者的最大值
         new_replicas = max(cpu_replicas, memory_replicas)
@@ -193,6 +242,13 @@ class HPAController:
                 hpa.status = STATUS.FAILED
                 self.update_hpa(hpa)
                 return
+            
+            # 未来扩展：根据节点ID设置正确的cAdvisor URL
+            # 现在我们先使用hpa.py中预设的URL
+            # node_id = target.node_id
+            # if node_id:
+            #     cadvisor_url = self.get_node_cadvisor_url(node_id)
+            #     hpa.cadvisor_base_url = cadvisor_url
                 
             # 评估指标，计算需要的副本数
             new_replicas = self.evaluate_metrics(hpa, target)
@@ -221,6 +277,8 @@ class HPAController:
                     
         except Exception as e:
             print(f"[ERROR]Error reconciling HPA {hpa.name}: {str(e)}")
+            import traceback
+            print(f"[ERROR]详细错误: {traceback.format_exc()}")
             hpa.status = STATUS.FAILED
             self.update_hpa(hpa)
 
