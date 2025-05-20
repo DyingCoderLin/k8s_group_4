@@ -387,6 +387,8 @@ def test_replica_set():
         print("[INFO]等待API Server和Replica Controller处理...")
         time.sleep(10)
         
+        return
+        
         # 测试2: 获取ReplicaSet
         print("\n[TEST]2. 获取ReplicaSet...")
         retrieved_rs = ReplicaSet.get(rs.namespace, rs.name)

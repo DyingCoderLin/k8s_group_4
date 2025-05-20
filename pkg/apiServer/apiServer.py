@@ -612,6 +612,7 @@ class ApiServer():
         print(f'[INFO]Update HPA {name} in namespace {namespace}')
         
         try:
+            print(f'[INFO]Received JSON: {request.json}')
             hpa_json = request.json
             if isinstance(hpa_json, str):
                 hpa_json = json.loads(hpa_json)
@@ -633,7 +634,6 @@ class ApiServer():
                     
                     # 更新运行时信息
                     hpa.current_replicas = hpa_json.get('current_replicas', hpa.current_replicas)
-                    hpa.target_replicas = hpa_json.get('target_replicas', hpa.target_replicas)
                     hpa.current_metrics = hpa_json.get('current_metrics', hpa.current_metrics)
                     
                     # 下面的部分是处理目标变更，但目前不支持目标变更

@@ -36,7 +36,6 @@ class HorizontalPodAutoscaler:
         # 运行时状态
         self.status = STATUS.PENDING
         self.current_replicas = 0
-        self.target_replicas = 0
         self.current_metrics = {}
         self.last_scale_time = None
         # self.cadvisor_base_url = f"http://{URIConfig.HOST}:8080"
@@ -78,7 +77,6 @@ class HorizontalPodAutoscaler:
             },
             'status': self.status,
             'current_replicas': self.current_replicas,
-            'target_replicas': self.target_replicas,
             'current_metrics': self.current_metrics
         }
         
@@ -142,8 +140,6 @@ class HorizontalPodAutoscaler:
                 hpa.status = hpa_config_dict['status']
             if 'current_replicas' in hpa_config_dict:
                 hpa.current_replicas = hpa_config_dict['current_replicas']
-            if 'target_replicas' in hpa_config_dict:
-                hpa.target_replicas = hpa_config_dict['target_replicas']
             if 'current_metrics' in hpa_config_dict:
                 hpa.current_metrics = hpa_config_dict['current_metrics']
             if 'last_scale_time' in hpa_config_dict and hpa_config_dict['last_scale_time']:
@@ -478,7 +474,7 @@ def test_hpa():
         else:
             print("[WARN]无法获取内存使用率")
             
-        return
+        # return
         
         # 以下是创建、获取、删除HPA的测试，暂不执行
         # 设置API客户端
@@ -493,6 +489,8 @@ def test_hpa():
             
         print("[PASS]创建HPA成功")
         
+        # return
+        
         # 获取HPA
         print("\n[TEST]获取HPA...")
         retrieved_hpa = HorizontalPodAutoscaler.get(hpa.namespace, hpa.name)
@@ -501,6 +499,8 @@ def test_hpa():
             return
             
         print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
+        
+        return
         
         # 删除HPA
         print("\n[TEST]删除HPA...")
