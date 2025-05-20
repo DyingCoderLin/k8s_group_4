@@ -8,7 +8,7 @@ spec:
     apiVersion: apps/v1
     kind: ReplicaSet # 标明管控的对象类型
     name: hello-world-rs # 需要管控的对象名称
-  minReplicas: 3
+  minReplicas: 1
   maxReplicas: 6
   metrics:
   - type: Resource
