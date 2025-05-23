@@ -246,9 +246,44 @@ class ApiServer():
         print('[INFO]Receive update pod in ApiServer')
         pass
 
-    def delete_pod(self):
-        print('[INFO]Receive delete pod in ApiServer')
-        pass
+    def delete_pod(self, namespace, name):
+        """删除Pod"""
+        print(f'[INFO]Delete pod {name} in namespace {namespace}')
+        
+        try:
+            # 获取Pod
+            key = self.etcd_config.PODS_KEY.format(namespace=namespace)
+            pods = self.get(key)
+            
+            target_pod = None
+            updated_pods = []
+            
+            for pod in pods:
+                if pod.name == name:
+                    target_pod = pod
+                else:
+                    updated_pods.append(pod)
+            
+            if not target_pod:
+                return json.dumps({'error': f'Pod {name} not found in namespace {namespace}'}), 404
+            
+            # 发送删除消息到相关Node的Kubelet
+            if hasattr(target_pod, 'node_id') and target_pod.node_id:
+                nodes = self.get(self.etcd_config.NODES_KEY)
+                for node in nodes:
+                    if node.id == target_pod.node_id:
+                        topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+                        self.kafka_producer.produce(topic, key='DELETE', value=json.dumps(target_pod.to_dict() if hasattr(target_pod, 'to_dict') else vars(target_pod)).encode('utf-8'))
+                        print(f'[INFO]Sent DELETE message for pod {name} to topic {topic}')
+                        break
+            
+            # 更新Pod列表
+            self.put(key, updated_pods)
+            
+            return json.dumps({'message': f'Pod {name} deleted successfully'})
+        except Exception as e:
+            print(f'[ERROR]Failed to delete Pod: {str(e)}')
+            return json.dumps({'error': str(e)}), 500
     
     def get_global_replica_sets(self):
         print('[INFO]Get global ReplicaSets.')
@@ -481,7 +516,11 @@ class ApiServer():
                 deleted_pods = []
                 
                 for pod in pods:
-                    if hasattr(pod, 'owner_reference') and pod.owner_reference == name:
+                    # 检查pod是否属于该ReplicaSet
+                    # 方法1: 通过owner_reference直接关联
+                    # 方法2: 通过pod_instances间接关联
+                    if (hasattr(pod, 'owner_reference') and pod.owner_reference == name) or \
+                       any(pod.name in group for group in target_rs.pod_instances if isinstance(group, list)):
                         deleted_pods.append(pod)
                     else:
                         updated_pods.append(pod)
@@ -489,14 +528,16 @@ class ApiServer():
                 # 更新Pod列表
                 self.put(pods_key, updated_pods)
                 
-                # 向Kubelet发送删除消息，这里不确定行不行，因为delete还没有实现
+                # 向Kubelet发送删除消息
                 for pod in deleted_pods:
-                    nodes = self.get(self.etcd_config.NODES_KEY)
-                    for node in nodes:
-                        if node.id == pod.node_id:
-                            topic = self.kafka_config.POD_TOPIC.format(name=node.name)
-                            self.kafka.produce(topic, key='DELETE', value=json.dumps(vars(pod)).encode('utf-8'))
-                            print(f'[INFO]Sent DELETE message for pod {pod.name} to topic {topic}')
+                    if hasattr(pod, 'node_id') and pod.node_id:
+                        nodes = self.get(self.etcd_config.NODES_KEY)
+                        for node in nodes:
+                            if node.id == pod.node_id:
+                                topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+                                self.kafka_producer.produce(topic, key='DELETE', value=json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)).encode('utf-8'))
+                                print(f'[INFO]Sent DELETE message for pod {pod.name} to topic {topic}')
+                                break
             
             # 更新ReplicaSet列表
             self.put(key, updated_replica_sets)
