@@ -429,7 +429,7 @@ def test_replica_set(ci_mode=False):
             print("[INFO]等待API Server和Replica Controller处理...")
             time.sleep(10)
             
-            return
+            # return
             
             # 测试2: 获取ReplicaSet
             print("\n[TEST]2. 获取ReplicaSet...")
@@ -442,39 +442,39 @@ def test_replica_set(ci_mode=False):
             
             # 测试3: 列出ReplicaSet
             print("\n[TEST]3. 列出ReplicaSet...")
-        print("\n[TEST]3. 列出ReplicaSet...")
-        rs_list = ReplicaSet.list(rs.namespace)
-        assert len(rs_list) > 0, "列出ReplicaSet失败，列表为空"
-        print(f"[PASS]列出ReplicaSet成功，找到 {len(rs_list)} 个ReplicaSet")
+            print("\n[TEST]3. 列出ReplicaSet...")
+            rs_list = ReplicaSet.list(rs.namespace)
+            assert len(rs_list) > 0, "列出ReplicaSet失败，列表为空"
+            print(f"[PASS]列出ReplicaSet成功，找到 {len(rs_list)} 个ReplicaSet")
+            
+            # 测试4: 缩放ReplicaSet
+            print("\n[TEST]4. 缩放ReplicaSet...")
+            scale_success = rs.scale(3)  # 扩容到3个Pod
+            assert scale_success, "缩放ReplicaSet失败"
+            print("[PASS]缩放ReplicaSet成功")
         
-        # 测试4: 缩放ReplicaSet
-        print("\n[TEST]4. 缩放ReplicaSet...")
-        scale_success = rs.scale(3)  # 扩容到3个Pod
-        assert scale_success, "缩放ReplicaSet失败"
-        print("[PASS]缩放ReplicaSet成功")
+            # 等待缩放完成
+            print("[INFO]等待缩放完成...")
+            time.sleep(10)
+            
+            # 测试5: 验证Pod创建
+            print("\n[TEST]5. 验证Pod创建...")
+            updated_rs = ReplicaSet.get(rs.namespace, rs.name)
+            assert updated_rs is not None, "获取更新后的ReplicaSet失败"
+            print(f"[INFO]当前Pod实例: {updated_rs['pod_instances']}")
+            print(f"[INFO]当前副本数: {updated_rs['current_replicas'][0]}")
+            assert len(updated_rs['pod_instances'][0]) == updated_rs['current_replicas'][0] and updated_rs['current_replicas'][0] == 3, "Pod创建数量不匹配"
+            print("[PASS]验证Pod创建成功")
         
-        # 等待缩放完成
-        print("[INFO]等待缩放完成...")
-        time.sleep(10)
+        # return
         
-        # 测试5: 验证Pod创建
-        print("\n[TEST]5. 验证Pod创建...")
-        updated_rs = ReplicaSet.get(rs.namespace, rs.name)
-        assert updated_rs is not None, "获取更新后的ReplicaSet失败"
-        print(f"[INFO]当前Pod实例: {updated_rs['pod_instances']}")
-        print(f"[INFO]当前副本数: {updated_rs['current_replicas'][0]}")
-        assert len(updated_rs['pod_instances'][0]) == updated_rs['current_replicas'][0] and updated_rs['current_replicas'][0] == 3, "Pod创建数量不匹配"
-        print("[PASS]验证Pod创建成功")
-        
-        return
-        
-        # 测试6: 删除ReplicaSet
-        print("\n[TEST]6. 删除ReplicaSet...")
-        delete_success = rs.delete()
-        assert delete_success, "删除ReplicaSet失败"
-        print("[PASS]删除ReplicaSet成功")
-        
-        print("\n[SUCCESS]所有测试用例通过!")
+            # 测试6: 删除ReplicaSet
+            print("\n[TEST]6. 删除ReplicaSet...")
+            delete_success = rs.delete()
+            assert delete_success, "删除ReplicaSet失败"
+            print("[PASS]删除ReplicaSet成功")
+            
+            print("\n[SUCCESS]所有测试用例通过!")
         return True
         
     except AssertionError as e:
