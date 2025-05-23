@@ -48,16 +48,6 @@ jobs:
         with:
           fetch-depth: 0  # 获取完整的git历史用于部署
       
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      
-      - name: Setup known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-      
       - name: Deploy to server
         run: |
           echo "部署到服务器..."
@@ -100,7 +90,7 @@ jobs:
     if: |
       (github.event_name == 'pull_request') || 
       (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy.result == 'success')
-      
+
     services:
       # 启动 cAdvisor 容器用于监控
       cadvisor:
