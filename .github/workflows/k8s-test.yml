@@ -1,0 +1,152 @@
+name: K8S Test and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  K8S_TEST_MODE: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      # 启动 cAdvisor 容器用于监控
+      cadvisor:
+        image: google/cadvisor:latest
+        ports:
+          - 8080:8080
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:ro
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+          - /dev/disk/:/dev/disk:ro
+        options: --privileged
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov flake8 black
+          pip install docker requests pyyaml
+          
+      - name: Prepare test environment
+        run: |
+          mkdir -p logs testFile
+          
+      - name: Code quality checks
+        run: |
+          echo "Running code quality checks..."
+          flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120 || true
+          black --check pkg/ || true
+      
+      # 启动所需服务
+      - name: Start required services
+        run: |
+          echo "Starting required services..."
+          bash ./start.sh
+          sleep 15  # 等待服务完全启动
+      
+      # 运行模块测试
+      - name: Test individual modules
+        run: |
+          echo "Testing individual modules..."
+          python -m pkg.apiObject.pod --test || true
+          python -m pkg.apiObject.replicaSet --test || true
+          python -m pkg.apiObject.hpa --test || true
+      
+      # 停止服务
+      - name: Stop services
+        run: |
+          echo "Stopping services..."
+          bash ./start.sh --stop
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 测试配置文件加载
+      - name: Test configuration loading
+        run: |
+          echo "Testing configuration loading..."
+          python -c "
+          import sys, os
+          sys.path.insert(0, os.getcwd())
+          from pkg.config.globalConfig import GlobalConfig
+          from pkg.config.uriConfig import URIConfig
+          print('Config loading test passed')
+          " || true
+      
+      # 测试 API 服务器启动
+      - name: Test API server startup
+        run: |
+          echo "Testing API server startup..."
+          timeout 30s python -m pkg.apiServer.apiServer &
+          sleep 5
+          curl -f http://localhost:5050/health || echo "Health check failed"
+          pkill -f "pkg.apiServer.apiServer" || true
+      
+      # 测试后清理
+      - name: Cleanup
+        run: |
+          pkill -f "python.*pkg" || true
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 如果测试失败，收集日志
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "Build failed, collecting logs..."
+          ls -la logs/ || true
+          tail -100 logs/*.log || true
+          
+      # 上传日志文件作为构建产物
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: logs
+          path: logs/
+          retention-days: 5
+          
+  # 部署任务，只在主分支推送时运行
+  deploy:
+    needs: test  # 依赖测试任务成功
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # 只在主分支推送时运行
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整的git历史用于部署
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Setup known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        run: |
+          echo "Deploying to server..."
+          # 将代码推送到服务器
+          rsync -avz --exclude '.git' --exclude 'node_modules' ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.SERVER_PATH }}
+          
+          # 远程执行命令：安装依赖并重启服务
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd ${{ secrets.SERVER_PATH }} && pip install -r requirements.txt && bash ./start.sh --stop && bash ./start.sh"
+          
+          echo "Deployment completed successfully!"
