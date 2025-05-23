@@ -52,31 +52,71 @@ jobs:
         run: |
           echo "部署到服务器..."
           
+          # 检查网络连接
+          echo "检查连接到服务器的网络..."
+          ping -c 4 ${{ secrets.SERVER_IP }} || echo "无法 ping 通服务器，但这不一定是问题"
+          
+          # 测试 SSH 连接 (不执行任何命令)
+          echo "测试 SSH 连接..."
+          timeout 10 ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH 连接成功'" || echo "SSH 连接失败，尝试增加超时时间并重试..."
+          
+          # 增加 SSH 超时时间并尝试连接
+          echo "尝试增加超时时间并重试..."
+          timeout 30 ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH 连接成功'"
+          
           # 确保远程目录存在并有正确的权限
+          echo "创建部署目录..."
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /root/deploy && chmod 755 /root/deploy"
           
           # 将代码推送到服务器的指定目录
-          rsync -avz --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/
+          echo "传输代码到远程服务器..."
+          rsync -avz --timeout=60 --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/ || {
+            echo "错误: 无法使用rsync传输文件，尝试使用scp作为备选方案"
+            scp -r -o ConnectTimeout=20 $(find . -type f -not -path "*/\.*" -not -path "*/node_modules/*" | grep -v "^./.git") ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/
+          }
           
           # 显示远程目录内容，用于调试
           echo "验证文件传输..."
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ls -la /root/deploy"
+          ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ls -la /root/deploy || echo '无法列出目录内容'"
           
           # 确保部署脚本有执行权限
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "chmod +x /root/deploy/deploy.sh"
+          echo "设置部署脚本权限..."
+          ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "chmod +x /root/deploy/deploy.sh || echo '无法设置部署脚本权限'"
           
           # 远程执行命令：使用部署脚本进行设置和启动
           echo "执行部署脚本..."
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && bash ./deploy.sh"
+          {
+            ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && bash ./deploy.sh"
+          } || {
+            echo "部署脚本执行失败，尝试重新执行..."
+            sleep 5
+            ssh -o ConnectTimeout=30 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && bash ./deploy.sh"
+          }
           
           # 验证服务是否正常启动
           echo "验证服务状态..."
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && curl -f http://localhost:5050/health || echo 'API Server健康检查失败'"
+          for i in {1..3}; do
+            echo "尝试 $i/3 检查服务健康状态..."
+            if ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && curl -m 5 -f http://localhost:5050/health"; then
+              echo "API Server 健康检查通过"
+              break
+            else
+              echo "API Server 健康检查失败，等待重试..."
+              sleep 10
+            fi
+            if [ $i -eq 3 ]; then
+              echo "警告: API Server 可能未正确启动，但将继续执行"
+            fi
+          done
           
           # 验证服务是否正常启动 - 再次检查
           echo "等待服务完全启动..."
           sleep 10
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ps -ef | grep python | grep -v grep || echo '没有找到Python进程'"
+          ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ps -ef | grep python | grep -v grep || echo '没有找到Python进程'"
+          
+          # 显示日志以帮助诊断
+          echo "获取服务日志摘要..."
+          ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ls -la /root/deploy/logs/ 2>/dev/null && tail -n 20 /root/deploy/logs/*.log 2>/dev/null || echo '无法获取日志'"
           
           echo "部署完成！"
           
@@ -86,6 +126,7 @@ jobs:
     # needs: ${{ (github.event_name == 'pull_request' && fromJSON('["code_quality"]')) || fromJSON('["code_quality", "deploy"]') }}
     needs: [code_quality, deploy]
     runs-on: ubuntu-latest
+    
     # 确保PR直接进行测试，主分支在部署后进行测试
     if: |
       (github.event_name == 'pull_request') || 
