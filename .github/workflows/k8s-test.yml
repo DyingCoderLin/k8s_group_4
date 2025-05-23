@@ -1,0 +1,246 @@
+name: K8S Deploy and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  K8S_TEST_MODE: true
+
+jobs:
+  # 代码质量检查
+  code_quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black
+          
+      - name: Prepare environment
+        run: |
+          mkdir -p logs testFile
+          
+      - name: Code quality checks
+        run: |
+          echo "Running code quality checks..."
+          flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120 || true
+          black --check pkg/ || true
+
+  # 部署任务，只在主分支推送时运行
+  deploy:
+    needs: code_quality  # 依赖代码质量检查成功
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # 只在主分支推送时运行
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整的git历史用于部署
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Setup known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        run: |
+          echo "部署到服务器..."
+          
+          # 确保远程目录存在并有正确的权限
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /root/deploy && chmod 755 /root/deploy"
+          
+          # 将代码推送到服务器的指定目录
+          rsync -avz --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/
+          
+          # 显示远程目录内容，用于调试
+          echo "验证文件传输..."
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ls -la /root/deploy"
+          
+          # 确保部署脚本有执行权限
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "chmod +x /root/deploy/deploy.sh"
+          
+          # 远程执行命令：使用部署脚本进行设置和启动
+          echo "执行部署脚本..."
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && bash ./deploy.sh"
+          
+          # 验证服务是否正常启动
+          echo "验证服务状态..."
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "cd /root/deploy && curl -f http://localhost:5050/health || echo 'API Server健康检查失败'"
+          
+          # 验证服务是否正常启动 - 再次检查
+          echo "等待服务完全启动..."
+          sleep 10
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "ps -ef | grep python | grep -v grep || echo '没有找到Python进程'"
+          
+          echo "部署完成！"
+          
+  # 测试任务 - PR直接测试，主分支在部署后测试
+  test:
+    # 对于PR只依赖code_quality，对于主分支推送需要依赖deploy
+    # needs: ${{ (github.event_name == 'pull_request' && fromJSON('["code_quality"]')) || fromJSON('["code_quality", "deploy"]') }}
+    needs: [code_quality, deploy]
+    runs-on: ubuntu-latest
+    # 确保PR直接进行测试，主分支在部署后进行测试
+    if: |
+      (github.event_name == 'pull_request') || 
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy.result == 'success')
+      
+    services:
+      # 启动 cAdvisor 容器用于监控
+      cadvisor:
+        image: google/cadvisor:latest
+        ports:
+          - 8080:8080
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:ro
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+          - /dev/disk/:/dev/disk:ro
+        options: --privileged
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pip install docker requests pyyaml
+          
+      - name: Prepare test environment
+        run: |
+          mkdir -p logs testFile
+      
+      # 检查依赖服务（etcd和kafka）
+      - name: Check dependencies
+        run: |
+          echo "检查依赖服务 (etcd和kafka)..."
+          
+          # 检查etcd (2379端口)
+          nc -z localhost 2379 2>/dev/null
+          ETCD_RUNNING=$?
+          
+          # 检查kafka (9092端口)
+          nc -z localhost 9092 2>/dev/null
+          KAFKA_RUNNING=$?
+          
+          if [ $ETCD_RUNNING -ne 0 ] || [ $KAFKA_RUNNING -ne 0 ]; then
+            echo "etcd或kafka服务未运行，启动所需容器..."
+            
+            # 确定使用哪个docker-compose文件
+            DOCKER_COMPOSE_FILE="./yamls/docker-compose.yml"
+            
+            # 停止可能存在的冲突容器
+            docker-compose -f $DOCKER_COMPOSE_FILE down || true
+            
+            # 启动docker-compose
+            echo "使用docker-compose启动依赖服务..."
+            docker-compose -f $DOCKER_COMPOSE_FILE up -d
+            
+            # 等待服务启动
+            echo "等待依赖服务启动 (30秒)..."
+            sleep 30
+            
+            # 再次检查服务
+            nc -z localhost 2379 2>/dev/null || { echo "etcd服务启动失败"; exit 1; }
+            nc -z localhost 9092 2>/dev/null || { echo "kafka服务启动失败"; exit 1; }
+            
+            echo "依赖服务已成功启动"
+          else
+            echo "依赖服务已经在运行"
+          fi
+      
+      # 启动所需服务
+      - name: Start required services
+        run: |
+          echo "启动应用服务..."
+          bash ./start.sh
+          sleep 15  # 等待服务完全启动
+      
+      # 运行模块测试
+      - name: Test individual modules
+        run: |
+          echo "Testing individual modules..."
+          python -m pkg.apiObject.pod --test || true
+          python -m pkg.apiObject.replicaSet --test || true
+          python -m pkg.apiObject.hpa --test || true
+      
+      # 停止服务
+      - name: Stop services
+        run: |
+          echo "Stopping services..."
+          bash ./start.sh --stop
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 测试配置文件加载
+      - name: Test configuration loading
+        run: |
+          echo "Testing configuration loading..."
+          python -c "
+          import sys, os
+          sys.path.insert(0, os.getcwd())
+          from pkg.config.globalConfig import GlobalConfig
+          from pkg.config.uriConfig import URIConfig
+          print('Config loading test passed')
+          " || true
+      
+      # 测试 API 服务器启动
+      - name: Test API server startup
+        run: |
+          echo "Testing API server startup..."
+          timeout 30s python -m pkg.apiServer.apiServer &
+          sleep 5
+          curl -f http://localhost:5050/health || echo "Health check failed"
+          pkill -f "pkg.apiServer.apiServer" || true
+      
+      # 测试后清理
+      - name: Cleanup
+        run: |
+          echo "清理测试进程..."
+          pkill -f "python.*pkg" || true
+          
+          echo "停止依赖服务容器..."
+          docker-compose -f ./yamls/docker-compose.yml down || true
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 如果测试失败，收集日志
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "Build failed, collecting logs..."
+          ls -la logs/ || true
+          tail -100 logs/*.log || true
+          
+      # 上传日志文件作为构建产物
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/
+          retention-days: 5
+          
+# 此处结束工作流文件

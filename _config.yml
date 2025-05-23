@@ -1,0 +1,6 @@
+# 修改后
+deploy:
+- type: git
+  # 下方的gh_token会被.travis.yml中sed命令替换
+  repo: https://github.com/DyingCoderLin/k8s_group_4.git
+  branch: main

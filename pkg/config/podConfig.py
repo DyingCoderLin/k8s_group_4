@@ -43,7 +43,7 @@ class PodConfig():
             },
             'overlay_name': self.overlay_name,
             'subnet_ip': self.subnet_ip,
-            'node_id': self.node_id,
+            'node_id': str(self.node_id),
             'status': self.status
         }
 
@@ -52,6 +52,7 @@ class PodConfig():
     #     return self.to_dict()
 
     # wcc: 加这个函数会导致pickle.load不正确
+
     # def __setstate__(self, state):
     #     self.__init__(state)
         # 重新初始化容器配置

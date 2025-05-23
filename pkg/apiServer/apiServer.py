@@ -170,10 +170,13 @@ class ApiServer():
         print('[INFO]Get pods in namespace %s' % namespace)
         key = self.etcd_config.PODS_KEY.format(namespace = namespace)
         pods = self.get(key)
+        
         # 格式化输出
         result = []
+        # print({hasattr(pod, 'to_dict')})
         for pod in pods:
             result.append({pod.name: pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)})
+        # return json.dumps(result)
         return json.dumps(result)
 
     # 查询一个Pod
@@ -183,7 +186,10 @@ class ApiServer():
         pods = self.get(key)
         for pod in pods:
             if pod.name == name:
+                # return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
+                print(f'[INFO]Found pod: {pod.to_dict()}')
                 return json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod))
+        # return json.dumps({'error': 'Pod not found'}), 404
         return json.dumps({'error': 'Pod not found'}), 404
 
     # 创建一个Pod
@@ -528,7 +534,11 @@ class ApiServer():
                 deleted_pods = []
                 
                 for pod in pods:
-                    if hasattr(pod, 'owner_reference') and pod.owner_reference == name:
+                    # 检查pod是否属于该ReplicaSet
+                    # 方法1: 通过owner_reference直接关联
+                    # 方法2: 通过pod_instances间接关联
+                    if (hasattr(pod, 'owner_reference') and pod.owner_reference == name) or \
+                       any(pod.name in group for group in target_rs.pod_instances if isinstance(group, list)):
                         deleted_pods.append(pod)
                     else:
                         updated_pods.append(pod)
@@ -536,14 +546,16 @@ class ApiServer():
                 # 更新Pod列表
                 self.put(pods_key, updated_pods)
                 
-                # 向Kubelet发送删除消息，这里不确定行不行，因为delete还没有实现
+                # 向Kubelet发送删除消息
                 for pod in deleted_pods:
-                    nodes = self.get(self.etcd_config.NODES_KEY)
-                    for node in nodes:
-                        if node.id == pod.node_id:
-                            topic = self.kafka_config.POD_TOPIC.format(name=node.name)
-                            self.kafka.produce(topic, key='DELETE', value=json.dumps(vars(pod)).encode('utf-8'))
-                            print(f'[INFO]Sent DELETE message for pod {pod.name} to topic {topic}')
+                    if hasattr(pod, 'node_id') and pod.node_id:
+                        nodes = self.get(self.etcd_config.NODES_KEY)
+                        for node in nodes:
+                            if node.id == pod.node_id:
+                                topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+                                self.kafka_producer.produce(topic, key='DELETE', value=json.dumps(pod.to_dict() if hasattr(pod, 'to_dict') else vars(pod)).encode('utf-8'))
+                                print(f'[INFO]Sent DELETE message for pod {pod.name} to topic {topic}')
+                                break
             
             # 更新ReplicaSet列表
             self.put(key, updated_replica_sets)
@@ -659,6 +671,7 @@ class ApiServer():
         print(f'[INFO]Update HPA {name} in namespace {namespace}')
         
         try:
+            print(f'[INFO]Received JSON: {request.json}')
             hpa_json = request.json
             if isinstance(hpa_json, str):
                 hpa_json = json.loads(hpa_json)
@@ -680,8 +693,6 @@ class ApiServer():
                     
                     # 更新运行时信息
                     hpa.current_replicas = hpa_json.get('current_replicas', hpa.current_replicas)
-                    hpa.target_replicas = hpa_json.get('target_replicas', hpa.target_replicas)
-                    hpa.current_metrics = hpa_json.get('current_metrics', hpa.current_metrics)
                     
                     # 下面的部分是处理目标变更，但目前不支持目标变更
                     # if hpa.target_name != hpa_json.get('target_name'):
