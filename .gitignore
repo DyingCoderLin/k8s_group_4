@@ -1,3 +1,6 @@
 **/__pycache__
 .idea
 logs
+# Zookeeper 数据和日志文件
+yamls/zookeeper-data/
+yamls/zookeeper-logs/

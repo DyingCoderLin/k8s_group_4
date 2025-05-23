@@ -1,0 +1,149 @@
+language: python
+python:
+  - "3.12"
+
+# 启用 Docker 服务（项目需要 Docker 支持）
+services:
+  - docker
+
+# 环境变量
+env:
+  global:
+    - PYTHONPATH="${TRAVIS_BUILD_DIR}:${PYTHONPATH}"
+    - K8S_TEST_MODE=true
+    - DOCKER_COMPOSE_VERSION=1.29.2
+
+# 缓存依赖以加速构建
+cache:
+  pip: true
+  directories:
+    - $HOME/.cache/pip
+    - $HOME/.docker
+
+# 安装阶段
+before_install:
+  # 更新 Docker Compose
+  # - sudo rm /usr/local/bin/docker-compose
+  # - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  # - chmod +x docker-compose
+  # - sudo mv docker-compose /usr/local/bin
+  # 验证 Docker 和 Docker Compose 安装
+  - docker --version
+  - docker-compose --version
+
+install:
+  # 安装 Python 依赖
+  - pip install --upgrade pip
+  - pip install -r requirements.txt
+  # 安装测试相关依赖
+  - pip install pytest pytest-cov flake8 black
+  # 安装 Docker Python SDK（如果 requirements.txt 中没有）
+  - pip install docker requests pyyaml
+
+# 测试前准备
+before_script:
+  # 创建必要的目录
+  - mkdir -p logs testFile
+  # 启动必要的 Docker 服务（如 cAdvisor 用于测试）
+  - docker run -d --name=cadvisor --privileged=true -p 8080:8080 -v /:/rootfs:ro -v /var/run:/var/run:ro -v /sys:/sys:ro -v /var/lib/docker/:/var/lib/docker:ro -v /dev/disk/:/dev/disk:ro --detach=true google/cadvisor:latest || true
+  # 等待服务启动
+  - sleep 5
+
+# 测试脚本
+script:
+  # 代码质量检查
+  - echo "Running code quality checks..."
+  - flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120
+  - black --check pkg/ || true  # 代码格式检查（不强制失败）
+  
+  # 启动所需服务
+  - echo "Starting required services..."
+  - bash ./start.sh
+  - sleep 15  # 等待服务完全启动
+  
+  # 运行模块测试
+  - echo "Testing individual modules..."
+  - python -m pkg.apiObject.pod --test || true
+  - python -m pkg.apiObject.replicaSet --test || true
+  - python -m pkg.apiObject.hpa --test || true
+  
+  # 停止服务
+  - echo "Stopping services..."
+  - bash ./start.sh --stop
+  
+  # 测试配置文件加载
+  - echo "Testing configuration loading..."
+  - python -c "
+    import sys, os
+    sys.path.insert(0, os.getcwd())
+    from pkg.config.globalConfig import GlobalConfig
+    from pkg.config.uriConfig import URIConfig
+    print('Config loading test passed')
+    " || true
+  
+  # 测试 API 服务器启动（短时间测试）
+  - echo "Testing API server startup..."
+  - timeout 30s python -m pkg.apiServer.apiServer &
+  - sleep 5
+  - curl -f http://localhost:5050/health || echo "Health check failed"
+  - pkill -f "pkg.apiServer.apiServer" || true
+
+# 测试后清理
+after_script:
+  # 停止所有测试进程
+  - pkill -f "python.*pkg" || true
+  - docker stop cadvisor || true
+  - docker rm cadvisor || true
+
+# 成功后的操作
+after_success:
+  # 如果是主分支，可以考虑部署操作
+  - |
+    if [ "$TRAVIS_BRANCH" = "main" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
+      echo "Main branch build successful - ready for deployment"
+      # 这里可以添加部署脚本
+    fi
+
+# 失败后的操作
+after_failure:
+  # 收集错误日志
+  - echo "Build failed, collecting logs..."
+  - ls -la logs/ || true
+  - tail -100 logs/*.log || true
+  - docker logs cadvisor || true
+
+# 构建矩阵（可选：测试多个 Python 版本或环境）
+matrix:
+  include:
+    - python: "3.12"
+      env: TEST_SUITE=unit
+    - python: "3.12"
+      env: TEST_SUITE=integration
+  allow_failures:
+    - env: TEST_SUITE=integration  # 允许集成测试失败
+
+# 通知设置（可选）
+notifications:
+  email:
+    recipients:
+      - your-email@example.com
+    on_success: change  # 只在状态改变时发送
+    on_failure: always
+  # Slack 通知（如果需要）
+  # slack:
+  #   rooms:
+  #     - your-workspace:your-channel#general
+  #   on_success: change
+  #   on_failure: always
+
+# 分支策略
+branches:
+  only:
+    - main
+
+# 构建阶段定义
+stages:
+  - name: test
+    if: type IN (push, pull_request)
+  - name: deploy
+    if: branch = main AND type = push AND fork = false

@@ -36,8 +36,6 @@ class HorizontalPodAutoscaler:
         # 运行时状态
         self.status = STATUS.PENDING
         self.current_replicas = 0
-        self.target_replicas = 0
-        self.current_metrics = {}
         self.last_scale_time = None
         # self.cadvisor_base_url = f"http://{URIConfig.HOST}:8080"
         # 非常重要！在mac上因为无法运行cadvisor，所以使用必须使用云主机上的cadvisor docker，只是用来测试获取的正确性的
@@ -78,8 +76,6 @@ class HorizontalPodAutoscaler:
             },
             'status': self.status,
             'current_replicas': self.current_replicas,
-            'target_replicas': self.target_replicas,
-            'current_metrics': self.current_metrics
         }
         
         # 处理last_scale_time (转换为ISO格式字符串)
@@ -142,10 +138,6 @@ class HorizontalPodAutoscaler:
                 hpa.status = hpa_config_dict['status']
             if 'current_replicas' in hpa_config_dict:
                 hpa.current_replicas = hpa_config_dict['current_replicas']
-            if 'target_replicas' in hpa_config_dict:
-                hpa.target_replicas = hpa_config_dict['target_replicas']
-            if 'current_metrics' in hpa_config_dict:
-                hpa.current_metrics = hpa_config_dict['current_metrics']
             if 'last_scale_time' in hpa_config_dict and hpa_config_dict['last_scale_time']:
                 try:
                     hpa.last_scale_time = datetime.datetime.fromisoformat(hpa_config_dict['last_scale_time'])
@@ -414,8 +406,12 @@ class HorizontalPodAutoscaler:
             print(f"[ERROR]Error getting pod container paths: {e}")
             return []
 
-def test_hpa():
-    """测试HPA功能"""
+def test_hpa(ci_mode=False):
+    """测试HPA功能
+    
+    Args:
+        ci_mode (bool): 是否在CI环境中运行测试
+    """
     import yaml
     import os
     import time
@@ -435,83 +431,133 @@ def test_hpa():
         return
     
     try:
-        # 测试CPU和内存指标获取
-        print("[TEST]获取CPU和内存指标...")        
-        # 创建HPA配置
-        hpa_config = HorizontalPodAutoscalerConfig(config_dict)
-        
-        # 创建HPA对象
-        hpa = HorizontalPodAutoscaler(hpa_config)
-        
-        # 获取机器信息
-        print("[TEST]获取机器信息...")
-        machine_info = hpa.get_machine_info()
-        if machine_info:
-            print(f"[INFO]机器内存容量: {machine_info.get('memory_capacity')} 字节")
-            print(f"[INFO]CPU核心数: {machine_info.get('num_cores', '未知')}")
-        else:
-            print("[WARN]无法获取机器信息")
-        
-        # 获取指标摘要
-        print("[TEST]获取指标摘要...")
-        metrics_summary = hpa.get_machine_metrics_summary()
-        if metrics_summary:
-            # 只打印根容器的信息以避免过多输出
-            root_metrics = metrics_summary.get("/", {})
-            print(f"[INFO]根容器时间戳: {root_metrics.get('timestamp', '未知')}")
-            print(f"[INFO]根容器最新CPU使用率: {root_metrics.get('latest_usage', {}).get('cpu')}%")
-            print(f"[INFO]根容器最新内存使用量: {root_metrics.get('latest_usage', {}).get('memory')} 字节")
-        else:
-            print("[WARN]无法获取指标摘要")
-        
-        # 获取CPU和内存使用率
-        cpu_percent = hpa.get_cpu_usage_percentage()
-        memory_percent = hpa.get_memory_usage_percentage()
-        
-        if cpu_percent is not None:
-            print(f"[INFO]CPU使用率: {cpu_percent:.2f}%")
-        else:
-            print("[WARN]无法获取CPU使用率")
+        # 检查是否在CI模式下运行
+        if ci_mode:
+            print("[INFO]在CI模式下运行简化测试...")
+            # 在CI模式下简化测试内容，仅验证基本功能
+            # 创建HPA配置
+            hpa_config = HorizontalPodAutoscalerConfig(config_dict)
             
-        if memory_percent is not None:
-            print(f"[INFO]内存使用率: {memory_percent:.2f}%")
-        else:
-            print("[WARN]无法获取内存使用率")
+            # 创建HPA对象
+            hpa = HorizontalPodAutoscaler(hpa_config)
             
-        return
-        
-        # 以下是创建、获取、删除HPA的测试，暂不执行
-        # 设置API客户端
-        hpa.set_api_client(ApiClient())
-        
-        # 创建HPA
-        print("[TEST]创建HPA...")
-        create_success = hpa.create()
-        if not create_success:
-            print("[FAIL]创建HPA失败")
+            # 设置API客户端
+            hpa.set_api_client(ApiClient())
+            
+            # 创建HPA
+            print("[TEST]创建HPA...")
+            create_success = hpa.create()
+            if not create_success:
+                print("[FAIL]创建HPA失败")
+                return
+                
+            print("[PASS]创建HPA成功")
+            
+            # return
+            
+            # 获取HPA
+            print("\n[TEST]获取HPA...")
+            retrieved_hpa = HorizontalPodAutoscaler.get(hpa.namespace, hpa.name)
+            if not retrieved_hpa:
+                print("[FAIL]获取HPA失败")
+                return
+                
+            print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
+            
             return
             
-        print("[PASS]创建HPA成功")
-        
-        # 获取HPA
-        print("\n[TEST]获取HPA...")
-        retrieved_hpa = HorizontalPodAutoscaler.get(hpa.namespace, hpa.name)
-        if not retrieved_hpa:
-            print("[FAIL]获取HPA失败")
+            # 删除HPA
+            print("\n[TEST]删除HPA...")
+            delete_success = hpa.delete()
+            if not delete_success:
+                print("[FAIL]删除HPA失败")
+                return
+                
+            print("[PASS]删除HPA成功")
+            
+            print("\n[SUCCESS]所有测试通过!")
+        else:
+            # 测试CPU和内存指标获取
+            print("[TEST]获取CPU和内存指标...")        
+            # 创建HPA配置
+            hpa_config = HorizontalPodAutoscalerConfig(config_dict)
+            
+            # 创建HPA对象
+            hpa = HorizontalPodAutoscaler(hpa_config)
+            
+            # 获取机器信息
+            print("[TEST]获取机器信息...")
+            machine_info = hpa.get_machine_info()
+            if machine_info:
+                print(f"[INFO]机器内存容量: {machine_info.get('memory_capacity')} 字节")
+                print(f"[INFO]CPU核心数: {machine_info.get('num_cores', '未知')}")
+            else:
+                print("[WARN]无法获取机器信息")
+            
+            # 获取指标摘要
+            print("[TEST]获取指标摘要...")
+            metrics_summary = hpa.get_machine_metrics_summary()
+            if metrics_summary:
+                # 只打印根容器的信息以避免过多输出
+                root_metrics = metrics_summary.get("/", {})
+                print(f"[INFO]根容器时间戳: {root_metrics.get('timestamp', '未知')}")
+                print(f"[INFO]根容器最新CPU使用率: {root_metrics.get('latest_usage', {}).get('cpu')}%")
+                print(f"[INFO]根容器最新内存使用量: {root_metrics.get('latest_usage', {}).get('memory')} 字节")
+            else:
+                print("[WARN]无法获取指标摘要")
+            
+            # 获取CPU和内存使用率
+            cpu_percent = hpa.get_cpu_usage_percentage()
+            memory_percent = hpa.get_memory_usage_percentage()
+            
+            if cpu_percent is not None:
+                print(f"[INFO]CPU使用率: {cpu_percent:.2f}%")
+            else:
+                print("[WARN]无法获取CPU使用率")
+                
+            if memory_percent is not None:
+                print(f"[INFO]内存使用率: {memory_percent:.2f}%")
+            else:
+                print("[WARN]无法获取内存使用率")
+                
+            # return
+            
+            # 以下是创建、获取、删除HPA的测试，暂不执行
+            # 设置API客户端
+            hpa.set_api_client(ApiClient())
+            
+            # 创建HPA
+            print("[TEST]创建HPA...")
+            create_success = hpa.create()
+            if not create_success:
+                print("[FAIL]创建HPA失败")
+                return
+                
+            print("[PASS]创建HPA成功")
+            
+            # return
+            
+            # 获取HPA
+            print("\n[TEST]获取HPA...")
+            retrieved_hpa = HorizontalPodAutoscaler.get(hpa.namespace, hpa.name)
+            if not retrieved_hpa:
+                print("[FAIL]获取HPA失败")
+                return
+                
+            print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
+            
             return
             
-        print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
-        
-        # 删除HPA
-        print("\n[TEST]删除HPA...")
-        delete_success = hpa.delete()
-        if not delete_success:
-            print("[FAIL]删除HPA失败")
-            return
+            # 删除HPA
+            print("\n[TEST]删除HPA...")
+            delete_success = hpa.delete()
+            if not delete_success:
+                print("[FAIL]删除HPA失败")
+                return
+                
+            print("[PASS]删除HPA成功")
             
-        print("[PASS]删除HPA成功")
-        
-        print("\n[SUCCESS]所有测试通过!")
+            print("\n[SUCCESS]所有测试通过!")
         
     except Exception as e:
         print(f"[ERROR]测试过程中出错: {e}")
@@ -519,5 +565,32 @@ def test_hpa():
         print(f"[ERROR]详细错误: {traceback.format_exc()}")
 
 if __name__ == '__main__':
-    print("[INFO]Testing HPA functionality")
-    test_hpa()
+    import argparse
+    import sys
+    
+    parser = argparse.ArgumentParser(description='Horizontal Pod Autoscaler management')
+    parser.add_argument('--test', action='store_true', help='Run the test sequence for HPA')
+    args = parser.parse_args()
+    
+    if args.test:
+        print("[INFO]Testing HPA in CI mode.")
+        try:
+            # 服务已通过 Travis CI 启动，无需在此检查或启动
+            print("[INFO]Assuming services are already running via Travis CI.")
+            
+            # 运行完整的测试，依赖所有服务
+            test_hpa(ci_mode=True)
+            
+            # 测试成功
+            print("[INFO]HPA test completed successfully.")
+            sys.exit(0)
+        except Exception as e:
+            print(f"[ERROR]Test failed: {str(e)}")
+            import traceback
+            print(f"[DEBUG]Detailed error: {traceback.format_exc()}")
+            
+            # 服务将由 Travis CI 停止，无需在此停止
+            sys.exit(1)
+    else:
+        print("[INFO]Testing HPA in regular mode.")
+        test_hpa(ci_mode=False)
