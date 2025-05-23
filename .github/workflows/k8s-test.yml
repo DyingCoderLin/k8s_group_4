@@ -93,13 +93,14 @@ jobs:
   # 测试任务 - PR直接测试，主分支在部署后测试
   test:
     # 对于PR只依赖code_quality，对于主分支推送需要依赖deploy
-    needs: ${{ (github.event_name == 'pull_request' && fromJSON('["code_quality"]')) || fromJSON('["code_quality", "deploy"]') }}
+    # needs: ${{ (github.event_name == 'pull_request' && fromJSON('["code_quality"]')) || fromJSON('["code_quality", "deploy"]') }}
+    needs: [code_quality, deploy]
     runs-on: ubuntu-latest
     # 确保PR直接进行测试，主分支在部署后进行测试
     if: |
       (github.event_name == 'pull_request') || 
       (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy.result == 'success')
-    
+      
     services:
       # 启动 cAdvisor 容器用于监控
       cadvisor:

@@ -59,14 +59,39 @@ class Kubelet():
             #         return
             # print('[WARNING]Pod not found.')
         elif type == 'DELETE':
-            print("receive an DELETE message")
-            # delete逻辑完全没有实现，需要实现
-            config = PodConfig(data)
-            print(f'[INFO]Kubelet delete pod config: {config}.')
-            # for i, pod in enumerate(self.pods_cache):
-            #     if pod.name == config.name:
-            #         self.pods_cache[i] = Pod(config)
-            #         return
+            print("[INFO]Received a DELETE message")
+            # 获取要删除的pod配置
+            if isinstance(data, dict):
+                pod_name = data.get('name')
+                if not pod_name and 'metadata' in data:
+                    pod_name = data.get('metadata', {}).get('name')
+            else:
+                # 尝试从PodConfig中获取
+                config = PodConfig(data)
+                pod_name = config.name
+                
+            print(f'[INFO]Kubelet deleting pod: {pod_name}')
+            
+            # 在本地缓存中查找并删除pod
+            pod_found = False
+            for i, pod in enumerate(self.pods_cache):
+                if pod.name == pod_name:
+                    print(f'[INFO]Found pod {pod_name} in cache, stopping and removing...')
+                    try:
+                        # 先停止pod中的所有容器
+                        pod.stop()
+                        # 再移除pod中的所有容器
+                        pod.remove()
+                        # 最后从缓存中删除pod对象
+                        self.pods_cache.pop(i)
+                        pod_found = True
+                        print(f'[INFO]Successfully deleted pod {pod_name}')
+                    except Exception as e:
+                        print(f'[ERROR]Failed to delete pod {pod_name}: {str(e)}')
+                    break
+                    
+            if not pod_found:
+                print(f'[WARNING]Pod {pod_name} not found in kubelet cache')
         elif type == 'GET':
             pass
 
