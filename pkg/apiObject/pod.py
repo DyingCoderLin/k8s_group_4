@@ -151,6 +151,10 @@ if __name__ == '__main__':
                     print(f'[INFO]获取Pod响应: {response.status_code}')
                     
                     print('[PASS]API创建和获取Pod测试通过')
+                    
+                    response = requests.delete(uri, timeout=5)
+                    print(f'[INFO]删除Pod响应: {response.status_code}')
+                    print('[PASS]API删除Pod测试通过')
                 except Exception as e:
                     print(f'[WARN]API测试失败: {str(e)}')
                     print('[INFO]尝试直接创建Pod...')
@@ -202,14 +206,13 @@ if __name__ == '__main__':
                 # 测试Post
                 uri = URIConfig.PREFIX + URIConfig.POD_SPEC_URL.format(
                     namespace= data['metadata']['namespace'], name = data['metadata']['name'])
-                print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
+                # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
                 response = requests.post(uri, json=data)
                 print(response.json())
 
                 input('Press Enter To Continue.')
                 # 测试Put
-                data = load_yaml("pod-1-2.yaml")
-                print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
+                # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
                 response = requests.put(uri, json=data)
                 print(response.json())
 
