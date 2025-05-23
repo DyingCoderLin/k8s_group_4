@@ -4,7 +4,6 @@
 
 https://docker-py.readthedocs.io/en/stable/networks.html
 
-
 ## 首先需要启动etcd, kafka, cadviser两个docker
 ### etcd一键安装
 ```docker
@@ -125,4 +124,3 @@ curl
   ```
   sudo docker swarm init
   ```
-
