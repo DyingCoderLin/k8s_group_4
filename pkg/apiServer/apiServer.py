@@ -205,9 +205,9 @@ class ApiServer():
         # lcl mark: create会出现的bug：没有确保没有重名的pod出现
         # 再标一句，如果add_pod考虑update的话，我写的这个逻辑应该也有问题，但这里先不进一步考虑
         # wcc: 我可以在Kubelet处进行名字检查
-        for pod in pods:
-            if pod.name == new_pod_config.name:
-                return json.dumps({'error': 'Pod name already exists'}), 409
+        # for pod in pods:
+        #     if pod.name == new_pod_config.name:
+        #         return json.dumps({'error': 'Pod name already exists'}), 409
         
         # lcl: 确保pod的namespace和name匹配
         # wcc: 说实话，我觉得这个地方客户端可以保证，就是说url中的namespace和name应该是用yaml中的信息填入的
@@ -296,6 +296,9 @@ class ApiServer():
         for node in nodes:
             if node.id == this_pod.node_id:
                 topic = self.kafka_config.POD_TOPIC.format(name=node.name)
+                # 从etcd中删掉这个pod的信息
+                pods.remove(this_pod)
+                self.put(self.etcd_config.PODS_KEY.format(namespace=namespace), pods)
                 break
         # 如果没有topic，说明node_id不匹配，只有可能是还没有分配
         if topic is None:
