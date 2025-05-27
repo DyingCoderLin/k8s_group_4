@@ -48,31 +48,63 @@ jobs:
         with:
           fetch-depth: 0  # 获取完整的git历史用于部署
       
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          # 设置SSH私钥
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # 添加服务器到已知主机列表
+          if [ ! -z "${{ secrets.SERVER_HOST }}" ]; then
+            # 使用主机名
+            echo "使用主机名连接: ${{ secrets.SERVER_HOST }}"
+            ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+            
+            # 如果同时提供了IP和主机名，添加到hosts文件
+            if [ ! -z "${{ secrets.SERVER_IP }}" ]; then
+              echo "${{ secrets.SERVER_IP }} ${{ secrets.SERVER_HOST }}" | sudo tee -a /etc/hosts
+            fi
+          else
+            # 使用IP地址
+            echo "使用IP地址连接: ${{ secrets.SERVER_IP }}"
+            ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          fi
+          
+          # 验证SSH设置
+          ls -la ~/.ssh/
+          echo "SSH密钥指纹:"
+          ssh-keygen -l -f ~/.ssh/id_rsa
+          
       - name: Deploy to server
         run: |
           echo "部署到服务器..."
           
-          # 检查网络连接
-          echo "检查连接到服务器的网络..."
-          ping -c 4 ${{ secrets.SERVER_IP }} || echo "无法 ping 通服务器，但这不一定是问题"
+          # 测试网络连通性
+          echo "检查网络连通性..."
           
-          # 测试 SSH 连接 (不执行任何命令)
-          echo "测试 SSH 连接..."
-          timeout 10 ssh -v ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH 连接成功'" || echo "SSH 连接失败，尝试增加超时时间并重试..."
+          # 确定使用主机名还是IP
+          SERVER_TARGET="${{ secrets.SERVER_HOST }}"
+          if [ -z "$SERVER_TARGET" ]; then
+            SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          fi
           
-          # 增加 SSH 超时时间并尝试连接
-          echo "尝试增加超时时间并重试..."
-          timeout 30 ssh -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "echo 'SSH 连接成功'"
+          echo "使用目标: ${SERVER_TARGET}"
+          ping -c 2 ${SERVER_TARGET} || echo "无法 ping 通服务器，但这不一定是问题"
+          
+          # 测试 SSH 连接 (包括详细调试信息)
+          echo "测试 SSH 连接 (详细模式)..."
+          ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=60 ${{ secrets.SERVER_USER }}@${SERVER_TARGET} "echo 'SSH 连接成功' && id && hostname && pwd"
           
           # 确保远程目录存在并有正确的权限
           echo "创建部署目录..."
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /root/deploy && chmod 755 /root/deploy"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=30 ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p /root/deploy && chmod 755 /root/deploy"
           
           # 将代码推送到服务器的指定目录
           echo "传输代码到远程服务器..."
-          rsync -avz --timeout=60 --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/ || {
+          rsync -avz --timeout=60 -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/ || {
             echo "错误: 无法使用rsync传输文件，尝试使用scp作为备选方案"
-            scp -r -o ConnectTimeout=20 $(find . -type f -not -path "*/\.*" -not -path "*/node_modules/*" | grep -v "^./.git") ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/
+            scp -i ~/.ssh/id_rsa -o ConnectTimeout=30 -o StrictHostKeyChecking=no -r $(find . -type f -not -path "*/\.*" -not -path "*/node_modules/*" | grep -v "^./.git") ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/root/deploy/
           }
           
           # 显示远程目录内容，用于调试
@@ -122,15 +154,15 @@ jobs:
           
   # 测试任务 - PR直接测试，主分支在部署后测试
   test:
-    # 对于PR只依赖code_quality，对于主分支推送需要依赖deploy
-    # needs: ${{ (github.event_name == 'pull_request' && fromJSON('["code_quality"]')) || fromJSON('["code_quality", "deploy"]') }}
-    needs: [code_quality, deploy]
+    # 根据事件类型动态设置依赖关系
+    needs: ${{ github.event_name == 'pull_request' && fromJSON('["code_quality"]') || fromJSON('["code_quality", "deploy"]') }}
     runs-on: ubuntu-latest
     
     # 确保PR直接进行测试，主分支在部署后进行测试
+    # 注意：对于PR，我们仅依赖code_quality；对于主分支，我们需要deploy任务成功或跳过
     if: |
-      (github.event_name == 'pull_request') || 
-      (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.deploy.result == 'success')
+      github.event_name == 'pull_request' || 
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.deploy.result == 'success' || needs.deploy.result == 'skipped'))
 
     services:
       # 启动 cAdvisor 容器用于监控
