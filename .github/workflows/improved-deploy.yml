@@ -104,6 +104,7 @@ jobs:
         run: |
           echo "尝试连接到服务器..."
           SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          echo "使用服务器地址: $SERVER_TARGET"
           
           # 检查与服务器的网络连接
           echo "检查与服务器的网络连接..."
