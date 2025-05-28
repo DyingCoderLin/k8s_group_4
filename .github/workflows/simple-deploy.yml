@@ -242,15 +242,12 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # 确定使用主机名还是IP
-          SERVER_TARGET="${{ secrets.SERVER_HOST }}"
-          if [ -z "$SERVER_TARGET" ]; then
-            SERVER_TARGET="${{ secrets.SERVER_IP }}"
-          fi
+          # 获取服务器IP地址
+          SERVER_TARGET="${{ secrets.SERVER_IP }}"
           
-          # 验证服务器地址是否存在
+          # 验证服务器IP是否存在
           if [ -z "$SERVER_TARGET" ]; then
-            echo "错误: 没有配置服务器地址 (SERVER_HOST 或 SERVER_IP)"
+            echo "错误: 没有配置服务器IP (SERVER_IP)"
             exit 1
           fi
           
@@ -269,11 +266,9 @@ jobs:
         run: |
           echo "部署到服务器..."
           
-          # 确定使用主机名还是IP
-          SERVER_TARGET="${{ secrets.SERVER_HOST }}"
-          if [ -z "$SERVER_TARGET" ]; then
-            SERVER_TARGET="${{ secrets.SERVER_IP }}"
-          fi
+          # 设置服务器IP地址
+          SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          
           
           # 检查SERVER_USER是否存在
           if [ -z "${{ secrets.SERVER_USER }}" ]; then
