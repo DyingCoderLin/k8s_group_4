@@ -143,6 +143,7 @@ jobs:
         run: |
           echo "部署到服务器..."
           SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          SERVER_TARGET="10.119.15.182"
           
           # 打印DNS解析结果，帮助诊断
           echo "服务器DNS解析结果:"
