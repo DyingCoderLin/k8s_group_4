@@ -67,6 +67,12 @@ jobs:
           pip install pytest pytest-cov
           pip install docker requests pyyaml
           
+      - name: Install system dependencies
+        run: |
+          echo "安装系统依赖..."
+          sudo apt-get update
+          sudo apt-get install -y netcat-openbsd docker-compose
+          
       - name: Prepare test environment
         run: |
           mkdir -p logs testFile
