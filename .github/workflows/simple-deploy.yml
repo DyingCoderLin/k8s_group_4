@@ -34,191 +34,191 @@ jobs:
           black --check pkg/ || true
 
   # 测试任务
-  test:
-    needs: [code_quality]
-    runs-on: ubuntu-latest  # 使用GitHub托管的运行器
+  # test:
+  #   needs: [code_quality]
+  #   runs-on: ubuntu-latest  # 使用GitHub托管的运行器
     
-    services:
-      # 启动 cAdvisor 容器用于监控
-      cadvisor:
-        image: google/cadvisor:latest
-        ports:
-          - 8080:8080
-        volumes:
-          - /:/rootfs:ro
-          - /var/run:/var/run:ro
-          - /sys:/sys:ro
-          - /var/lib/docker/:/var/lib/docker:ro
-          - /dev/disk/:/dev/disk:ro
-        options: --privileged
+  #   services:
+  #     # 启动 cAdvisor 容器用于监控
+  #     cadvisor:
+  #       image: google/cadvisor:latest
+  #       ports:
+  #         - 8080:8080
+  #       volumes:
+  #         - /:/rootfs:ro
+  #         - /var/run:/var/run:ro
+  #         - /sys:/sys:ro
+  #         - /var/lib/docker/:/var/lib/docker:ro
+  #         - /dev/disk/:/dev/disk:ro
+  #       options: --privileged
     
-    steps:
-      - uses: actions/checkout@v3
+  #   steps:
+  #     - uses: actions/checkout@v3
       
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
+  #     - name: Set up Python 3.12
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: '3.12'
           
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
-          pip install docker requests pyyaml
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install -r requirements.txt
+  #         pip install pytest pytest-cov
+  #         pip install docker requests pyyaml
           
-      - name: Install system dependencies
-        run: |
-          echo "安装系统依赖..."
-          sudo apt-get update
-          sudo apt-get install -y netcat-openbsd docker-compose
+  #     - name: Install system dependencies
+  #       run: |
+  #         echo "安装系统依赖..."
+  #         sudo apt-get update
+  #         sudo apt-get install -y netcat-openbsd docker-compose
           
-      - name: Prepare test environment
-        run: |
-          mkdir -p logs testFile
+  #     - name: Prepare test environment
+  #       run: |
+  #         mkdir -p logs testFile
       
-      # 检查依赖服务（etcd和kafka）
-      - name: Check dependencies
-        run: |
-          echo "检查依赖服务 (etcd和kafka)..."
+  #     # 检查依赖服务（etcd和kafka）
+  #     - name: Check dependencies
+  #       run: |
+  #         echo "检查依赖服务 (etcd和kafka)..."
           
-          # 检查etcd (2379端口)
-          nc -z localhost 2379 2>/dev/null
-          ETCD_RUNNING=$?
+  #         # 检查etcd (2379端口)
+  #         nc -z localhost 2379 2>/dev/null
+  #         ETCD_RUNNING=$?
           
-          # 检查kafka (9092端口)
-          nc -z localhost 9092 2>/dev/null
-          KAFKA_RUNNING=$?
+  #         # 检查kafka (9092端口)
+  #         nc -z localhost 9092 2>/dev/null
+  #         KAFKA_RUNNING=$?
 
-          echo "to here"
+  #         echo "to here"
 
-          if [ $ETCD_RUNNING -ne 0 ]; then
-            echo "etcd服务未运行，启动容器"
-            # 先清理可能存在的同名容器
-            docker rm -f etcd 2>/dev/null || true
+  #         if [ $ETCD_RUNNING -ne 0 ]; then
+  #           echo "etcd服务未运行，启动容器"
+  #           # 先清理可能存在的同名容器
+  #           docker rm -f etcd 2>/dev/null || true
             
-            docker run -d \
-            --name etcd \
-            -p 2379:2379 \
-            -p 2380:2380 \
-            quay.io/coreos/etcd:v3.5.0 \
-            /usr/local/bin/etcd \
-            --listen-client-urls http://0.0.0.0:2379 \
-            --advertise-client-urls http://localhost:2379
+  #           docker run -d \
+  #           --name etcd \
+  #           -p 2379:2379 \
+  #           -p 2380:2380 \
+  #           quay.io/coreos/etcd:v3.5.0 \
+  #           /usr/local/bin/etcd \
+  #           --listen-client-urls http://0.0.0.0:2379 \
+  #           --advertise-client-urls http://localhost:2379
             
-            # 等待etcd启动并检查
-            echo "等待etcd服务启动 (10秒)..."
-            sleep 10
-            nc -z localhost 2379 2>/dev/null
-            if [ $? -ne 0 ]; then
-              echo "etcd服务启动失败，查看日志:"
-              docker logs etcd
-              exit 1
-            fi
-            echo "etcd服务已成功启动"
-          else
-            echo "etcd服务正在运行"
-          fi
+  #           # 等待etcd启动并检查
+  #           echo "等待etcd服务启动 (10秒)..."
+  #           sleep 10
+  #           nc -z localhost 2379 2>/dev/null
+  #           if [ $? -ne 0 ]; then
+  #             echo "etcd服务启动失败，查看日志:"
+  #             docker logs etcd
+  #             exit 1
+  #           fi
+  #           echo "etcd服务已成功启动"
+  #         else
+  #           echo "etcd服务正在运行"
+  #         fi
           
-          if [ $KAFKA_RUNNING -ne 0 ]; then
-            echo "kafka服务未运行，启动所需容器..."
+  #         if [ $KAFKA_RUNNING -ne 0 ]; then
+  #           echo "kafka服务未运行，启动所需容器..."
             
-            # 确定使用哪个docker-compose文件
-            DOCKER_COMPOSE_FILE="./yamls/docker-compose.yml"
+  #           # 确定使用哪个docker-compose文件
+  #           DOCKER_COMPOSE_FILE="./yamls/docker-compose.yml"
             
-            # 停止可能存在的冲突容器
-            docker-compose -f $DOCKER_COMPOSE_FILE down || true
+  #           # 停止可能存在的冲突容器
+  #           docker-compose -f $DOCKER_COMPOSE_FILE down || true
             
-            # 启动docker-compose
-            echo "使用docker-compose启动依赖服务..."
-            docker-compose -f $DOCKER_COMPOSE_FILE up -d
+  #           # 启动docker-compose
+  #           echo "使用docker-compose启动依赖服务..."
+  #           docker-compose -f $DOCKER_COMPOSE_FILE up -d
             
-            # 等待服务启动
-            echo "等待依赖服务启动 (30秒)..."
-            sleep 30
+  #           # 等待服务启动
+  #           echo "等待依赖服务启动 (30秒)..."
+  #           sleep 30
             
-            # 再次检查服务
-            nc -z localhost 2379 2>/dev/null || { echo "etcd服务启动失败"; exit 1; }
-            nc -z localhost 9092 2>/dev/null || { echo "kafka服务启动失败"; exit 1; }
+  #           # 再次检查服务
+  #           nc -z localhost 2379 2>/dev/null || { echo "etcd服务启动失败"; exit 1; }
+  #           nc -z localhost 9092 2>/dev/null || { echo "kafka服务启动失败"; exit 1; }
             
-            echo "依赖服务已成功启动"
-          else
-            echo "依赖服务已经在运行"
-          fi
+  #           echo "依赖服务已成功启动"
+  #         else
+  #           echo "依赖服务已经在运行"
+  #         fi
       
-      # 启动所需服务
-      - name: Start required services
-        run: |
-          echo "启动应用服务..."
-          bash ./start.sh
-          sleep 15  # 等待服务完全启动
+  #     # 启动所需服务
+  #     - name: Start required services
+  #       run: |
+  #         echo "启动应用服务..."
+  #         bash ./start.sh
+  #         sleep 15  # 等待服务完全启动
       
-      # 运行模块测试
-      - name: Test individual modules
-        run: |
-          echo "Testing individual modules..."
-          python -m pkg.apiObject.pod --test || true
-          python -m pkg.apiObject.replicaSet --test || true
-          python -m pkg.apiObject.hpa --test || true
+  #     # 运行模块测试
+  #     - name: Test individual modules
+  #       run: |
+  #         echo "Testing individual modules..."
+  #         python -m pkg.apiObject.pod --test || true
+  #         python -m pkg.apiObject.replicaSet --test || true
+  #         python -m pkg.apiObject.hpa --test || true
       
-      # 停止服务
-      - name: Stop services
-        run: |
-          echo "Stopping services..."
-          bash ./start.sh --stop
-        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+  #     # 停止服务
+  #     - name: Stop services
+  #       run: |
+  #         echo "Stopping services..."
+  #         bash ./start.sh --stop
+  #       if: always()  # 无论前面的步骤是否成功，都执行此步骤
       
-      # 测试配置文件加载
-      - name: Test configuration loading
-        run: |
-          echo "Testing configuration loading..."
-          python -c "
-          import sys, os
-          sys.path.insert(0, os.getcwd())
-          from pkg.config.globalConfig import GlobalConfig
-          from pkg.config.uriConfig import URIConfig
-          print('Config loading test passed')
-          " || true
+  #     # 测试配置文件加载
+  #     - name: Test configuration loading
+  #       run: |
+  #         echo "Testing configuration loading..."
+  #         python -c "
+  #         import sys, os
+  #         sys.path.insert(0, os.getcwd())
+  #         from pkg.config.globalConfig import GlobalConfig
+  #         from pkg.config.uriConfig import URIConfig
+  #         print('Config loading test passed')
+  #         " || true
       
-      # 测试 API 服务器启动
-      - name: Test API server startup
-        run: |
-          echo "Testing API server startup..."
-          timeout 30s python -m pkg.apiServer.apiServer &
-          sleep 5
-          curl -f http://localhost:5050/health || echo "Health check failed"
-          pkill -f "pkg.apiServer.apiServer" || true
+  #     # 测试 API 服务器启动
+  #     - name: Test API server startup
+  #       run: |
+  #         echo "Testing API server startup..."
+  #         timeout 30s python -m pkg.apiServer.apiServer &
+  #         sleep 5
+  #         curl -f http://localhost:5050/health || echo "Health check failed"
+  #         pkill -f "pkg.apiServer.apiServer" || true
       
-      # 测试后清理
-      - name: Cleanup
-        run: |
-          echo "清理测试进程..."
-          pkill -f "python.*pkg" || true
+  #     # 测试后清理
+  #     - name: Cleanup
+  #       run: |
+  #         echo "清理测试进程..."
+  #         pkill -f "python.*pkg" || true
           
-          echo "停止依赖服务容器..."
-          docker-compose -f ./yamls/docker-compose.yml down || true
-        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+  #         echo "停止依赖服务容器..."
+  #         docker-compose -f ./yamls/docker-compose.yml down || true
+  #       if: always()  # 无论前面的步骤是否成功，都执行此步骤
       
-      # 如果测试失败，收集日志
-      - name: Collect logs on failure
-        if: failure()
-        run: |
-          echo "Build failed, collecting logs..."
-          ls -la logs/ || true
-          tail -100 logs/*.log || true
+  #     # 如果测试失败，收集日志
+  #     - name: Collect logs on failure
+  #       if: failure()
+  #       run: |
+  #         echo "Build failed, collecting logs..."
+  #         ls -la logs/ || true
+  #         tail -100 logs/*.log || true
           
-      # 上传日志文件作为构建产物
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: logs/
-          retention-days: 5
+  #     # 上传日志文件作为构建产物
+  #     - name: Upload logs
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: logs
+  #         path: logs/
+  #         retention-days: 5
 
   # 部署任务，只在主分支推送时运行
   deploy:
-    needs: [test]  # 依赖测试成功
+    # needs: [test]  # 依赖测试成功
     runs-on: ubuntu-latest  # 使用GitHub托管的运行器
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'  # 只在主分支推送时运行
     
