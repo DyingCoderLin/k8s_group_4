@@ -50,31 +50,69 @@ jobs:
       
       - name: Set up SSH
         run: |
+          echo "配置SSH连接..."
           mkdir -p ~/.ssh
-          # 设置SSH私钥
+          
+          # 设置SSH私钥（注意权限设置）
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           
-          # 添加服务器到已知主机列表
-          if [ ! -z "${{ secrets.SERVER_HOST }}" ]; then
-            # 使用主机名
-            echo "使用主机名连接: ${{ secrets.SERVER_HOST }}"
-            ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-            
-            # 如果同时提供了IP和主机名，添加到hosts文件
-            if [ ! -z "${{ secrets.SERVER_IP }}" ]; then
-              echo "${{ secrets.SERVER_IP }} ${{ secrets.SERVER_HOST }}" | sudo tee -a /etc/hosts
-            fi
-          else
-            # 使用IP地址
-            echo "使用IP地址连接: ${{ secrets.SERVER_IP }}"
-            ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          # 确定使用主机名还是IP
+          SERVER_TARGET="${{ secrets.SERVER_HOST }}"
+          if [ -z "$SERVER_TARGET" ]; then
+            SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          fi
+          
+          # 添加服务器到已知主机
+          ssh-keyscan -H $SERVER_TARGET >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 644 ~/.ssh/known_hosts
+          
+          # 如果同时提供了IP和主机名，添加到hosts文件
+          if [ ! -z "${{ secrets.SERVER_HOST }}" ] && [ ! -z "${{ secrets.SERVER_IP }}" ]; then
+            echo "${{ secrets.SERVER_IP }} ${{ secrets.SERVER_HOST }}" | sudo tee -a /etc/hosts
           fi
           
           # 验证SSH设置
           ls -la ~/.ssh/
           echo "SSH密钥指纹:"
-          ssh-keygen -l -f ~/.ssh/id_rsa
+          ssh-keygen -l -f ~/.ssh/id_rsa || echo "无法生成密钥指纹"
+      
+      - name: Check SSH Connection
+        id: ssh_check
+        run: |
+          echo "测试SSH连接..."
+          
+          # 确定使用主机名还是IP
+          SERVER_TARGET="${{ secrets.SERVER_HOST }}"
+          if [ -z "$SERVER_TARGET" ]; then
+            SERVER_TARGET="${{ secrets.SERVER_IP }}"
+          fi
+          
+          # 测试网络连通性
+          echo "检查网络连通性..."
+          ping -c 2 $SERVER_TARGET || echo "警告: 无法ping通服务器，但这可能是防火墙设置所致"
+          
+          # 尝试建立SSH连接 - 带详细输出
+          for i in {1..3}; do
+            echo "尝试SSH连接 ($i/3)..."
+            if ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=10 -o BatchMode=yes ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo 'SSH连接成功' && hostname && pwd"; then
+              echo "SSH连接成功!"
+              echo "::set-output name=ssh_success::true"
+              break
+            else
+              echo "SSH连接失败，尝试详细调试..."
+              ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=15 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo 测试" || true
+              
+              if [ $i -eq 3 ]; then
+                echo "无法建立SSH连接，部署将失败"
+                echo "::set-output name=ssh_success::false"
+                exit 1
+              fi
+              
+              echo "等待10秒后重试..."
+              sleep 10
+            fi
+          done
           
       - name: Deploy to server
         run: |
