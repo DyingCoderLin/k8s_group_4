@@ -232,6 +232,12 @@ jobs:
           echo "配置SSH连接..."
           mkdir -p ~/.ssh
           
+          # 检查SSH私钥是否存在
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "错误: SSH_PRIVATE_KEY secret 未设置"
+            exit 1
+          fi
+          
           # 设置SSH私钥（注意权限设置）
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
@@ -242,8 +248,22 @@ jobs:
             SERVER_TARGET="${{ secrets.SERVER_IP }}"
           fi
           
+          # 验证服务器地址是否存在
+          if [ -z "$SERVER_TARGET" ]; then
+            echo "错误: 没有配置服务器地址 (SERVER_HOST 或 SERVER_IP)"
+            exit 1
+          fi
+          
+          echo "使用服务器地址: $SERVER_TARGET"
+          
           # 添加服务器到已知主机
-          ssh-keyscan -H $SERVER_TARGET >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan -H $SERVER_TARGET >> ~/.ssh/known_hosts 2>/dev/null || {
+            echo "警告: 无法扫描服务器 SSH 密钥"
+            # 添加 StrictHostKeyChecking=no 以便后续命令不需要检查主机密钥
+            echo "Host $SERVER_TARGET" >> ~/.ssh/config
+            echo "    StrictHostKeyChecking no" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          }
       
       - name: Deploy to server
         run: |
@@ -255,12 +275,35 @@ jobs:
             SERVER_TARGET="${{ secrets.SERVER_IP }}"
           fi
           
+          # 检查SERVER_USER是否存在
+          if [ -z "${{ secrets.SERVER_USER }}" ]; then
+            echo "错误: SERVER_USER secret 未设置"
+            exit 1
+          fi
+          
+          # 测试SSH连接
+          echo "测试SSH连接..."
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接成功'" || {
+            echo "错误: 无法连接到服务器"
+            # 显示详细的连接信息以帮助诊断
+            ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o ConnectTimeout=20 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo 测试" || true
+            exit 1
+          }
+          
           # 将代码推送到服务器的指定目录
           echo "传输代码到远程服务器..."
-          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
+            echo "错误: 无法传输代码到服务器"
+            exit 1
+          }
           
           # 远程执行部署脚本
           echo "执行部署脚本..."
-          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && bash ./deploy.sh"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
+            echo "错误: 部署脚本执行失败"
+            # 显示可能的错误日志
+            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && ls -la && cat logs/*.log 2>/dev/null || echo '没有日志文件'"
+            exit 1
+          }
           
-          echo "部署完成！"
+          echo "部署成功完成！"
