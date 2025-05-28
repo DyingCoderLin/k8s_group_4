@@ -190,17 +190,159 @@ jobs:
           
           echo "部署完成！"
           
-  # 测试任务 - PR直接测试，主分支在部署后测试
-  test:
-    # 根据事件类型动态设置依赖关系
-    needs: ${{ github.event_name == 'pull_request' && fromJSON('["code_quality"]') || fromJSON('["code_quality", "deploy"]') }}
+  # 测试任务 - PR的测试流程
+  test_pr:
+    needs: [code_quality]
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    services:
+      # 启动 cAdvisor 容器用于监控
+      cadvisor:
+        image: google/cadvisor:latest
+        ports:
+          - 8080:8080
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:ro
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+          - /dev/disk/:/dev/disk:ro
+        options: --privileged
     
-    # 确保PR直接进行测试，主分支在部署后进行测试
-    # 注意：对于PR，我们仅依赖code_quality；对于主分支，我们需要deploy任务成功或跳过
-    if: |
-      github.event_name == 'pull_request' || 
-      (github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.deploy.result == 'success' || needs.deploy.result == 'skipped'))
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pip install docker requests pyyaml
+          
+      - name: Prepare test environment
+        run: |
+          mkdir -p logs testFile
+      
+      # 检查依赖服务（etcd和kafka）
+      - name: Check dependencies
+        run: |
+          echo "检查依赖服务 (etcd和kafka)..."
+          
+          # 检查etcd (2379端口)
+          nc -z localhost 2379 2>/dev/null
+          ETCD_RUNNING=$?
+          
+          # 检查kafka (9092端口)
+          nc -z localhost 9092 2>/dev/null
+          KAFKA_RUNNING=$?
+          
+          if [ $ETCD_RUNNING -ne 0 ] || [ $KAFKA_RUNNING -ne 0 ]; then
+            echo "etcd或kafka服务未运行，启动所需容器..."
+            
+            # 确定使用哪个docker-compose文件
+            DOCKER_COMPOSE_FILE="./yamls/docker-compose.yml"
+            
+            # 停止可能存在的冲突容器
+            docker-compose -f $DOCKER_COMPOSE_FILE down || true
+            
+            # 启动docker-compose
+            echo "使用docker-compose启动依赖服务..."
+            docker-compose -f $DOCKER_COMPOSE_FILE up -d
+            
+            # 等待服务启动
+            echo "等待依赖服务启动 (30秒)..."
+            sleep 30
+            
+            # 再次检查服务
+            nc -z localhost 2379 2>/dev/null || { echo "etcd服务启动失败"; exit 1; }
+            nc -z localhost 9092 2>/dev/null || { echo "kafka服务启动失败"; exit 1; }
+            
+            echo "依赖服务已成功启动"
+          else
+            echo "依赖服务已经在运行"
+          fi
+      
+      # 启动所需服务
+      - name: Start required services
+        run: |
+          echo "启动应用服务..."
+          bash ./start.sh
+          sleep 15  # 等待服务完全启动
+      
+      # 运行模块测试
+      - name: Test individual modules
+        run: |
+          echo "Testing individual modules..."
+          python -m pkg.apiObject.pod --test || true
+          python -m pkg.apiObject.replicaSet --test || true
+          python -m pkg.apiObject.hpa --test || true
+      
+      # 停止服务
+      - name: Stop services
+        run: |
+          echo "Stopping services..."
+          bash ./start.sh --stop
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 测试配置文件加载
+      - name: Test configuration loading
+        run: |
+          echo "Testing configuration loading..."
+          python -c "
+          import sys, os
+          sys.path.insert(0, os.getcwd())
+          from pkg.config.globalConfig import GlobalConfig
+          from pkg.config.uriConfig import URIConfig
+          print('Config loading test passed')
+          " || true
+      
+      # 测试 API 服务器启动
+      - name: Test API server startup
+        run: |
+          echo "Testing API server startup..."
+          timeout 30s python -m pkg.apiServer.apiServer &
+          sleep 5
+          curl -f http://localhost:5050/health || echo "Health check failed"
+          pkill -f "pkg.apiServer.apiServer" || true
+      
+      # 测试后清理
+      - name: Cleanup
+        run: |
+          echo "清理测试进程..."
+          pkill -f "python.*pkg" || true
+          
+          echo "停止依赖服务容器..."
+          docker-compose -f ./yamls/docker-compose.yml down || true
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+      
+      # 如果测试失败，收集日志
+      - name: Collect logs on failure
+        if: failure()
+        run: |
+          echo "Build failed, collecting logs..."
+          ls -la logs/ || true
+          tail -100 logs/*.log || true
+          
+      # 上传日志文件作为构建产物
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/
+          retention-days: 5
+
+  # 测试任务 - 主分支的测试流程（在部署后执行）
+  test_main:
+    needs: [code_quality, deploy]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     services:
       # 启动 cAdvisor 容器用于监控
