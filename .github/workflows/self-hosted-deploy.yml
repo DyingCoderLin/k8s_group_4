@@ -1,0 +1,74 @@
+name: group-k8s-master
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  K8S_TEST_MODE: true
+
+jobs:
+  # 代码质量检查可以继续在GitHub托管的运行器上运行
+  code_quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black
+          
+      - name: Code quality checks
+        run: |
+          echo "Running code quality checks..."
+          flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120 || true
+          black --check pkg/ || true
+
+  # 部署任务将在自托管运行器上执行
+  deploy:
+    # needs: [test]  # 如果有测试任务，可以取消注释此行
+    runs-on: self-hosted  # 使用自托管运行器
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整的git历史用于部署
+      
+      - name: Deploy to server
+        run: |
+          echo "部署到服务器..."
+          SERVER_TARGET="10.119.15.182"
+          
+          echo "检查网络连接..."
+          ping -c 2 $SERVER_TARGET || echo "警告: 无法ping通服务器"
+          
+          echo "测试SSH连接..."
+          # 使用本地配置的SSH密钥(假设运行器已经配置好SSH)
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接测试'" || {
+            echo "错误: 自托管运行器无法连接到服务器"
+            exit 1
+          }
+          
+          echo "传输代码到远程服务器..."
+          rsync -avz --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
+            echo "错误: 无法传输代码到服务器"
+            exit 1
+          }
+          
+          echo "执行部署脚本..."
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
+            echo "错误: 部署脚本执行失败"
+            exit 1
+          }
+          
+          echo "部署成功完成！"
