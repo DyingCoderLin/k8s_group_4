@@ -8,3 +8,5 @@ class KafkaConfig:
     # -------------------- 资源主题定义 --------------------
     # 与Node的kubelet组件交互
     POD_TOPIC = "api.v1.nodes.{name}"
+    # 与scheduler交互
+    SCHEDULER_TOPIC = 'api.v1.scheduler'

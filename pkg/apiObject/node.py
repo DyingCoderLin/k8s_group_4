@@ -10,21 +10,20 @@ class STATUS():
     OFFLINE = 'OFFLINE'
 
 class Node():
-    def __init__(self, node_config: NodeConfig, uri_config: URIConfig):
+    def __init__(self, node_config: NodeConfig, uri_config: URIConfig = None):
         self.config = node_config
         self.uri_config = uri_config
-        self.status = STATUS.OFFLINE
 
     def run(self):
         uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(name = self.config.name)
         register_response = requests.post(uri, json=self.config.json)
 
         if register_response.status_code == 200:
-            self.config.running_init(register_response.json())
+            self.config.status = STATUS.ONLINE
+            res_json = register_response.json()
 
-            kubelet_config = KubeletConfig(**self.config.kubelet_config_args())
-            self.kubelet = Kubelet(kubelet_config)
-            self.status = STATUS.ONLINE
+            kubelet_config = KubeletConfig(**self.config.kubelet_config_args(), **res_json)
+            self.kubelet = Kubelet(kubelet_config, self.uri_config)
             print(f"[INFO]Successfully register to ApiServer.")
             self.kubelet.run()
         else:

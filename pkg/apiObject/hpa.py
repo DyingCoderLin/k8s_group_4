@@ -424,7 +424,7 @@ def test_hpa(ci_mode=False):
     # 加载测试配置
     if os.path.exists(config_file):
         print(f"[INFO]正在加载测试配置文件: {config_file}")
-        with open(config_file, 'r') as f:
+        with open(config_file, 'r', encoding='utf-8') as f:
             config_dict = yaml.safe_load(f)
     else:
         print(f"[ERROR]未找到测试配置文件: {config_file}")
