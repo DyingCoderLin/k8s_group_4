@@ -12,7 +12,6 @@ env:
   http_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
   https_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
   no_proxy: 'localhost,127.0.0.1,10.119.15.182'
-  NO_PROXY: 'localhost,127.0.0.1,10.119.15.182'
 
 jobs:
   # 代码质量检查可以继续在GitHub托管的运行器上运行
