@@ -131,6 +131,9 @@ curl
 sudo apt install python3 python3-pip
 sudo apt install python3-dev build-essential
 sudo apt install python-is-python3
+wget -qO - https://packages.confluent.io/deb/7.5/archive.key | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/7.5 stable main"
+
 sudo apt install librdkafka-dev
 ```
 - 配置服务器上的runner
