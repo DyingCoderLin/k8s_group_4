@@ -9,6 +9,10 @@ on:
 env:
   PYTHONPATH: ${{ github.workspace }}
   K8S_TEST_MODE: true
+  http_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
+  https_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
+  HTTP_PROXY: 'http://ipads:ipads123@202.120.40.82:11235'
+  HTTPS_PROXY: 'http://ipads:ipads123@202.120.40.82:11235'
 
 jobs:
   # 代码质量检查可以继续在GitHub托管的运行器上运行
@@ -46,6 +50,7 @@ jobs:
           echo "设置HTTP代理..."
           export http_proxy='http://ipads:ipads123@202.120.40.82:11235'
           export https_proxy='http://ipads:ipads123@202.120.40.82:11235'
+          
 
       - uses: actions/checkout@v3
       
