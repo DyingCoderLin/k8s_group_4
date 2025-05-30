@@ -131,10 +131,15 @@ curl
 sudo apt install python3 python3-pip
 sudo apt install python3-dev build-essential
 sudo apt install python-is-python3
-wget -qO - https://packages.confluent.io/deb/7.5/archive.key | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://packages.confluent.io/deb/7.5 stable main"
 
-sudo apt install librdkafka-dev
+wget https://github.com/edenhill/librdkafka/archive/refs/tags/v2.10.0.tar.gz
+tar -xzf v2.10.0.tar.gz
+cd librdkafka-2.10.0
+./configure
+make
+sudo make install
+sudo ldconfig
+pip install --no-binary :all: confluent-kafka
 ```
 - 配置服务器上的runner
   - 首先创建一个非root用户，并给予它/home/<username>下文件的创建、修改权限
