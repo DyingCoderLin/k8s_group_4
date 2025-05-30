@@ -49,7 +49,7 @@ jobs:
           git config --global http.proxy http://ipads:ipads123@202.120.40.82:11235
           git config --global https.proxy http://ipads:ipads123@202.120.40.82:11235
 
-          source ~/.zshrc
+          source ~/.bashrc
           
           echo "测试网络连接..."
           curl -I https://github.com || echo "GitHub连接测试完成"
