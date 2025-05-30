@@ -124,8 +124,8 @@ jobs:
           fi
           
           # 等待所有服务启动
-          echo "等待所有服务启动 (30秒)..."
-          sleep 30
+          echo "等待所有服务启动 (10秒)..."
+          sleep 10
           
           # 验证服务状态
           echo "验证服务状态..."
@@ -154,18 +154,18 @@ jobs:
           bash ./start.sh --stop || echo "停止脚本执行完成"
         if: always()  # 无论前面的步骤是否成功，都执行此步骤
         
-      - name: Cleanup test environment
-        run: |
-          echo "清理测试环境..."
-          # 停止测试期间启动的Docker容器
-          docker stop etcd kafka zookeeper 2>/dev/null || true
-          docker rm etcd kafka zookeeper 2>/dev/null || true
+      # - name: Cleanup test environment
+      #   run: |
+      #     echo "清理测试环境..."
+      #     # 停止测试期间启动的Docker容器
+      #     docker stop etcd kafka zookeeper 2>/dev/null || true
+      #     docker rm etcd kafka zookeeper 2>/dev/null || true
           
-          # 如果使用了docker-compose，也清理它
-          if [ -f "./yamls/docker-compose.yml" ]; then
-            docker-compose -f ./yamls/docker-compose.yml down || true
-          fi
-        if: always()
+      #     # 如果使用了docker-compose，也清理它
+      #     if [ -f "./yamls/docker-compose.yml" ]; then
+      #       docker-compose -f ./yamls/docker-compose.yml down || true
+      #     fi
+      #   if: always()
 
   # 部署任务只在主分支推送时执行，并且依赖测试成功
   deploy:
