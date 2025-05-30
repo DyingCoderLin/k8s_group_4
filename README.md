@@ -124,3 +124,16 @@ curl
   ```
   sudo docker swarm init
   ```
+
+### 配置cicd
+- 首选确保服务器上有python和docker（这两个没有的话一切都进行不了）
+```
+sudo apt install python3 python3-pip
+sudo apt install python-is-python3
+```
+- 配置服务器上的runner
+  - 首先创建一个非root用户，并给予它/home/<username>下文件的创建、修改权限
+  ```
+  
+  ```
+  - 然后根据github action中对于self host的指令进行配置，最后在该用户下运行./run.sh
