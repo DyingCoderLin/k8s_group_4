@@ -36,7 +36,7 @@ jobs:
   # 测试任务在自托管运行器上执行
   test:
     needs: code_quality
-    runs-on: [self-hosted, group-k8s-master]  # 指定使用group-k8s-master运行器
+    runs-on: [self-hosted, Linux,X64,k8s]  # 指定使用group-k8s-master运行器
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     
     steps:
