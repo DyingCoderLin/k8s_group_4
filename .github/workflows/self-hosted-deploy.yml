@@ -43,14 +43,16 @@ jobs:
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     
     steps:
-      # - name: Configure Git and proxy
-      #   run: |
-      #     echo "配置Git代理..."
-      #     git config --global http.proxy http://ipads:ipads123@202.120.40.82:11235
-      #     git config --global https.proxy http://ipads:ipads123@202.120.40.82:11235
+      - name: Configure Git and proxy
+        run: |
+          echo "配置Git代理..."
+          git config --global http.proxy http://ipads:ipads123@202.120.40.82:11235
+          git config --global https.proxy http://ipads:ipads123@202.120.40.82:11235
+
+          source ~/.zshrc
           
-      #     echo "测试网络连接..."
-      #     curl -I https://github.com || echo "GitHub连接测试完成"
+          echo "测试网络连接..."
+          curl -I https://github.com || echo "GitHub连接测试完成"
 
       - uses: actions/checkout@v3
       
