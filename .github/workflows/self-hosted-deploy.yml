@@ -13,6 +13,8 @@ env:
   https_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
   HTTP_PROXY: 'http://ipads:ipads123@202.120.40.82:11235'
   HTTPS_PROXY: 'http://ipads:ipads123@202.120.40.82:11235'
+  no_proxy: 'localhost,127.0.0.1,10.119.15.182'
+  NO_PROXY: 'localhost,127.0.0.1,10.119.15.182'
 
 jobs:
   # 代码质量检查可以继续在GitHub托管的运行器上运行
@@ -37,20 +39,21 @@ jobs:
           flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120 || true
           black --check pkg/ || true
 
-
   # 测试任务在自托管运行器上执行
   test:
     needs: code_quality
-    runs-on: [self-hosted, Linux,X64,k8s]  # 指定使用group-k8s-master运行器
+    runs-on: [self-hosted, Linux, X64, k8s]  # 使用你的运行器标签
     if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     
     steps:
-      - name: Set up https proxy
+      - name: Configure Git and proxy
         run: |
-          echo "设置HTTP代理..."
-          export http_proxy='http://ipads:ipads123@202.120.40.82:11235'
-          export https_proxy='http://ipads:ipads123@202.120.40.82:11235'
+          echo "配置Git代理..."
+          git config --global http.proxy http://ipads:ipads123@202.120.40.82:11235
+          git config --global https.proxy http://ipads:ipads123@202.120.40.82:11235
           
+          echo "测试网络连接..."
+          curl -I https://github.com || echo "GitHub连接测试完成"
 
       - uses: actions/checkout@v3
       
@@ -168,7 +171,7 @@ jobs:
   # 部署任务只在主分支推送时执行，并且依赖测试成功
   deploy:
     needs: [code_quality, test]
-    runs-on: [self-hosted, group-k8s-master]  # 指定使用group-k8s-master运行器
+    runs-on: [self-hosted, Linux, X64, k8s]  # 与test任务使用相同的运行器标签
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
@@ -239,9 +242,3 @@ jobs:
           fi
           
           echo "部署成功完成！"
-
-      - name: unset http_proxy
-        run: |
-          echo "清理环境变量..."
-          unset http_proxy
-          unset https_proxy
