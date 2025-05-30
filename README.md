@@ -131,6 +131,7 @@ curl
 sudo apt install python3 python3-pip
 sudo apt install python3-dev build-essential
 sudo apt install python-is-python3
+sudo apt install librdkafka-dev
 ```
 - 配置服务器上的runner
   - 首先创建一个非root用户，并给予它/home/<username>下文件的创建、修改权限
