@@ -2,6 +2,7 @@ from pkg.config.podConfig import PodConfig
 from pkg.config.nodeConfig import NodeConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
+from pkg.config.serviceConfig import ServiceConfig
 
 
 class EtcdConfig:
@@ -33,3 +34,9 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
+    
+    # Service相关
+    GLOBAL_SERVICES_KEY = "/api/v1/namespaces/services"
+    SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"
+    SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"
+    SERVICES_VALUE = ServiceConfig
