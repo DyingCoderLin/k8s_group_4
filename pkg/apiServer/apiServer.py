@@ -493,6 +493,7 @@ class ApiServer:
             pod_configs = self.etcd.get_prefix(
                 self.etcd_config.PODS_KEY.format(namespace=namespace)
             )
+            
             print(f"[INFO]Pods in namespace {namespace}: {pod_configs}")
             # 通过selector找到对应的pod_configs
             selector_app = rs_config.get_selector_app()
@@ -621,52 +622,38 @@ class ApiServer:
                 return json.dumps({"error": f"ReplicaSet {name} not found"}), 404
 
             # 删除所有关联的Pod
+            count = 0
             if hasattr(target_rs, "pod_instances") and target_rs.pod_instances:
-                pods_key = self.etcd_config.PODS_KEY.format(namespace=namespace)
-                pods = self.etcd.get_prefix(pods_key)
-
-                deleted_pods = []
-
-                for pod in pods:
-                    # 检查pod是否属于该ReplicaSet
-                    # 方法1: 通过owner_reference直接关联
-                    # 方法2: 通过pod_instances间接关联
-                    if (
-                        hasattr(pod, "owner_reference") and pod.owner_reference == name
-                    ) or any(
-                        pod.name in group
-                        for group in target_rs.pod_instances
-                        if isinstance(group, list)
-                    ):
-                        deleted_pods.append(pod)
-
-                # 向Kubelet发送删除消息，删除pod键值
-                for pod in deleted_pods:
-                    pod_key = self.etcd_config.POD_SPEC_KEY.format(
-                        namespace=namespace, name=pod.name
-                    )
-                    self.etcd.delete(pod_key)
-                    if hasattr(pod, "node_name") and pod.node_name:
-                        node = self.etcd.get(
-                            self.etcd_config.NODE_SPEC_KEY.format(name=pod.node_name)
+                for group in target_rs.pod_instances:
+                    if group:
+                        for pod_name in group:
+                            self.delete_pod(
+                                namespace, pod_name
+                            )  # 调用delete_pod方法删除Pod
+                            count += 1
+            else:
+                print(f"[WARNING]ReplicaSet {name} has no associated pods to delete.")
+            print(f"[INFO]Deleted {count} pods associated with ReplicaSet {name}.")
+            
+            if target_rs.hpa_controlled:
+                # 如果ReplicaSet被HPA控制，删除HPA
+                hpa_key = self.etcd_config.HPA_KEY.format(
+                    namespace=namespace
+                )
+                hpas = self.etcd.get(hpa_key)
+                for hpa in hpas:
+                    if hpa.target_name == name:
+                        self.etcd.delete(
+                            self.etcd_config.HPA_SPEC_KEY.format(
+                                namespace=namespace, name=hpa.name
+                            )
                         )
-                        if node is None:
-                            raise f"Node {pod.node_name} not found"
-                        topic = self.kafka_config.POD_TOPIC.format(name=node.name)
-                        self.kafka_producer.produce(
-                            topic,
-                            key="DELETE",
-                            value=json.dumps(
-                                pod.to_dict() if hasattr(pod, "to_dict") else vars(pod)
-                            ).encode("utf-8"),
-                        )
-                        print(
-                            f"[INFO]Sent DELETE message for pod {pod.name} to topic {topic}"
-                        )
-                        break
+                        print(f"[INFO]Deleted HPA {hpa.name} controlling ReplicaSet {name}.")
 
             # 更新ReplicaSet列表
             self.etcd.delete(key)
+            
+            # 如果hpa托管了，删除托管它的hpa
 
             return json.dumps(
                 {"message": f"ReplicaSet {name} and its pods deleted successfully"}
@@ -821,31 +808,7 @@ class ApiServer:
             hpa.current_replicas = hpa_json.get(
                 "current_replicas", hpa.current_replicas
             )
-
-            # 下面的部分是处理目标变更，但目前不支持目标变更
-            # if hpa.target_name != hpa_json.get('target_name'):
-            #     # 旧目标移除HPA控制
-            #     if hpa.target_kind == 'ReplicaSet':
-            #         self._release_hpa_control(namespace, hpa.target_name)
-
-            #     # 新目标添加HPA控制
-            #     if hpa_json.get('target_kind') == 'ReplicaSet':
-            #         rs_key = self.etcd_config.REPLICA_SETS_KEY.format(namespace=namespace)
-            #         replica_sets = self.etcd.get(rs_key)
-
-            #         target_found = False
-            #         for rs in replica_sets:
-            #             if rs.name == hpa_json.get('target_name'):
-            #                 rs.hpa_controlled = True
-            #                 target_found = True
-            #                 break
-
-            #         if not target_found:
-            #             return json.dumps({'error': f'Target ReplicaSet {hpa_json.get['target_name']} not found'}), 404
-
-            #         # 更新ReplicaSet
-            #         self.etcd.put(rs_key, replica_sets)
-
+            
             # 保存更新
             self.etcd.put(key, hpa)
 
@@ -881,7 +844,7 @@ class ApiServer:
     def _release_hpa_control(self, namespace, replica_set_name):
         """移除ReplicaSet的HPA控制标记"""
         rs_key = self.etcd_config.REPLICA_SET_SPEC_KEY.format(
-            namespace=namespace, name=name
+            namespace=namespace, name=replica_set_name
         )
         rs = self.etcd.get(rs_key)
 
