@@ -8,14 +8,15 @@ services:
     environment:
       # 时区
       - TZ=Asia/Shanghai
-      # 允许匿名登录
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      # # 允许匿名登录
+      # - ALLOW_ANONYMOUS_LOGIN=yes
       # zk在集群中的序号（1~255）
       - ZOO_SERVER_ID=1
       # 端口
       - ZOO_PORT_NUMBER=2181
     volumes:
       - ./zookeeper:/bitnami/zookeeper
+    user: "1001:1001"  # 使用固定的用户ID
   kafka:
     image: bitnami/kafka:3.9.0
     container_name: kafka
@@ -37,6 +38,7 @@ services:
       - ./kafka/data:/bitnami/kafka/data
     depends_on:
       - zookeeper
+    user: "1001:1001"  # 使用固定的用户ID
   kafka-manager:
     image: sheepkiller/kafka-manager:stable
     container_name: kafka-manager

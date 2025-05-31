@@ -187,7 +187,7 @@ jobs:
       - name: Deploy to server
         run: |
           echo "部署到服务器..."
-          SERVER_TARGET="10.119.15.182"
+          # SERVER_TARGET="10.119.15.182"
           
           echo "检查网络连接..."
           ping -c 2 $SERVER_TARGET || echo "警告: 无法ping通服务器"
