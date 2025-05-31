@@ -15,7 +15,8 @@ services:
       # 端口
       - ZOO_PORT_NUMBER=2181
     volumes:
-      - ./zookeeper:/bitnami/zookeeper
+      - ./zookeeper-log:/bitnami/zookeeper/log
+      - ./zookeeper-data:/bitnami/zookeeper/data
     user: "1001:1001"  # 使用固定的用户ID
   kafka:
     image: bitnami/kafka:3.9.0
@@ -46,7 +47,8 @@ services:
       - 9000:9000
     environment:
       # zk地址
-      - ZK_HOSTS=47.103.11.77:2181
+      # - ZK_HOSTS=47.103.11.77:2181
+      - ZK_HOSTS=zookeeper:2181
       # 应用秘钥
       - APPLICATION_SECRET=xcrj_km_secret
       # km用户名
