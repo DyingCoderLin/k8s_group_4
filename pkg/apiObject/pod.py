@@ -34,10 +34,8 @@ class Pod():
                 version='1.25',
                 timeout=5
             )
-        # print(f'[INFO]enter docker client, base_url: {self.client.base_url}')
-        print(f"config: {self.config}")
         self.client.networks.prune()
-        print(f"labels: {self.config.labels}")
+        self.containers = []
 
         # --- 不使用cni网络 ---
         # self.network = self.client.networks.create(name = 'network_' + self.config.namespace, driver='bridge')
@@ -47,27 +45,25 @@ class Pod():
 
         # --- 使用cni网络 ---
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
-        
-        self.containers = [self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
-                                   command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-                                   network = self.config.cni_name)]
-        
-        print(f'[INFO]Pod init, pause container: {self.containers[0].name}')
-        print(f"container num: {len(self.config.containers)}")
+        containers = self.client.containers.list(all=True, filters={"name": pause_docker_name})
+        if len(containers) == 0:
+            self.containers.append(self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
+                               command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
+                               network = self.config.cni_name))
+        else:
+            self.containers.append(containers[0])
+
         for container in self.config.containers:
             try:
-                container_args = container.dockerapi_args()
-                if 'cpu_quota' in container_args and isinstance(container_args['cpu_quota'], float):
-                    container_args['cpu_quota'] = int(container_args['cpu_quota'])
-                print(f'[INFO]container args: {container_args}')
-                new_container = self.client.containers.run(
-                    **container_args,
-                    detach=True, 
+                args = container.dockerapi_args()
+                containers = self.client.containers.list(all=True, filters={"name": args['name']})
+                if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
+                    for container in containers: container.remove(force=True)
+                self.containers.append(self.client.containers.run(
+                    **args,
+                    detach=True,
                     network_mode=f'container:{pause_docker_name}'
-                )
-                print(new_container.status)
-                self.containers.append(new_container)
-                print(f'[INFO]container {container.name} created, id: {self.containers[-1].id}')
+                ))
             except Exception as e:
                 print(f'[ERROR]Failed to create container {container.name}: {str(e)}')
                 # 可选：添加更详细的错误信息
@@ -77,6 +73,7 @@ class Pod():
 
     # docker stop + docker rm
     def remove(self):
+        self.status = STATUS.KILLED
         for container in self.containers:
             self.client.api.stop(container.id)
             self.client.api.remove_container(container.id)
@@ -110,6 +107,8 @@ class Pod():
         self.status = STATUS.RUNNING
 
     def restart_crash(self):
+        if self.status == STATUS.KILLED:
+            return
         for container in self.containers:
             container.reload()
             if container.status == 'exited' and container.attrs['State']['ExitCode'] != 0:
