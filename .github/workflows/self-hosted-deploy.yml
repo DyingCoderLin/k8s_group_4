@@ -51,8 +51,8 @@ jobs:
 
           source ~/.bashrc
           
-          echo "测试网络连接..."
-          curl -I https://github.com || echo "GitHub连接测试完成"
+          # echo "测试网络连接..."
+          # curl -I https://github.com || echo "GitHub连接测试完成"
 
       - uses: actions/checkout@v3
       

@@ -8,8 +8,8 @@ services:
     environment:
       # 时区
       - TZ=Asia/Shanghai
-      # # 允许匿名登录
-      # - ALLOW_ANONYMOUS_LOGIN=yes
+      # 允许匿名登录
+      - ALLOW_ANONYMOUS_LOGIN=yes
       # zk在集群中的序号（1~255）
       - ZOO_SERVER_ID=1
       # 端口
