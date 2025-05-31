@@ -17,7 +17,7 @@ class GlobalConfig:
     
     @classmethod
     def get_docker_yml_path(cls):
-        return os.path.join(cls.get_project_root(), 'docker_ymls')
+        return os.path.join(cls.get_project_root(), 'yamls')
     
     @classmethod
     def get_test_file_path(cls):
