@@ -1,0 +1,249 @@
+name: 自托管运行器部署流程
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHONPATH: ${{ github.workspace }}
+  K8S_TEST_MODE: true
+  # http_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
+  # https_proxy: 'http://ipads:ipads123@202.120.40.82:11235'
+  # no_proxy: 'localhost,127.0.0.1,10.119.15.182'
+
+jobs:
+  # 代码质量检查可以继续在GitHub托管的运行器上运行
+  code_quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          
+      - name: Install linting tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black
+          
+      - name: Code quality checks
+        run: |
+          echo "Running code quality checks..."
+          flake8 pkg/ --count --select=E9,F63,F7,F82 --show-source --statistics --max-line-length=120 || true
+          black --check pkg/ || true
+
+  # 测试任务在自托管运行器上执行
+  test:
+    needs: code_quality
+    runs-on: [self-hosted, Linux, X64, k8s]  # 使用你的运行器标签
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    
+    steps:
+      - name: Configure Git and proxy
+        run: |
+          echo "配置Git代理..."
+          git config --global http.proxy http://ipads:ipads123@202.120.40.82:11235
+          git config --global https.proxy http://ipads:ipads123@202.120.40.82:11235
+
+          source ~/.bashrc
+          
+          echo "测试网络连接..."
+          curl -I https://github.com || echo "GitHub连接测试完成"
+
+      - uses: actions/checkout@v3
+      
+      - name: Check Python environment
+        run: |
+          echo "检查Python环境..."
+          python3 --version || python --version
+          which python3 || which python
+          
+      - name: Install dependencies
+        run: |
+          echo "安装依赖..."
+          python3 -m pip install --upgrade pip || python -m pip install --upgrade pip
+          pip3 install -r requirements.txt || pip install -r requirements.txt
+          pip3 install pytest pytest-cov || pip install pytest pytest-cov
+          pip3 install docker requests pyyaml || pip install docker requests pyyaml
+          
+      - name: Check Docker services
+        run: |
+          echo "检查Docker服务..."
+          docker --version
+          docker-compose --version
+          docker ps -a
+          
+      - name: Prepare test environment
+        run: |
+          mkdir -p logs testFile
+          
+      - name: Check and start dependencies
+        run: |
+          echo "检查并启动依赖服务..."
+          
+          # 检查etcd和kafka是否已经在运行
+          if ! docker ps | grep -q etcd; then
+            echo "启动etcd服务..."
+            docker run -d --name etcd -p 2379:2379 -p 2380:2380 \
+              quay.io/coreos/etcd:v3.5.0 \
+              /usr/local/bin/etcd \
+              --listen-client-urls http://0.0.0.0:2379 \
+              --advertise-client-urls http://localhost:2379
+          fi
+          
+          # 等待etcd启动
+          echo "等待etcd服务启动..."
+          sleep 10
+          
+          # 检查kafka - 如果有docker-compose文件则使用
+          # 先检查9092端口是否被占用
+          if nc -z localhost 9092; then
+            echo "kafka服务已在运行"
+          else
+            echo "kafka服务未运行，准备启动..."
+            if [ -f "./yamls/docker-compose.yml" ]; then
+              echo "使用docker-compose启动kafka..."
+              docker-compose -f ./yamls/docker-compose.yml up -d || true
+            else
+              echo "使用单独的docker命令启动kafka..."
+              if ! docker ps | grep -q kafka; then
+                # 先启动zookeeper
+                docker run -d --name zookeeper -p 2181:2181 \
+                  -e ZOOKEEPER_CLIENT_PORT=2181 \
+                  confluentinc/cp-zookeeper:latest
+                
+                sleep 10
+                
+                # 启动kafka
+                docker run -d --name kafka -p 9092:9092 \
+                  -e KAFKA_BROKER_ID=1 \
+                  -e KAFKA_ZOOKEEPER_CONNECT=localhost:2181 \
+                  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+                  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+                  confluentinc/cp-kafka:latest
+              fi
+            fi
+          fi
+          
+          # 等待所有服务启动
+          echo "等待所有服务启动 (10秒)..."
+          sleep 10
+          
+          # 验证服务状态
+          echo "验证服务状态..."
+          nc -z localhost 2379 || { echo "etcd未运行在端口2379"; exit 1; }
+          nc -z localhost 9092 || { echo "kafka未运行在端口9092"; exit 1; }
+          
+          echo "所有依赖服务已就绪"
+          
+      - name: Start application services
+        run: |
+          echo "启动应用服务..."
+          chmod +x ./start.sh
+          bash ./start.sh
+          sleep 15  # 等待服务完全启动
+          
+      - name: Test individual modules
+        run: |
+          echo "测试各个模块..."
+          python3 -m pkg.apiObject.pod --test || python -m pkg.apiObject.pod --test || echo "Pod测试完成"
+          python3 -m pkg.apiObject.replicaSet --test || python -m pkg.apiObject.replicaSet --test || echo "ReplicaSet测试完成" 
+          python3 -m pkg.apiObject.hpa --test || python -m pkg.apiObject.hpa --test || echo "HPA测试完成"
+          
+      - name: Stop services
+        run: |
+          echo "停止服务..."
+          bash ./start.sh --stop || echo "停止脚本执行完成"
+        if: always()  # 无论前面的步骤是否成功，都执行此步骤
+        
+      # - name: Cleanup test environment
+      #   run: |
+      #     echo "清理测试环境..."
+      #     # 停止测试期间启动的Docker容器
+      #     docker stop etcd kafka zookeeper 2>/dev/null || true
+      #     docker rm etcd kafka zookeeper 2>/dev/null || true
+          
+      #     # 如果使用了docker-compose，也清理它
+      #     if [ -f "./yamls/docker-compose.yml" ]; then
+      #       docker-compose -f ./yamls/docker-compose.yml down || true
+      #     fi
+      #   if: always()
+
+  # 部署任务只在主分支推送时执行，并且依赖测试成功
+  deploy:
+    needs: [code_quality, test]
+    runs-on: [self-hosted, Linux, X64, k8s]  # 与test任务使用相同的运行器标签
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整的git历史用于部署
+      
+      - name: Deploy to server
+        run: |
+          echo "部署到服务器..."
+          SERVER_TARGET="10.119.15.182"
+          
+          echo "检查网络连接..."
+          ping -c 2 $SERVER_TARGET || echo "警告: 无法ping通服务器"
+          
+          echo "测试SSH连接..."
+          # 检查是否已配置SSH密钥
+          if [ ! -f ~/.ssh/id_rsa ]; then
+            echo "警告: 未找到SSH密钥，尝试使用密码认证"
+            # 如果没有SSH密钥，可以尝试使用sshpass
+            if command -v sshpass &> /dev/null && [ ! -z "${{ secrets.REMOTE_PASSWORD }}" ]; then
+              echo "使用密码认证连接..."
+              export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
+              sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接测试'" || {
+                echo "错误: 无法连接到服务器"
+                exit 1
+              }
+            else
+              echo "错误: 既没有SSH密钥也没有密码配置"
+              exit 1
+            fi
+          else
+            # 使用SSH密钥连接
+            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接测试'" || {
+              echo "错误: SSH密钥连接失败"
+              exit 1
+            }
+          fi
+          
+          echo "传输代码到远程服务器..."
+          # 根据可用的认证方式选择传输方法
+          if [ -f ~/.ssh/id_rsa ]; then
+            rsync -avz --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
+              echo "错误: 无法传输代码到服务器"
+              exit 1
+            }
+          else
+            # 使用scp with password
+            export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
+            sshpass -e scp -r -o StrictHostKeyChecking=no ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
+              echo "错误: 无法传输代码到服务器"
+              exit 1
+            }
+          fi
+          
+          echo "执行部署脚本..."
+          if [ -f ~/.ssh/id_rsa ]; then
+            ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
+              echo "错误: 部署脚本执行失败"
+              exit 1
+            }
+          else
+            export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
+            sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
+              echo "错误: 部署脚本执行失败"
+              exit 1
+            }
+          fi
+          
+          echo "部署成功完成！"

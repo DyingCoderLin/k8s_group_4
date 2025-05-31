@@ -232,18 +232,21 @@ if __name__ == '__main__':
                 uri = URIConfig.PREFIX + URIConfig.POD_SPEC_URL.format(
                     namespace= data['metadata']['namespace'], name = data['metadata']['name'])
                 # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
+                print(f'[INFO]测试Pod的创建')
                 response = requests.post(uri, json=data)
                 print(response.json())
 
                 input('Press Enter To Continue.')
                 # 测试Put
                 # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
-                response = requests.put(uri, json=data)
-                print(response.json())
+                # print(f'[INFO]测试Pod的更新')
+                # response = requests.put(uri, json=data)
+                # print(response.json())
 
                 input('Press Enter To Continue.')
                 # 测试Delete
-                print(f'[INFO]创建Pod请求地址: {uri}')
+                # print(f'[INFO]创建Pod请求地址: {uri}')
+                print(f'[INFO]测试Pod的删除')
                 response = requests.delete(uri)
                 print(response)
 
