@@ -1,4 +1,5 @@
 import requests
+import pickle
 import json
 from requests.exceptions import RequestException
 import time
@@ -68,7 +69,10 @@ class ApiClient:
                 
                 # 尝试解析JSON响应
                 if response.content:
-                    return response.json()
+                    try:
+                        return response.json()
+                    except: # wcc: 如果无法json，直接作为python类解析（或者python类的列表）
+                        return pickle.loads(response.content)
                 return None
                 
             except (RequestException, json.JSONDecodeError) as e:

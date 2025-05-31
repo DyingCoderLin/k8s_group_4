@@ -1,3 +1,8 @@
+from pkg.config.podConfig import PodConfig
+from pkg.config.nodeConfig import NodeConfig
+from pkg.config.replicaSetConfig import ReplicaSetConfig
+from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
+
 class EtcdConfig:
     # Etcd 地址
 
@@ -9,14 +14,21 @@ class EtcdConfig:
 
     # -------------------- 资源键值定义 --------------------
     NODES_KEY = "/api/v1/nodes"
-    NODES_VALUE = "List[NodeConfig]"
+    NODE_SPEC_KEY = "/api/v1/nodes/{name}"
+    NODES_VALUE = NodeConfig
 
-    PODS_KEY = "/api/v1/namespaces/<namespace>/pods"
-    PODS_VALUE = "List[PodConfig]"
-    
-    REPLICA_SETS_KEY = "/api/v1/namespaces/<namespace>/replicasets"
-    REPLICA_SETS_VALUE = "List[ReplicaSetConfig]"
+    GLOBAL_PODS_KEY = "/api/v1/namespaces/pods"
+    PODS_KEY = "/api/v1/namespaces/pods/{namespace}"
+    POD_SPEC_KEY = "/api/v1/namespaces/pods/{namespace}/{name}"
+    PODS_VALUE = PodConfig
+
+    GLOBAL_REPLICA_SETS_KEY = "/api/v1/namespaces/replicasets"
+    REPLICA_SETS_KEY = "/api/v1/namespaces/replicasets/{namespace}"
+    REPLICA_SET_SPEC_KEY = "/api/v1/namespaces/replicasets/{namespace}/{name}"
+    REPLICA_SETS_VALUE = ReplicaSetConfig
     
     # HPA相关
-    HPA_KEY = "/api/v1/namespaces/<namespace>/hpa"
-    HPA_VALUE = "List[HorizontalPodAutoscalerConfig]"
+    GLOBAL_HPA_KEY = "/api/v1/namespaces/hpa"
+    HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
+    HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
+    HPA_VALUE = HorizontalPodAutoscalerConfig

@@ -15,6 +15,7 @@ class PodConfig():
         spec = arg_json.get('spec')
         volumes = spec.get('volumes', [])
         containers = spec.get('containers', [])
+        self.node_selector = spec.get('nodeSelector', {})
         self.volume, self.containers = dict(), []
 
         # 目前只支持hostPath，并且忽略type字段
@@ -25,9 +26,9 @@ class PodConfig():
             self.containers.append(ContainerConfig(self.volume, container))
 
         # --- running information ---
-        self.overlay_name = None
+        self.cni_name = None
         self.subnet_ip = None
-        self.node_id = None
+        self.node_name = None
         self.status = None
         
     def to_dict(self):
@@ -41,9 +42,9 @@ class PodConfig():
                 'volumes': self.volume,
                 'containers': [container.to_dict() for container in self.containers]
             },
-            'overlay_name': self.overlay_name,
+            'cni_name': self.cni_name,
             'subnet_ip': self.subnet_ip,
-            'node_id': str(self.node_id),
+            'node_name': str(self.node_name),
             'status': self.status
         }
 
