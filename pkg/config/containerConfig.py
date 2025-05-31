@@ -10,7 +10,7 @@ class ContainerConfig:
             port = dict()
             for port_json in arg_json.get("port"):
                 protocol = port_json.get("protocol", "tcp").lower()
-                port[(f"{port_json.get('containerPort')}/" f"{protocol}")] = (
+                port[f"{port_json.get('containerPort')}/{protocol}"] = (
                     port_json.get("hostPort", None)
                 )
             self.port["ports"] = port
