@@ -235,21 +235,19 @@ jobs:
             python3 -m pip install --upgrade pip || python -m pip install --upgrade pip
             pip3 install -r requirements.txt || pip install -r requirements.txt
             
-            # 启动应用服务
-            echo "启动应用服务..."
-            chmod +x ./start.sh
-            bash ./start.sh
+            # # 启动应用服务
+            # echo "启动应用服务..."
+            # chmod +x ./start.sh
+            # bash ./start.sh
             
             # 验证部署
             echo "验证部署状态..."
             sleep 10
             nc -z localhost 2379 && echo "✓ etcd运行正常"
             nc -z localhost 9092 && echo "✓ kafka运行正常"
-            
-            # 这里可以添加你的应用健康检查
-            # 比如检查特定端口或调用健康检查API
-            echo "应用服务验证..."
-            # curl -f http://localhost:YOUR_APP_PORT/health || echo "应用健康检查失败"
+
+            # echo "应用服务验证..."
+            # # curl -f http://localhost:5050/health || echo "应用健康检查失败"
           fi
           
           echo "部署完成！"
@@ -262,9 +260,9 @@ jobs:
           echo "检查服务状态..."
           docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
           
-          # 检查端口监听状态
-          echo "检查端口状态..."
-          netstat -tlnp | grep -E ':(2379|9092|YOUR_APP_PORT)' || echo "端口检查完成"
+          # # 检查端口监听状态
+          # echo "检查端口状态..."
+          # netstat -tlnp | grep -E ':(2379|9092|5050)' || echo "端口检查完成"
           
           # 可以添加更多验证步骤
           echo "部署验证完成！"
