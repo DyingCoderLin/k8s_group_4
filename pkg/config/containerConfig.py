@@ -46,14 +46,17 @@ class ContainerConfig:
             self.volumes["volumes"] = volumes
 
     def dockerapi_args(self):
-        return {
-            "image": self.image,
-            "name": self.name,
-            "command": self.command + self.args,
+        container_args = {
+            'image': self.image,
+            'name': self.name,
+            'command': self.command + self.args,
             **self.volumes,
             **self.port,
             **self.resources,
         }
+        if 'cpu_quota' in container_args and isinstance(container_args['cpu_quota'], float):
+            container_args['cpu_quota'] = int(container_args['cpu_quota'])
+        return container_args
 
     def to_dict(self):
         """
