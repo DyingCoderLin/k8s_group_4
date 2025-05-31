@@ -268,7 +268,7 @@ class ApiServer:
                 self.kafka_config.SCHEDULER_TOPIC, value=pickle.dumps(new_pod_config)
             )
             return json.dumps({"message": "Pod is creating."}), 200
-        except e:
+        except Exception as e:
             print(f"[ERROR]Scheduler error {e}, maybe scheduler is offline.")
             return json.dumps({"error": "Scheduler is not ready"}), 409
 
