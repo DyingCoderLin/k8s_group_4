@@ -82,7 +82,7 @@ docker run -d \
         # kk配置监听器
         - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
         # kk配置发布到zk的监听器 要公网访问需要配置公网ip 可以配置私网公网分流
-        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://47.103.11.77:9092
+        - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://<host-ip>:9092
       volumes:
         - ./kafka/data:/bitnami/kafka/data
       depends_on:

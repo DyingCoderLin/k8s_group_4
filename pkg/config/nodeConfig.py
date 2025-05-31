@@ -14,6 +14,7 @@ class NodeConfig():
         self.json = arg_json
 
         self.status = None
+        self.heartbeat_time = None
         self.kafka_server = None
         self.kafka_topic = None
 
