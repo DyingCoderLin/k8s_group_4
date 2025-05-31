@@ -17,7 +17,7 @@ services:
     volumes:
       - ./zookeeper-log:/bitnami/zookeeper/log
       - ./zookeeper-data:/bitnami/zookeeper/data
-    # user: "1001:1001"  # 使用固定的用户ID
+    user: "root"  # 使用固定的用户ID
   kafka:
     image: bitnami/kafka:3.9.0
     container_name: kafka
