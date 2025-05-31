@@ -37,6 +37,7 @@ services:
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://47.103.11.77:9092
     volumes:
       - ./kafka/data:/bitnami/kafka/data
+    user: "root"  # 使用固定的用户ID
     depends_on:
       - zookeeper
     # user: "1001:1001"  # 使用固定的用户ID
