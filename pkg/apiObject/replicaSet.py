@@ -338,7 +338,7 @@ def test_replica_set(ci_mode=False):
     # 如果测试配置文件存在，则加载它
     if os.path.exists(config_file):
         print(f"[INFO]正在加载测试配置文件: {config_file}")
-        with open(config_file, 'r') as f:
+        with open(config_file, 'r', encoding='utf-8') as f:
             config_dict = yaml.safe_load(f)
     else:
         # 否则使用默认的测试配置
@@ -466,7 +466,7 @@ def test_replica_set(ci_mode=False):
             assert len(updated_rs['pod_instances'][0]) == updated_rs['current_replicas'][0] and updated_rs['current_replicas'][0] == 3, "Pod创建数量不匹配"
             print("[PASS]验证Pod创建成功")
         
-        # return
+            return
         
             # 测试6: 删除ReplicaSet
             print("\n[TEST]6. 删除ReplicaSet...")

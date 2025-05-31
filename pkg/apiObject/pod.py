@@ -11,14 +11,15 @@ import os
 import yaml
 
 class STATUS():
+    CREATING = 'CREATING'
     STOPPED = 'STOPPED'
     RUNNING = 'RUNNING'
     KILLED = 'KILLED'
 
 class Pod():
     def __init__(self, config):
+        self.status = STATUS.CREATING
         self.config = config
-        self.status = STATUS.RUNNING
         print(f'[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}')
         
         if platform.system() == "Windows":
@@ -38,18 +39,18 @@ class Pod():
         self.client.networks.prune()
         print(f"labels: {self.config.labels}")
 
-        # --- 不使用overlay网络 ---
+        # --- 不使用cni网络 ---
         # self.network = self.client.networks.create(name = 'network_' + self.config.namespace, driver='bridge')
         # self.containers = [self.client.containers.run(image = 'busybox', name = 'pause', detach = True,
         #                            command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
         #                            network = self.network.name)]
 
-        # --- 使用overlay网络 ---
+        # --- 使用cni网络 ---
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
         
         self.containers = [self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
                                    command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-                                   network = self.config.overlay_name)]
+                                   network = self.config.cni_name)]
         
         print(f'[INFO]Pod init, pause container: {self.containers[0].name}')
         print(f"container num: {len(self.config.containers)}")
@@ -64,6 +65,7 @@ class Pod():
                     detach=True, 
                     network_mode=f'container:{pause_docker_name}'
                 )
+                print(new_container.status)
                 self.containers.append(new_container)
                 print(f'[INFO]container {container.name} created, id: {self.containers[-1].id}')
             except Exception as e:
@@ -71,6 +73,7 @@ class Pod():
                 # 可选：添加更详细的错误信息
                 import traceback
                 print(f'[DEBUG]详细错误: {traceback.format_exc()}')
+        self.status = STATUS.RUNNING
 
     # docker stop + docker rm
     def remove(self):
@@ -100,6 +103,12 @@ class Pod():
                 raise e
         self.status = STATUS.KILLED
 
+    # docker restart
+    def restart(self):
+        for container in self.containers:
+            self.client.api.restart(container.id)
+        self.status = STATUS.RUNNING
+
     def restart_crash(self):
         for container in self.containers:
             container.reload()
@@ -107,11 +116,27 @@ class Pod():
                 print(f'[INFO]restart abnormally exited container {container.name}')
                 self.client.api.restart(container.id)
 
-    # docker restart
-    def restart(self):
+    def refresh_status(self):
+        exited_normal, creating = 0, 0
         for container in self.containers:
-            self.client.api.restart(container.id)
-        self.status = STATUS.RUNNING
+            container.reload()
+            if container.status == 'exited' and container.attrs['State']['ExitCode'] == 0:
+                exited_normal += 1
+            elif container.status == 'creating':
+                creating += 1
+
+        # STOPPED: 如果全部正常退出，那么Pod处于停止状态
+        # CREATING: 如果有正在创建，则处于创建状态
+        # RUNNING: 否则有异常退出的容器（根据Pod自动重启的原则处于Running状态）或者都在正常运行
+        # KILLED: 无法判断，调用killed的时候手动设置（但是没有考虑这种情况，因为还没有实现kill接口）
+        if exited_normal == len(self.containers):
+            self.status = STATUS.STOPPED
+        elif creating == 0:
+            self.status = STATUS.RUNNING
+        else:
+            self.status = STATUS.CREATING
+        return self.status
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Pod management')

@@ -82,6 +82,10 @@ class URIConfig:
     WORKFLOW_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/workflows/<name>")
     WORKFLOW_SPEC_STATUS_URL = URIString("/apis/v1/namespaces/<namespace>/workflows/<name>/status")
 
+    # Scheduler 相关
+    SCHEDULER_URL = URIString('/api/v1/scheduler')
+    SCHEDULER_POD_URL = URIString('/api/v1/namespaces/<namespace>/pods/<name>/scheduler/<node_name>')
+
     # -------------------- 参数定义 --------------------
     URL_PARAM_NAME = "name"
     URL_PARAM_NAMESPACE = "namespace"

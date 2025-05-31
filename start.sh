@@ -93,7 +93,15 @@ pids+=($api_server_pid)
 echo "${BLUE}等待 ApiServer 启动 (5秒)...${NC}"
 sleep 5
 
-# 2. 启动 Node（会自动启动 Kubelet）
+# 2. 启动 Scheduler
+scheduler_pid=$(start_component "Scheduler" "python3 -m pkg.controller.scheduler" "${PROJECT_ROOT}/logs/scheduler.log")
+pids+=(scheduler_pid)
+
+# 等待 Scheduler 完全启动
+echo "${BLUE}等待 Sheduler 启动 (5秒)...${NC}"
+sleep 5
+
+# 3. 启动 Node（会自动启动 Kubelet）
 node_pid=$(start_component "Node" "python3 -m pkg.apiObject.node" "${PROJECT_ROOT}/logs/node.log")
 pids+=($node_pid)
 
@@ -101,11 +109,11 @@ pids+=($node_pid)
 echo "${BLUE}等待 Node 和 Kubelet 启动 (3秒)...${NC}"
 sleep 3
 
-# 3. 启动 ReplicaSetController
+# 4. 启动 ReplicaSetController
 rs_controller_pid=$(start_component "ReplicaSetController" "python3 -m pkg.controller.rsStarter" "${PROJECT_ROOT}/logs/replicaset_controller.log")
 pids+=($rs_controller_pid)
 
-# 4. 启动 HPAController
+# 5. 启动 HPAController
 hpa_controller_pid=$(start_component "HPAController" "python3 -m pkg.controller.hpaStarter" "${PROJECT_ROOT}/logs/hpa_controller.log")
 pids+=($hpa_controller_pid)
 
