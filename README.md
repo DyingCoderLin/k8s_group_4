@@ -140,6 +140,8 @@ make
 sudo make install
 sudo ldconfig
 pip install --no-binary :all: confluent-kafka
+# 给容器授权
+sudo chown -R 1001:1001 /home/chenglianglin/actions-runner/_work/k8s_group_4/k8s_group_4/yamls
 ```
 - 配置服务器上的runner
   - 首先创建一个非root用户，并给予它/home/<username>下文件的创建、修改权限
