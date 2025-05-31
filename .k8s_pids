@@ -7,3 +7,8 @@
 79658 Node
 79676 ReplicaSetController
 79678 HPAController
+82274 ApiServer
+82301 Scheduler
+82326 Node
+82340 ReplicaSetController
+82342 HPAController
