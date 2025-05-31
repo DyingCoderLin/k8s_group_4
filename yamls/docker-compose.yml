@@ -34,7 +34,7 @@ services:
       # kk配置监听器
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
       # kk配置发布到zk的监听器 要公网访问需要配置公网ip 可以配置私网公网分流
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://47.103.11.77:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://10.119.15.182:9092
     volumes:
       - ./kafka/data:/bitnami/kafka/data
     user: "root"  # 使用固定的用户ID
@@ -48,8 +48,7 @@ services:
       - 9000:9000
     environment:
       # zk地址
-      # - ZK_HOSTS=47.103.11.77:2181
-      - ZK_HOSTS=zookeeper:2181
+      - ZK_HOSTS=10.119.15.182:2181
       # 应用秘钥
       - APPLICATION_SECRET=xcrj_km_secret
       # km用户名
