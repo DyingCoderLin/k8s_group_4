@@ -184,66 +184,88 @@ jobs:
         with:
           fetch-depth: 0  # 获取完整的git历史用于部署
       
-      - name: Deploy to server
+      - name: Deploy application locally
         run: |
-          echo "部署到服务器..."
-          # SERVER_TARGET="10.119.15.182"
+          echo "开始本地部署..."
           
-          echo "检查网络连接..."
-          ping -c 2 $SERVER_TARGET || echo "警告: 无法ping通服务器"
-          
-          echo "测试SSH连接..."
-          # 检查是否已配置SSH密钥
-          if [ ! -f ~/.ssh/id_rsa ]; then
-            echo "警告: 未找到SSH密钥，尝试使用密码认证"
-            # 如果没有SSH密钥，可以尝试使用sshpass
-            if command -v sshpass &> /dev/null && [ ! -z "${{ secrets.REMOTE_PASSWORD }}" ]; then
-              echo "使用密码认证连接..."
-              export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
-              sshpass -e ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接测试'" || {
-                echo "错误: 无法连接到服务器"
-                exit 1
-              }
-            else
-              echo "错误: 既没有SSH密钥也没有密码配置"
-              exit 1
+          # 检查部署脚本是否存在
+          if [ -f "./deploy.sh" ]; then
+            echo "找到部署脚本，执行部署..."
+            chmod +x ./deploy.sh
+            bash ./deploy.sh
+          else
+            echo "未找到deploy.sh，执行默认部署步骤..."
+            
+            # 停止现有服务
+            echo "停止现有服务..."
+            bash ./start.sh --stop 2>/dev/null || echo "停止脚本执行完成"
+            
+            # 确保依赖服务正在运行
+            echo "检查依赖服务..."
+            if ! nc -z localhost 2379; then
+              echo "etcd未运行，启动etcd..."
+              docker run -d --name etcd -p 2379:2379 -p 2380:2380 \
+                quay.io/coreos/etcd:v3.5.0 \
+                /usr/local/bin/etcd \
+                --listen-client-urls http://0.0.0.0:2379 \
+                --advertise-client-urls http://localhost:2379
+              sleep 10
             fi
-          else
-            # 使用SSH密钥连接
-            ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SERVER_USER }}@$SERVER_TARGET "echo '连接测试'" || {
-              echo "错误: SSH密钥连接失败"
-              exit 1
-            }
+            
+            if ! nc -z localhost 9092; then
+              echo "kafka未运行，启动kafka..."
+              docker-compose -f ./yamls/docker-compose.yml up -d zookeeper kafka || {
+                echo "docker-compose启动失败，使用docker命令启动..."
+                docker run -d --name zookeeper -p 2181:2181 \
+                  -e ZOOKEEPER_CLIENT_PORT=2181 \
+                  confluentinc/cp-zookeeper:latest
+                sleep 10
+                docker run -d --name kafka -p 9092:9092 \
+                  -e KAFKA_BROKER_ID=1 \
+                  -e KAFKA_ZOOKEEPER_CONNECT=localhost:2181 \
+                  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+                  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+                  confluentinc/cp-kafka:latest
+              }
+              sleep 20
+            fi
+            
+            # 安装/更新依赖
+            echo "安装/更新Python依赖..."
+            python3 -m pip install --upgrade pip || python -m pip install --upgrade pip
+            pip3 install -r requirements.txt || pip install -r requirements.txt
+            
+            # 启动应用服务
+            echo "启动应用服务..."
+            chmod +x ./start.sh
+            bash ./start.sh
+            
+            # 验证部署
+            echo "验证部署状态..."
+            sleep 10
+            nc -z localhost 2379 && echo "✓ etcd运行正常"
+            nc -z localhost 9092 && echo "✓ kafka运行正常"
+            
+            # 这里可以添加你的应用健康检查
+            # 比如检查特定端口或调用健康检查API
+            echo "应用服务验证..."
+            # curl -f http://localhost:YOUR_APP_PORT/health || echo "应用健康检查失败"
           fi
           
-          echo "传输代码到远程服务器..."
-          # 根据可用的认证方式选择传输方法
-          if [ -f ~/.ssh/id_rsa ]; then
-            rsync -avz --exclude '.git' --exclude 'node_modules' --delete ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
-              echo "错误: 无法传输代码到服务器"
-              exit 1
-            }
-          else
-            # 使用scp with password
-            export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
-            sshpass -e scp -r -o StrictHostKeyChecking=no ./ ${{ secrets.SERVER_USER }}@$SERVER_TARGET:/root/deploy/ || {
-              echo "错误: 无法传输代码到服务器"
-              exit 1
-            }
-          fi
+          echo "部署完成！"
+      
+      - name: Post-deployment verification
+        run: |
+          echo "执行部署后验证..."
           
-          echo "执行部署脚本..."
-          if [ -f ~/.ssh/id_rsa ]; then
-            ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
-              echo "错误: 部署脚本执行失败"
-              exit 1
-            }
-          else
-            export SSHPASS="${{ secrets.REMOTE_PASSWORD }}"
-            sshpass -e ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@$SERVER_TARGET "cd /root/deploy && chmod +x ./deploy.sh && bash ./deploy.sh" || {
-              echo "错误: 部署脚本执行失败"
-              exit 1
-            }
-          fi
+          # 检查关键服务状态
+          echo "检查服务状态..."
+          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
           
-          echo "部署成功完成！"
+          # 检查端口监听状态
+          echo "检查端口状态..."
+          netstat -tlnp | grep -E ':(2379|9092|YOUR_APP_PORT)' || echo "端口检查完成"
+          
+          # 可以添加更多验证步骤
+          echo "部署验证完成！"
+        if: always()  # 无论部署是否成功都执行验证

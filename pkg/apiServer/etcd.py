@@ -1,7 +1,8 @@
 import etcd3
 import pickle
 
-class Etcd():
+
+class Etcd:
     def __init__(self, host, port):
         self.etcd = etcd3.client(host=host, port=port)
 
@@ -11,7 +12,7 @@ class Etcd():
         """
         keys = self.etcd.get_all()
         for value, metadata in keys:
-            key = metadata.key.decode('utf-8')
+            key = metadata.key.decode("utf-8")
             self.etcd.delete(key)
 
     def get_prefix(self, prefix):
@@ -23,7 +24,7 @@ class Etcd():
 
         return [pickle.loads(v) if v else None for v, meta in range_response]
 
-    def get(self, key, ret_meta = False):
+    def get(self, key, ret_meta=False):
         """
         获取一个python类，如果没有返回None，不会报错
         场景：修改某个pod信息，None的判断在接口之外
