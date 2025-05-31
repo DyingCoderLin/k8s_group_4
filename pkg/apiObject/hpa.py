@@ -560,7 +560,7 @@ def test_hpa(ci_mode=False):
 
             print(f"[PASS]获取HPA成功: {retrieved_hpa.name}")
 
-            return
+            # return
 
             # 删除HPA
             print("\n[TEST]删除HPA...")
