@@ -100,26 +100,32 @@ jobs:
           sleep 10
           
           # 检查kafka - 如果有docker-compose文件则使用
-          if [ -f "./yamls/docker-compose.yml" ]; then
-            echo "使用docker-compose启动kafka..."
-            docker-compose -f ./yamls/docker-compose.yml up -d || true
+          # 先检查9092端口是否被占用
+          if nc -z localhost 9092; then
+            echo "kafka服务已在运行"
           else
-            echo "使用单独的docker命令启动kafka..."
-            if ! docker ps | grep -q kafka; then
-              # 先启动zookeeper
-              docker run -d --name zookeeper -p 2181:2181 \
-                -e ZOOKEEPER_CLIENT_PORT=2181 \
-                confluentinc/cp-zookeeper:latest
-              
-              sleep 10
-              
-              # 启动kafka
-              docker run -d --name kafka -p 9092:9092 \
-                -e KAFKA_BROKER_ID=1 \
-                -e KAFKA_ZOOKEEPER_CONNECT=localhost:2181 \
-                -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
-                -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
-                confluentinc/cp-kafka:latest
+            echo "kafka服务未运行，准备启动..."
+            if [ -f "./yamls/docker-compose.yml" ]; then
+              echo "使用docker-compose启动kafka..."
+              docker-compose -f ./yamls/docker-compose.yml up -d || true
+            else
+              echo "使用单独的docker命令启动kafka..."
+              if ! docker ps | grep -q kafka; then
+                # 先启动zookeeper
+                docker run -d --name zookeeper -p 2181:2181 \
+                  -e ZOOKEEPER_CLIENT_PORT=2181 \
+                  confluentinc/cp-zookeeper:latest
+                
+                sleep 10
+                
+                # 启动kafka
+                docker run -d --name kafka -p 9092:9092 \
+                  -e KAFKA_BROKER_ID=1 \
+                  -e KAFKA_ZOOKEEPER_CONNECT=localhost:2181 \
+                  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+                  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+                  confluentinc/cp-kafka:latest
+              fi
             fi
           fi
           
