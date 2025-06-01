@@ -1,4 +1,6 @@
 import requests
+import sys
+import os
 import pickle
 from threading import Thread
 from time import sleep
@@ -18,6 +20,10 @@ class Node:
     def __init__(self, node_config: NodeConfig, uri_config: URIConfig = None):
         self.config = node_config
         self.uri_config = uri_config
+        
+        # 设置标准输出无缓冲，确保日志实时写入
+        sys.stdout.reconfigure(write_through=True)
+        sys.stderr.reconfigure(write_through=True)
 
     def run(self):
         uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(
@@ -53,9 +59,17 @@ class Node:
 
 if __name__ == "__main__":
     print("[INFO]Testing Node.")
+    # 设置标准输出无缓冲，确保日志实时写入
+    sys.stdout.reconfigure(write_through=True)
+    sys.stderr.reconfigure(write_through=True)
+    
+    # 记录日志文件路径
+    log_file = os.environ.get('NODE_LOG_FILE')
+    if log_file:
+        print(f"[INFO]Node logs will be written to: {log_file}")
+        
     import yaml
     from pkg.config.globalConfig import GlobalConfig
-    import os
 
     global_config = GlobalConfig()
     file_yaml = "node-1.yaml"
