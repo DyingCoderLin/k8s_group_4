@@ -3,9 +3,10 @@ import pickle
 import random
 from time import sleep
 from confluent_kafka import Consumer, KafkaError
-from pkg.apiServer.apiClient import ApiClient
 from abc import ABC, abstractmethod
 
+from pkg.apiServer.apiClient import ApiClient
+from pkg.apiObject.node import STATUS
 
 class Strategy(ABC):
     """抽象策略基类，所有方法需由子类实现"""
@@ -117,6 +118,10 @@ class FilterSelect(Strategy):
             return True
 
         filter_list = self.list
+        # 根据node状态是否为ONLINE筛选
+        filter_list = [
+            node for node in filter_list if node.status == STATUS.ONLINE
+        ]
 
         # 根据node的污点标签筛选。对于给定的key，value必须满足
         filter_list = [
