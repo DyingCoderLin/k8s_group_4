@@ -10,22 +10,29 @@ class ServiceConfig:
         
         # Service规格
         spec = arg_json.get("spec", {})
+        # 默认为ClusterIP类型
         self.type = spec.get("type", "ClusterIP")  # 支持ClusterIP和NodePort
         self.cluster_ip = spec.get("clusterIP", None)  # 虚拟IP，由系统分配
         self.selector = spec.get("selector", {})  # Pod选择器
-        self.ports = spec.get("ports", [])  # 端口配置
+        
+        # 端口配置 - 只支持一个端口
+        ports = spec.get("ports", [])
+        if not ports:
+            raise ValueError("Service must have at least one port configuration")
+        if len(ports) > 1:
+            raise ValueError("Only one port configuration is supported")
+            
+        port_config = ports[0]
+        self.port_name = port_config.get("name", "default")
+        self.port = int(port_config.get("port", 80))
+        self.target_port = int(port_config.get("targetPort", 80))
+        self.protocol = port_config.get("protocol", "TCP")
         
         # NodePort特定配置
-        self.node_port = None
-        if self.type == "NodePort":
-            for port_config in self.ports:
-                if "nodePort" in port_config:
-                    self.node_port = port_config["nodePort"]
-                    break
-        
-        # 运行时状态
-        self.status = "Pending"  # Pending, Running, Failed
-        
+        self.node_port = port_config.get("nodePort") if self.type == "NodePort" else None
+        if self.node_port:
+            self.node_port = int(self.node_port)
+                
     def to_dict(self):
         """转换为字典格式"""
         return {
@@ -38,28 +45,31 @@ class ServiceConfig:
                 "type": self.type,
                 "clusterIP": self.cluster_ip,
                 "selector": self.selector,
-                "ports": self.ports,
-            },
-            "status": self.status
+                "ports": [{
+                    "name": self.port_name,
+                    "port": self.port,
+                    "targetPort": self.target_port,
+                    "protocol": self.protocol,
+                    "nodePort": self.node_port if self.type == "NodePort" else None
+                }]
+            }
         }
     
-    def get_port_config(self, target_port=None):
+    def get_port_config(self):
         """获取端口配置"""
-        if not self.ports:
-            return None
-            
-        if target_port is None:
-            return self.ports[0]  # 返回第一个端口配置
-            
-        for port_config in self.ports:
-            if port_config.get("targetPort") == target_port or port_config.get("port") == target_port:
-                return port_config
-        return None
+        return {
+            "name": self.port_name,
+            "port": self.port,
+            "targetPort": self.target_port,
+            "protocol": self.protocol,
+            "nodePort": self.node_port
+        }
     
     def matches_pod(self, pod_labels):
         """检查Pod标签是否匹配Service的选择器"""
         if not self.selector or not pod_labels:
             return False
+        print(f"[INFO]ServiceConfig.matches_pod: {self.selector} vs {pod_labels}")
             
         for key, value in self.selector.items():
             if key not in pod_labels or pod_labels[key] != value:

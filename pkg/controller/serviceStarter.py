@@ -24,8 +24,7 @@ from pkg.apiServer.etcd import Etcd
 class ServiceStarter:
     """Service控制器启动器"""
     
-    def __init__(self, namespace="default"):
-        self.namespace = namespace
+    def __init__(self):
         self.service_controller = None
         self.etcd_client = None
         self.running = False
@@ -56,23 +55,16 @@ class ServiceStarter:
         try:
             self.logger.info("启动Service控制器...")
             
-            # 初始化etcd客户端
-            etcd_config = EtcdConfig()
-            self.etcd_client = Etcd(host=etcd_config.HOST, port=etcd_config.PORT)
-            
             # 初始化Service控制器
             uri_config = URIConfig()
             self.service_controller = ServiceController(
                 etcd_client=self.etcd_client,
                 uri_config=uri_config,
-                namespace=self.namespace
             )
             
             # 启动控制器
             self.service_controller.start()
             self.running = True
-            
-            self.logger.info(f"Service控制器已启动，管理namespace: {self.namespace}")
             
             # 保持运行
             while self.running:
@@ -98,16 +90,11 @@ class ServiceStarter:
 
 def main():
     """主函数"""
-    # 解析命令行参数
-    namespace = "default"
-    if len(sys.argv) > 1:
-        namespace = sys.argv[1]
-    
     # 创建日志目录
     os.makedirs('logs', exist_ok=True)
     
     # 启动Service控制器
-    starter = ServiceStarter(namespace)
+    starter = ServiceStarter()
     starter.setup_signal_handlers()
     
     try:

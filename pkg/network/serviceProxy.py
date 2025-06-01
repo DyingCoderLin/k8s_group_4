@@ -1,5 +1,7 @@
 import subprocess
 import logging
+import platform
+import shutil
 from typing import List, Optional
 
 
@@ -10,10 +12,25 @@ class ServiceProxy:
         self.logger = logging.getLogger(__name__)
         self.nat_chain = "KUBE-SERVICES"
         self.endpoint_chain_prefix = "KUBE-SVC-"
-        self.setup_base_chains()
+        
+        # 检查是否在macOS上运行
+        self.is_macos = platform.system() == "Darwin"
+        # 检查iptables是否可用
+        self.iptables_available = not self.is_macos and shutil.which('iptables') is not None
+        
+        if self.is_macos:
+            self.logger.warning("在macOS上运行，iptables功能将被模拟")
+        elif not self.iptables_available:
+            self.logger.warning("iptables命令不可用，网络代理功能将被禁用")
+        else:
+            self.setup_base_chains()
     
     def setup_base_chains(self):
         """设置基础iptables链"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info("跳过在非Linux系统上设置iptables链")
+            return
+            
         try:
             # 创建KUBE-SERVICES链
             self._run_iptables(["-t", "nat", "-N", self.nat_chain], ignore_errors=True)
@@ -34,6 +51,10 @@ class ServiceProxy:
     def create_service_rules(self, service_name: str, cluster_ip: str, port: int, 
                            protocol: str, endpoints: List[str], node_port: Optional[int] = None):
         """为Service创建iptables规则"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info(f"模拟创建Service {service_name}的iptables规则 (ClusterIP: {cluster_ip}:{port})")
+            return
+            
         try:
             chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
             
@@ -98,6 +119,10 @@ class ServiceProxy:
     def delete_service_rules(self, service_name: str, cluster_ip: str, port: int, 
                            protocol: str, node_port: Optional[int] = None):
         """删除Service的iptables规则"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info(f"模拟删除Service {service_name}的iptables规则")
+            return
+            
         try:
             chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
             
@@ -130,10 +155,19 @@ class ServiceProxy:
     def update_service_endpoints(self, service_name: str, cluster_ip: str, port: int,
                                protocol: str, endpoints: List[str], node_port: Optional[int] = None):
         """更新Service的端点"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info(f"模拟更新Service {service_name}的端点: {endpoints}")
+            return
+            
         self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
     
     def _run_iptables(self, args: List[str], ignore_errors: bool = False):
         """执行iptables命令"""
+        if self.is_macos or not self.iptables_available:
+            # 在不支持iptables的环境中模拟成功
+            self.logger.debug(f"模拟iptables命令: iptables {' '.join(args)}")
+            return None
+            
         cmd = ["iptables"] + args
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, check=True)
@@ -148,6 +182,10 @@ class ServiceProxy:
     
     def cleanup_all_rules(self):
         """清理所有Service相关的iptables规则"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info("模拟清理所有Service iptables规则")
+            return
+            
         try:
             # 清空KUBE-SERVICES链
             self._run_iptables(["-t", "nat", "-F", self.nat_chain], ignore_errors=True)
@@ -172,6 +210,16 @@ class ServiceProxy:
     
     def get_service_stats(self, service_name: str) -> dict:
         """获取Service的iptables统计信息"""
+        if self.is_macos or not self.iptables_available:
+            # 在不支持iptables的环境中返回模拟数据
+            return {
+                "name": service_name,
+                "connections": 0,
+                "packets": 0,
+                "bytes": 0,
+                "note": "在不支持iptables的环境中运行，数据为模拟值"
+            }
+            
         try:
             chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
             result = subprocess.run(
