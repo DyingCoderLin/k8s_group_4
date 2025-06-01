@@ -6,6 +6,8 @@ from flask import Flask, request
 from confluent_kafka import Producer, KafkaException
 from confluent_kafka.admin import AdminClient, NewTopic
 import platform
+from time import time, sleep, ctime
+from threading import Thread
 
 from pkg.apiObject.pod import STATUS as POD_STATUS
 from pkg.apiObject.node import Node, STATUS as NODE_STATUS
@@ -30,6 +32,7 @@ class ApiServer:
         self.uri_config = uri_config
         self.etcd_config = etcd_config
         self.kafka_config = kafka_config
+        self.NODE_TIMEOUT = 10
 
         self.app = Flask(__name__)
         self.etcd = Etcd(host=etcd_config.HOST, port=etcd_config.PORT)
@@ -64,7 +67,11 @@ class ApiServer:
         # 注册一个新Node
         self.app.route(config.NODE_SPEC_URL, methods=["POST"])(self.add_node)
         # 获得集群全部Node
-        self.app.route(config.NODES_URL, methods=["GET"])(self.get_nodes)
+        self.app.route(config.NODES_URL, methods=['GET'])(self.get_nodes)
+        # 更新Node信息，结点心跳
+        self.app.route(config.NODE_SPEC_URL, methods=['PUT'])(self.update_node)
+        # 获得结点上所有Pod信息
+        self.app.route(config.NODE_ALL_PODS_URL, methods=['GET'])(self.get_node_pods)
 
         # scheduler相关
         self.app.route(config.SCHEDULER_URL, methods=["POST"])(self.add_scheduler)
@@ -136,15 +143,26 @@ class ApiServer:
         self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
     def run(self):
-        print("[INFO]ApiServer running...")
-        self.app.run(host="0.0.0.0", port=self.uri_config.PORT, processes=True)
+        print('[INFO]ApiServer running...')
+        Thread(target = self.node_health).start()
+        self.app.run(host='0.0.0.0', port=self.uri_config.PORT, processes=True)
+
+    def node_health(self):
+        while True:
+            sleep(5.0)
+            now = time()
+            nodes = self.etcd.get_prefix(self.etcd_config.NODES_KEY)
+            for node in nodes:
+                if node.status == NODE_STATUS.ONLINE and now - node.heartbeat_time > self.NODE_TIMEOUT:
+                    node.status = NODE_STATUS.OFFLINE
+                    self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=node.name), node)
+                    print(f'[INFO]Node {node.name} offline. Last heartbeat {ctime(node.heartbeat_time)}')
 
     def index(self):
         return "ApiServer Demo"
 
     # 注册调度器
     def add_scheduler(self):
-
         try:
             kafka_topic = self.kafka_config.SCHEDULER_TOPIC
             fs = self.kafka.create_topics(
@@ -172,9 +190,12 @@ class ApiServer:
 
         # 如果Node存在且状态为ONLINE
         node = self.etcd.get(self.etcd_config.NODE_SPEC_KEY.format(name=name))
-        if node is not None and node.status != NODE_STATUS.OFFLINE:
-            print(f"[ERROR] Node {name} already exists and is still online.")
-            return json.dumps({"error": "Node name duplicated"}), 403
+        if node is not None:
+            if node.status == NODE_STATUS.OFFLINE:
+                print(f'[INFO]Node {name} reconnect.')
+            else:
+                print(f'[ERROR] Node {name} already exists and is still online.')
+                return json.dumps({'error': 'Node name duplicated'}), 403
 
         try:
             # 创建kafka主题
@@ -196,6 +217,7 @@ class ApiServer:
         new_node_config.kafka_server = self.kafka_config.BOOTSTRAP_SERVER
         new_node_config.topic = kafka_topic
         new_node_config.status = NODE_STATUS.ONLINE
+        new_node_config.heartbeat_time = time()
         self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=name), new_node_config)
 
         return {
@@ -206,8 +228,26 @@ class ApiServer:
     # 获取集群中所有node
     def get_nodes(self):
         nodes = self.etcd.get_prefix(self.etcd_config.NODES_KEY)
-
         return pickle.dumps(nodes)
+
+    # 获取某个node上所有pod
+    def get_node_pods(self, name : str):
+        pods = self.etcd.get_prefix(self.etcd_config.GLOBAL_PODS_KEY)
+        node_pods = [pod for pod in pods if pod.node_name == name]
+        return pickle.dumps(node_pods)
+
+    # 结点心跳
+    def update_node(self, name : str):
+        node_json = request.json
+        node_config = NodeConfig(node_json)
+        node_config.heartbeat_time = time()
+        node_config.status = NODE_STATUS.ONLINE
+
+        node = self.etcd.get(self.etcd_config.NODE_SPEC_KEY.format(name=name))
+        if node is None:
+            return json.dumps({'error': 'Node not found. Need to register before update.'}), 404
+        self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=name), node_config)
+        return json.dumps({'message': f'Receive heartbeat timestamp {node_config.heartbeat_time}'}), 200
 
     # 查询系统中所有Pod
     def get_global_pods(self):

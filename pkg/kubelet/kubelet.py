@@ -39,6 +39,10 @@ class Kubelet:
         self.consumer.subscribe([config.topic])
         print(f"[INFO]Subscribe kafka({config.kafka_server}) topic {config.topic}")
 
+    def apply(self, pod_config_list):
+        self.pods_cache = [Pod(pod_config) for pod_config in pod_config_list]
+        self.pods_status = [STATUS.CREATING] * len(self.pods_cache)
+
     def run(self):
         while True:
             # 接收Pod修改请求
