@@ -1,15 +1,17 @@
 import docker
+from docker.errors import APIError
 import platform
 import argparse
 import sys
 import os
 import yaml
 import requests
+import json
 import argparse
 import sys
 import os
 import yaml
-
+from pkg.apiServer.apiClient import ApiClient
 
 class STATUS:
     CREATING = "CREATING"
@@ -17,9 +19,8 @@ class STATUS:
     RUNNING = "RUNNING"
     KILLED = "KILLED"
 
-
 class Pod:
-    def __init__(self, config):
+    def __init__(self, config,api_client: ApiClient = None,uri_config =None):
         self.status = STATUS.CREATING
         self.config = config
         print(f"[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}")
@@ -70,7 +71,44 @@ class Pod:
                 import traceback
 
                 print(f"[DEBUG]详细错误: {traceback.format_exc()}")
+        
+        # 获取Pod的IP地址
+        self.subnet_ip = self._get_pod_ip()
+        print(f"[INFO]Pod {self.config.namespace}:{self.config.name} IP地址: {self.subnet_ip}")
+        if api_client and uri_config:
+            api_client.put(
+                uri_config.POD_SPEC_IP_URL.format(
+                    namespace=self.config.namespace, name=self.config.name
+                ),
+                {"subnet_ip": self.subnet_ip},
+            )
+        
         self.status = STATUS.RUNNING
+
+    def _get_pod_ip(self) -> str:
+        """获取Pod的IP地址（从pause容器获取）"""
+        try:
+            pause_container = self.containers[0]  # pause容器是第一个创建的
+            pause_container.reload()  # 确保获取最新状态
+            
+            # 使用docker inspect获取容器网络信息
+            container_info = self.client.api.inspect_container(pause_container.id)
+            
+            # 获取IP地址
+            ip_address = container_info['NetworkSettings']['IPAddress']
+            
+            # 如果默认网络模式没有IP，尝试从自定义网络获取
+            if not ip_address:
+                networks = container_info['NetworkSettings']['Networks']
+                for network_name, network_config in networks.items():
+                    if network_config.get('IPAddress'):
+                        ip_address = network_config['IPAddress']
+                        break
+            
+            return ip_address
+        except Exception as e:
+            print(f"[ERROR]获取Pod IP地址失败: {str(e)}")
+            return "0.0.0.0"  # 返回默认IP
 
     # docker stop + docker rm
     def remove(self):
@@ -95,7 +133,8 @@ class Pod:
     # docker kill, 立即终止
     def kill(self):
         try:
-            self.client.api.kill(container.id)
+            for container in self.containers:
+                self.client.api.kill(container.id)
         except APIError as e:
             if not "is not running" in e.explanation:
                 raise e
@@ -250,21 +289,35 @@ if __name__ == "__main__":
                 # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
                 print(f"[INFO]测试Pod的创建")
                 response = requests.post(uri, json=data)
-                print(response.json())
+                print(f"[INFO]响应状态码: {response.status_code}")
+                try:
+                    json_response = response.json()
+                    print(f"[INFO]响应数据: {json_response}")
+                except json.decoder.JSONDecodeError:
+                    print(f"[INFO]响应内容不是有效的JSON: {response.text}")
 
                 input("Press Enter To Continue.")
                 # 测试Put
                 # print(f'[INFO]创建Pod请求地址: {uri} \ndata: {data}')
                 # print(f'[INFO]测试Pod的更新')
                 # response = requests.put(uri, json=data)
-                # print(response.json())
+                # try:
+                #     json_response = response.json()
+                #     print(f"[INFO]响应数据: {json_response}")
+                # except json.decoder.JSONDecodeError:
+                #     print(f"[INFO]响应内容不是有效的JSON: {response.text}")
 
                 input("Press Enter To Continue.")
                 # 测试Delete
                 # print(f'[INFO]创建Pod请求地址: {uri}')
                 print(f"[INFO]测试Pod的删除")
                 response = requests.delete(uri)
-                print(response)
+                print(f"[INFO]删除响应状态码: {response.status_code}")
+                try:
+                    json_response = response.json()
+                    print(f"[INFO]删除响应数据: {json_response}")
+                except json.decoder.JSONDecodeError:
+                    print(f"[INFO]删除响应内容不是有效的JSON: {response.text}")
 
                 # 测试pod的获取
                 # uri = URIConfig.PREFIX + URIConfig.POD_SPEC_URL.format(
