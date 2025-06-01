@@ -2,19 +2,18 @@ import json
 import time
 import threading
 import logging
-from typing import Dict, List
+from typing import Dict, List, Set
 from pkg.apiObject.service import Service
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.apiServer.apiClient import ApiClient
 
-
 class ServiceController:
     """Service控制器，负责Service的生命周期管理"""
     
-    def __init__(self, etcd_client, uri_config, namespace="default"):
+    def __init__(self, etcd_client, uri_config):
         self.etcd_client = etcd_client
         self.uri_config = uri_config
-        self.namespace = namespace
+        # self.namespace = namespace
         self.logger = logging.getLogger(__name__)
         
         # API客户端
@@ -29,7 +28,7 @@ class ServiceController:
         self.sync_thread = None
         self.sync_interval = 10  # 同步间隔（秒）
         
-        self.logger.info(f"ServiceController初始化完成，namespace: {namespace}")
+        # self.logger.info(f"ServiceController初始化完成，namespace: {namespace}")
     
     def start(self):
         """启动Service控制器"""
@@ -72,75 +71,106 @@ class ServiceController:
     def _sync_services(self):
         """同步所有Service"""
         try:
+            # 从API Server获取所有Service
+            services_data = self._get_all_services()
+            if not services_data:
+                self.logger.warning("从API Server获取Service列表失败或者目前还没有service")
+                return
+            
             # 获取所有Pod
             pods = self._get_all_pods()
             
-            # 同步每个Service
-            for service_name, service in list(self.services.items()):
+            # 处理每个Service
+            current_services = set()
+            for service_dict in services_data:
                 try:
-                    # 过滤匹配的Pod
-                    matching_pods = [
-                        pod for pod in pods 
-                        if service.config.matches_pod(getattr(pod, 'labels', {}))
-                    ]
+                    # 解析Service数据
+                    service_name = list(service_dict.keys())[0]
+                    # service_name = next(iter(service_dict.keys()))
+                    service_info = service_dict[service_name]
                     
-                    # 更新Service端点
-                    service.update_endpoints(matching_pods)
+                    # 创建Service配置
+                    service_config = ServiceConfig(service_info)
+                    current_services.add(service_name)
                     
+                    # 检查Service是否已经在缓存中
+                    if service_name in self.services:
+                        # 更新现有Service
+                        self._update_service(service_name, service_config, pods)
+                    else:
+                        # 创建新Service
+                        self._create_service(service_name, service_config, pods)
+                        
                 except Exception as e:
-                    self.logger.error(f"同步Service {service_name} 失败: {e}")
+                    self.logger.error(f"处理Service {service_name} 失败: {e}")
+            
+            # 清理不再存在的Service
+            self._cleanup_services(current_services)
             
         except Exception as e:
             self.logger.error(f"同步所有Service失败: {e}")
     
+    def _get_all_services(self):
+        """从API Server获取所有Service"""
+        try:
+            # 获取指定namespace的Service
+            services_url = self.uri_config.GLOBAL_SERVICES_URL
+            response = self.api_client.get(services_url)
+            
+            print(f"[DEBUG]获取Service列表: {response}")
+            
+            if response:
+                return response
+            return []
+            
+        except Exception as e:
+            self.logger.error(f"获取Service列表失败: {e}")
+            return []
+    
     def _get_all_pods(self) -> List:
         """获取所有Pod"""
         try:
-            # 从etcd获取所有Pod
-            # 这里需要根据实际的etcd key格式调整
-            from pkg.config.etcdConfig import EtcdConfig
-            etcd_config = EtcdConfig()
+            # 使用API客户端获取Pod
+            pods_url = self.uri_config.GLOBAL_PODS_URL
+            response = self.api_client.get(pods_url)
             
-            # 获取指定namespace的Pod
-            pods_key = etcd_config.PODS_KEY.format(namespace=self.namespace)
-            pods = self.etcd_client.get_prefix(pods_key)
-            
-            # 也获取全局Pod（如果需要跨namespace）
-            try:
-                global_pods = self.etcd_client.get_prefix(etcd_config.GLOBAL_PODS_KEY)
-                # 过滤指定namespace的Pod
-                namespace_pods = [
-                    pod for pod in global_pods
-                    if getattr(pod, 'namespace', 'default') == self.namespace
-                ]
-                pods.extend(namespace_pods)
-            except:
-                pass
-            
-            return pods
-            
+            # if response and isinstance(response, str):
+            #     return json.loads(response)
+            # return []
+            # 格式为:result.append(
+            #    {pod.name: pod.to_dict() if hasattr(pod, "to_dict") else vars(pod)}
+            #)
+            result = []
+            if response:
+                # 返回一个Dict list
+                for pod_item in response:
+                    # 解析Service数据
+                    pod_name= list(pod_item.keys())[0]
+                    # service_name = next(iter(service_dict.keys()))
+                    pod_dict = pod_item[pod_name]
+                    result.append(pod_dict)
+                # print(f"[DEBUG]获取Pod列表: {result}")
+                return result
+            return []
         except Exception as e:
             self.logger.error(f"获取Pod列表失败: {e}")
             return []
     
-    def create_service(self, service_config: ServiceConfig) -> Service:
-        """创建Service"""
+    def _create_service(self, service_name: str, service_config: ServiceConfig, pods: List):
+        """创建新的Service"""
         try:
-            service_name = service_config.name
-            
-            if service_name in self.services:
-                raise ValueError(f"Service {service_name} 已存在")
+            self.logger.info(f"创建新Service: {service_name}")
             
             # 创建Service实例
-            service = Service(service_config, self.etcd_client)
+            service = Service(service_config)
             
-            # 获取匹配的Pod并启动Service
-            pods = self._get_all_pods()
+            # 过滤匹配的Pod
             matching_pods = [
                 pod for pod in pods 
-                if service_config.matches_pod(getattr(pod, 'labels', {}))
+                if service_config.matches_pod(pod.get("metadata",{}).get("labels", {}))
             ]
             
+            # 启动Service
             service.start(matching_pods)
             
             # 缓存Service
@@ -148,30 +178,43 @@ class ServiceController:
             self.service_configs[service_name] = service_config
             
             self.logger.info(f"Service {service_name} 创建成功")
-            return service
             
         except Exception as e:
-            self.logger.error(f"创建Service失败: {e}")
+            self.logger.error(f"创建Service {service_name} 失败: {e}")
             raise
     
-    def delete_service(self, service_name: str):
-        """删除Service"""
+    def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
+        """更新现有Service"""
         try:
-            if service_name not in self.services:
-                raise ValueError(f"Service {service_name} 不存在")
+            self.logger.info(f"更新Service: {service_name}")
             
-            service = self.services[service_name]
-            service.stop()
+            old_service = self.services[service_name]
             
-            # 从缓存中移除
-            del self.services[service_name]
-            del self.service_configs[service_name]
-            
-            self.logger.info(f"Service {service_name} 删除成功")
-            
+            # 配置未变化，只更新端点
+            # print(f"pods: {pods}")
+            matching_pods = [
+                pod for pod in pods 
+                if new_config.matches_pod(pod.get("metadata", {}).get("labels", {}))
+            ]
+            # print(f"matching_pods: {matching_pods}")
+            old_service.update_endpoints(matching_pods)
+
         except Exception as e:
-            self.logger.error(f"删除Service失败: {e}")
+            self.logger.error(f"更新Service {service_name} 失败: {e}")
             raise
+    
+    def _cleanup_services(self, current_services: Set[str]):
+        """清理不再存在的Service"""
+        for service_name in list(self.services.keys()):
+            if service_name not in current_services:
+                try:
+                    self.logger.info(f"清理不再存在的Service: {service_name}")
+                    service = self.services[service_name]
+                    service.stop()
+                    del self.services[service_name]
+                    del self.service_configs[service_name]
+                except Exception as e:
+                    self.logger.error(f"清理Service {service_name} 失败: {e}")
     
     def get_service(self, service_name: str) -> Service:
         """获取Service"""
@@ -183,39 +226,8 @@ class ServiceController:
         """列出所有Service"""
         return list(self.services.values())
     
-    def update_service(self, service_name: str, new_config: ServiceConfig):
-        """更新Service配置"""
-        try:
-            if service_name not in self.services:
-                raise ValueError(f"Service {service_name} 不存在")
-            
-            old_service = self.services[service_name]
-            old_service.stop()
-            
-            # 创建新的Service
-            new_service = Service(new_config, self.etcd_client)
-            
-            # 获取匹配的Pod并启动Service
-            pods = self._get_all_pods()
-            matching_pods = [
-                pod for pod in pods 
-                if new_config.matches_pod(getattr(pod, 'labels', {}))
-            ]
-            
-            new_service.start(matching_pods)
-            
-            # 更新缓存
-            self.services[service_name] = new_service
-            self.service_configs[service_name] = new_config
-            
-            self.logger.info(f"Service {service_name} 更新成功")
-            
-        except Exception as e:
-            self.logger.error(f"更新Service失败: {e}")
-            raise
-    
     def get_service_stats(self, service_name: str = None) -> Dict:
-        """获取Service统计信息"""
+        """统计信息"""
         if service_name:
             if service_name not in self.services:
                 return {"error": f"Service {service_name} 不存在"}
@@ -236,10 +248,9 @@ class ServiceController:
     def handle_pod_event(self, event_type: str, pod):
         """处理Pod事件（添加、删除、更新）"""
         try:
-            self.logger.info(f"处理Pod事件: {event_type}, Pod: {getattr(pod, 'name', 'unknown')}")
+            self.logger.info(f"处理Pod事件: {event_type}, Pod: {pod.get('name', 'unknown') if isinstance(pod, dict) else getattr(pod, 'name', 'unknown')}")
             
             # 对于Pod变化，我们简单地触发一次同步
-            # 在生产环境中，可以更精细地只更新相关的Service
             self._sync_services()
             
         except Exception as e:

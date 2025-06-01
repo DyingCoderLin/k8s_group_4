@@ -45,6 +45,7 @@ class URIConfig:
     PODS_URL = URIString("/api/v1/namespaces/<namespace>/pods")
     POD_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/pods/<name>")
     POD_SPEC_STATUS_URL = URIString("/api/v1/namespaces/<namespace>/pods/<name>/status")
+    POD_SPEC_IP_URL = URIString("/api/v1/namespaces/<namespace>/pods/<name>/ip")
 
     # Service 相关
     GLOBAL_SERVICES_URL = URIString("/api/v1/services")

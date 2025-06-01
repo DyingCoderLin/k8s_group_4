@@ -36,7 +36,7 @@ class RoundRobinBalancer(LoadBalancer):
 
 class RandomBalancer(LoadBalancer):
     """随机负载均衡器"""
-    
+
     def get_next_endpoint(self) -> Optional[str]:
         if not self.endpoints:
             return None

@@ -84,6 +84,8 @@ class ApiServer:
         self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(
             self.update_pod_status
         )
+        self.app.route(config.POD_SPEC_IP_URL, methods=["PUT"])(self.update_pod_subnet_ip)
+        self.app.route(config.POD_SPEC_IP_URL, methods=["GET"])(self.get_pod_subnet_ip)
 
         # replicaSet相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的rs，读取某个namespace下的rs，读取某个rs
@@ -338,6 +340,46 @@ class ApiServer:
             json.dumps(
                 {"message": f"Pod {namespace}:{name} status change to {status}"}
             ),
+            200,
+        )
+    
+    def get_pod_subnet_ip(self, namespace: str, name: str):
+        # 获取容器的子网IP，读取etcd subnet_ip
+        pod = self.etcd.get(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if pod is None:
+            return (
+                json.dumps({"message": f"Pod {namespace}:{name} is already deleted."}),
+                404,
+            )
+        if pod.subnet_ip is None:
+            return json.dumps({"subnet_ip": "None"}), 200
+        print(f"[INFO]Pod {namespace}:{name} subnet_ip is {pod.subnet_ip}.")
+        return json.dumps({"subnet_ip": pod.subnet_ip}), 200
+        
+    def update_pod_subnet_ip(self, namespace: str, name: str):
+        subnet_ip = request.json["subnet_ip"]
+        if not subnet_ip:
+            return json.dumps({"error": "subnet_ip is required"}), 400
+        # 更新容器的子网IP，写etcd subnet_ip
+        pod = self.etcd.get(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if pod is None:
+            return (
+                json.dumps({"message": f"Pod {namespace}:{name} is already deleted."}),
+                404,
+            )
+        if pod.subnet_ip:
+            print(f"[INFO]updating pod {namespace}:{name} subnet_ip from {pod.subnet_ip} to {subnet_ip}")
+        pod.subnet_ip = subnet_ip
+        self.etcd.put(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name), pod
+        )
+        print(f"[INFO]Pod {namespace}:{name} subnet_ip change to {subnet_ip}.")
+        return (
+            json.dumps({"message": f"Pod {namespace}:{name} subnet_ip change to {subnet_ip}"}),
             200,
         )
 
@@ -872,6 +914,8 @@ class ApiServer:
         print("[INFO]Get global services")
         try:
             services = self.etcd.get_prefix(self.etcd_config.GLOBAL_SERVICES_KEY)
+            print(f"[INFO]Found {len(services)} global services")
+            print(f"[INFO]Services: {services}")
             result = []
             for service in services:
                 result.append({service.name: service.to_dict()})
@@ -908,6 +952,7 @@ class ApiServer:
             print(f"[ERROR]Failed to get service: {str(e)}")
             return json.dumps({"error": str(e)}), 500
 
+    # service 只在 apiserver里存进etcd，后续的 service 对pod的管理是在servicecontroller中实现的
     def create_service(self, namespace: str, name: str):
         """创建Service"""
         print(f"[INFO]Create service {name} in namespace {namespace}")
@@ -933,15 +978,15 @@ class ApiServer:
 
             # 创建Service配置
             service_config = ServiceConfig(service_json)
-            service_config.namespace = namespace
-            service_config.name = name
-            service_config.status = "Pending"
+            # service_config.namespace = namespace
+            # service_config.name = name
+            # service_config.status = "Pending"
 
             # 保存到etcd
             self.etcd.put(key, service_config)
 
             print(f"[INFO]Service {name} created successfully")
-            return json.dumps({"message": f"Service {name} created successfully"}), 201
+            return json.dumps({"message": f"Service {name} created successfully"}), 200
 
         except Exception as e:
             print(f"[ERROR]Failed to create service: {str(e)}")
@@ -949,15 +994,15 @@ class ApiServer:
 
     def update_service(self, namespace: str, name: str):
         """更新Service"""
+        # 只有clusterIP可以更新，其他的都不允许更新
         print(f"[INFO]Update service {name} in namespace {namespace}")
         try:
-            service_json = request.json
+            cluster_ip_json = request.json
             
-            # 验证namespace和name是否匹配
-            if service_json.get("metadata", {}).get("name") != name:
+            if not cluster_ip_json.get("cluster_ip", {}): # 如果没有cluster_ip字段
                 return json.dumps({
-                    "error": "Name in URL does not match name in request body"
-                }), 400
+                    "error": "No cluster_ip provided for update"
+            }), 400
 
             # 获取现有Service
             key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
@@ -966,16 +1011,16 @@ class ApiServer:
                 return json.dumps({"error": "Service not found"}), 404
 
             # 创建新的Service配置
-            updated_config = ServiceConfig(service_json)
-            updated_config.namespace = namespace
-            updated_config.name = name
-            
-            # 保持原有的ClusterIP（如果已分配）
-            if existing_service.cluster_ip and updated_config.cluster_ip in [None, "None"]:
-                updated_config.cluster_ip = existing_service.cluster_ip
+            if existing_service.cluster_ip:
+                print(f"[ERROR]Service {name} already has cluster_ip, cannot update.")
+                print(f"[ERROR]Existing service: {existing_service.to_dict()}")
+                print(f"[ERROR]trying to update Cluster IP to: {cluster_ip_json.get('cluster_ip')}")
+                return json.dumps({"error": "Service already has a cluster IP"}), 400
+                
+            existing_service.cluster_ip = cluster_ip_json.get("cluster_ip", existing_service.cluster_ip)
 
             # 保存更新
-            self.etcd.put(key, updated_config)
+            self.etcd.put(key, existing_service)
 
             return json.dumps({"message": f"Service {name} updated successfully"})
 
@@ -1010,19 +1055,7 @@ class ApiServer:
             if service is None:
                 return json.dumps({"error": "Service not found"}), 404
 
-            # 返回Service状态信息
-            status_info = {
-                "name": service.name,
-                "namespace": service.namespace,
-                "type": service.type,
-                "cluster_ip": service.cluster_ip,
-                "status": service.status,
-                "selector": service.selector,
-                "ports": service.ports,
-                "created_at": getattr(service, 'created_at', 'unknown')
-            }
-
-            return json.dumps(status_info)
+            return json.dumps(service.to_dict()), 200
 
         except Exception as e:
             print(f"[ERROR]Failed to get service status: {str(e)}")
