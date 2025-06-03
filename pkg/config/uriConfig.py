@@ -2,7 +2,7 @@ class URIString(str):
     def __new__(cls, string: str):
         assert (
             "{" not in string and "}" not in string
-        ), "请使用 '/api/v1/<name>' 而非 '/api/v1/{name}' 初始化"
+        ), "请使用 '/api/v1/<n>' 而非 '/api/v1/{name}' 初始化"
         return super().__new__(cls, string)
 
     def format(self, **kwargs):
@@ -102,6 +102,21 @@ class URIConfig:
     WORKFLOW_SPEC_STATUS_URL = URIString(
         "/apis/v1/namespaces/<namespace>/workflows/<name>/status"
     )
+
+    # PersistentVolume 相关 (集群级别)
+    GLOBAL_PVS_URL = URIString("/api/v1/persistentvolumes")
+    PV_SPEC_URL = URIString("/api/v1/persistentvolumes/<name>")
+    PV_SPEC_STATUS_URL = URIString("/api/v1/persistentvolumes/<name>/status")
+
+    # PersistentVolumeClaim 相关 (命名空间级别)
+    GLOBAL_PVCS_URL = URIString("/api/v1/persistentvolumeclaims")
+    PVCS_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims")
+    PVC_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>")
+    PVC_SPEC_STATUS_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>/status")
+
+    # StorageClass 相关 (集群级别)
+    GLOBAL_STORAGE_CLASSES_URL = URIString("/api/v1/storageclasses")
+    STORAGE_CLASS_SPEC_URL = URIString("/api/v1/storageclasses/<name>")
 
     # Scheduler 相关
     SCHEDULER_URL = URIString("/api/v1/scheduler")

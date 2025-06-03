@@ -19,9 +19,29 @@ class PodConfig:
         self.node_selector = spec.get("nodeSelector", {})
         self.volume, self.containers = dict(), []
 
-        # 目前只支持hostPath，并且忽略type字段
+        # 解析卷配置，支持 hostPath 和 PVC
         for volume in volumes:
-            self.volume[volume.get("name")] = volume.get("hostPath").get("path")
+            volume_name = volume.get("name")
+            if "hostPath" in volume:
+                # hostPath 类型
+                self.volume[volume_name] = {
+                    "type": "hostPath",
+                    "path": volume.get("hostPath").get("path")
+                }
+            elif "persistentVolumeClaim" in volume:
+                # PVC 类型
+                pvc = volume.get("persistentVolumeClaim")
+                self.volume[volume_name] = {
+                    "type": "pvc",
+                    "claimName": pvc.get("claimName"),
+                    "readOnly": pvc.get("readOnly", False)
+                }
+            else:
+                # 默认为 emptyDir
+                self.volume[volume_name] = {
+                    "type": "emptyDir",
+                    "path": f"/tmp/emptydir-{volume_name}"
+                }
 
         for container in containers:
             self.containers.append(ContainerConfig(self.volume, container))

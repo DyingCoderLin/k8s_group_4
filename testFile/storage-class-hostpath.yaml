@@ -1,0 +1,10 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: hostpath
+provisioner: minik8s.io/hostpath
+parameters:
+  type: hostPath
+  basePath: /tmp/minik8s-storage
+reclaimPolicy: Delete
+allowVolumeExpansion: false

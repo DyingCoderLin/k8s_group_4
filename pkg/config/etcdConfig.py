@@ -3,6 +3,8 @@ from pkg.config.nodeConfig import NodeConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
+from pkg.config.pvConfig import PVConfig
+from pkg.config.pvcConfig import PVCConfig
 
 
 class EtcdConfig:
@@ -40,3 +42,16 @@ class EtcdConfig:
     SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
     SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
     SERVICES_VALUE = ServiceConfig
+
+    # PersistentVolume相关 (集群级别)
+    GLOBAL_PVS_KEY = "/api/v1/persistentvolumes"
+    PV_SPEC_KEY = "/api/v1/persistentvolumes/{name}"
+    PVS_VALUE = PVConfig
+
+    # PersistentVolumeClaim相关 (命名空间级别)
+    GLOBAL_PVCS_KEY = "/api/v1/namespaces/persistentvolumeclaims"
+    PVCS_KEY = "/api/v1/namespaces/persistentvolumeclaims/{namespace}"
+    PVC_SPEC_KEY = "/api/v1/namespaces/persistentvolumeclaims/{namespace}/{name}"
+    PVCS_VALUE = PVCConfig
+    
+    

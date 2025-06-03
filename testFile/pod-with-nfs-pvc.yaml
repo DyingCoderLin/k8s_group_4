@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-nfs-pvc
+  namespace: default
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    volumeMounts:
+    - name: shared-data
+      mountPath: /usr/share/nginx/html
+  - name: busybox
+    image: busybox
+    command: ["sleep", "3600"]
+    volumeMounts:
+    - name: shared-data
+      mountPath: /data
+  volumes:
+  - name: shared-data
+    type: pvc
+    claimName: pvc-nfs-dynamic

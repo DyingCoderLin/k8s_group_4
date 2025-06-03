@@ -12,6 +12,7 @@ import sys
 import os
 import yaml
 from pkg.apiServer.apiClient import ApiClient
+from pkg.kubelet.volumeResolver import VolumeResolver
 
 class STATUS:
     CREATING = "CREATING"
@@ -25,6 +26,10 @@ class Pod:
         self.config = config
         print(f"[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}")
 
+        # 使用VolumeResolver处理PVC
+        self.volume_resolver = VolumeResolver(api_client, uri_config)
+        self.resolved_volumes = {}
+
         if platform.system() == "Windows":
             self.client = docker.DockerClient(
                 base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=5
@@ -35,6 +40,13 @@ class Pod:
             )
         self.client.networks.prune()
         self.containers = []
+
+        # Resolve volumes before creating containers
+        if hasattr(config, 'volumes') and config.volumes:
+            self.resolved_volumes = self.volume_resolver.resolve_volumes(
+                config.volumes, config.namespace
+            )
+            print(f"[INFO]Resolved volumes: {self.resolved_volumes}")
 
         # --- 不使用cni网络 ---
         # self.network = self.client.networks.create(name = 'network_' + self.config.namespace, driver='bridge')
@@ -56,6 +68,19 @@ class Pod:
         for container in self.config.containers:
             try:
                 args = container.dockerapi_args()
+                
+                # Add volume mounts if container has volume mounts
+                if hasattr(container, 'volume_mounts') and container.volume_mounts:
+                    volume_binds = self.volume_resolver.get_container_volume_mounts(
+                        container.volume_mounts, self.resolved_volumes
+                    )
+                    if volume_binds:
+                        if 'volumes' not in args:
+                            args['volumes'] = volume_binds
+                        else:
+                            args['volumes'].extend(volume_binds)
+                        print(f"[INFO]Container {container.name} volume mounts: {volume_binds}")
+                
                 containers = self.client.containers.list(all=True, filters={"name": args['name']})
                 if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
                     for container in containers: container.remove(force=True)
@@ -116,6 +141,11 @@ class Pod:
         for container in self.containers:
             self.client.api.stop(container.id)
             self.client.api.remove_container(container.id)
+        
+        # Cleanup mounted volumes
+        if hasattr(self, 'volume_resolver'):
+            self.volume_resolver.cleanup_volumes()
+            
         print(f"[INFO]Pod {self.config.namespace}:{self.config.name} removed.")
 
     # docker start

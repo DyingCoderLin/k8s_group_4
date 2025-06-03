@@ -39,10 +39,32 @@ class ContainerConfig:
             volumes = dict()
             for volume in arg_json.get("volumeMounts"):
                 mode = "ro" if volume.get("readOnly", False) else "rw"
-                host_path = volumes_map[volume.get("name")]
+                volume_name = volume.get("name")
                 bind_path = volume.get("mountPath")
 
-                volumes[host_path] = {"bind": bind_path, "mode": mode}
+                # 根据卷类型获取主机路径
+                if volume_name in volumes_map:
+                    volume_config = volumes_map[volume_name]
+                    if isinstance(volume_config, str):
+                        # 兼容旧格式（直接是路径字符串）
+                        host_path = volume_config
+                    elif isinstance(volume_config, dict):
+                        # 新格式（包含类型信息）
+                        if volume_config["type"] == "hostPath":
+                            host_path = volume_config["path"]
+                        elif volume_config["type"] == "pvc":
+                            # PVC 类型，运行时需要解析实际路径
+                            host_path = f"pvc:{volume_config['claimName']}"
+                            if volume_config.get("readOnly", False):
+                                mode = "ro"
+                        elif volume_config["type"] == "emptyDir":
+                            host_path = volume_config["path"]
+                        else:
+                            raise ValueError(f"Unsupported volume type: {volume_config['type']}")
+                    else:
+                        raise ValueError(f"Invalid volume config for {volume_name}")
+                    
+                    volumes[host_path] = {"bind": bind_path, "mode": mode}
             self.volumes["volumes"] = volumes
 
     def dockerapi_args(self):

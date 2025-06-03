@@ -1,0 +1,18 @@
+# 使用持久化存储的Pod示例
+apiVersion: v1
+kind: Pod
+metadata:
+  name: data-pod
+  namespace: default
+spec:
+  containers:
+  - name: data-container
+    image: busybox
+    command: ["sh", "-c", "echo Hello from Minik8s PV! > /data/hello.txt && sleep 3600"]
+    volumeMounts:
+    - name: data-volume
+      mountPath: /data
+  volumes:
+  - name: data-volume
+    persistentVolumeClaim:
+      claimName: pvc-dynamic-test

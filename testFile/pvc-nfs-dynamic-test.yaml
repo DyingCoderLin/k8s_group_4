@@ -1,0 +1,12 @@
+# 使用NFS的动态供应测试用例
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nfs-dynamic-test
+  namespace: default
+  labels:
+    storage-type: nfs  # 标记使用NFS类型存储
+spec:
+  resources:
+    requests:
+      storage: 1Gi
