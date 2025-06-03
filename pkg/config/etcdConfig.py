@@ -3,15 +3,14 @@ from pkg.config.nodeConfig import NodeConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
-
+from pkg.config.dnsConfig import DNSConfig
 
 class EtcdConfig:
     # Etcd 地址
 
-    # HOST = '10.119.11.171' # 这是哪个
-    HOST = "10.119.15.182"  # server
+    # HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
-    # HOST = 'localhost'
+    HOST = 'localhost'
     PORT = "2379"
 
     # -------------------- 资源键值定义 --------------------
@@ -40,3 +39,8 @@ class EtcdConfig:
     SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
     SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
     SERVICES_VALUE = ServiceConfig
+
+    # DNS 相关
+    DNS_KEY = "/api/v1/namespaces/dns/{namespace}"
+    DNS_SPEC_KEY = "/api/v1/namespaces/dns/{namespace}/{name}"
+    DNS_VALUE = DNSConfig

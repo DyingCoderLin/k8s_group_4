@@ -13,8 +13,8 @@ class URIString(str):
 
 class URIConfig:
     # URI 协议方案
-    # HOST = "localhost"
-    HOST = "10.119.15.182"
+    HOST = "localhost"
+    # HOST = "10.119.15.182"
 
     import sys
 

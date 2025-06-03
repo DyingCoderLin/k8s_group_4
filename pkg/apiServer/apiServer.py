@@ -22,6 +22,7 @@ from pkg.config.podConfig import PodConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
+from pkg.config.dnsConfig import DNSConfig
 
 
 class ApiServer:
@@ -34,9 +35,12 @@ class ApiServer:
         self.kafka_config = kafka_config
         self.NODE_TIMEOUT = 10
 
+        # 创建 Flask 应用实例，用于提供 HTTP API 服务
         self.app = Flask(__name__)
+        # 创建 etcd 客户端，连接到指定的主机和端口
         self.etcd = Etcd(host=etcd_config.HOST, port=etcd_config.PORT)
 
+        # 根据操作系统（Windows 或类 Unix 系统）初始化 Docker 客户端，用于管理容器
         if platform.system() == "Windows":
             self.docker = docker.DockerClient(
                 base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=5
@@ -45,6 +49,8 @@ class ApiServer:
             self.docker = docker.DockerClient(
                 base_url="unix://var/run/docker.sock", version="1.25", timeout=5
             )
+        
+        # 创建调度器实例，负责 Pod 的调度和管理
         self.kafka = AdminClient({"bootstrap.servers": kafka_config.BOOTSTRAP_SERVER})
         self.kafka_producer = Producer(
             {"bootstrap.servers": kafka_config.BOOTSTRAP_SERVER}
@@ -60,6 +66,8 @@ class ApiServer:
         self.bind(uri_config)
         print("[INFO]ApiServer init success.")
 
+    
+    # 配置 Flask 应用的路由表
     def bind(self, config):
         self.app.route("/", methods=["GET"])(self.index)
 
@@ -142,6 +150,69 @@ class ApiServer:
         # Service状态和统计信息
         self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
+        # DNS 相关路由
+        self.app.route(config.DNS_URL, methods=["GET"])(self.get_dns)
+        self.app.route(config.DNS_SPEC_URL, methods=["GET"])(self.get_dns_spec)
+        self.app.route(config.DNS_SPEC_URL, methods=["POST"])(self.create_dns)
+        self.app.route(config.DNS_SPEC_URL, methods=["PUT"])(self.update_dns)
+        self.app.route(config.DNS_SPEC_URL, methods=["DELETE"])(self.delete_dns)
+
+    def get_dns(self, namespace):
+        """获取指定 namespace 下的 DNS 配置"""
+        dns_list = self.etcd.get_prefix(self.etcd_config.DNS_KEY.format(namespace=namespace))
+        return pickle.dumps([DNSConfig(pickle.loads(data), self.etcd) for data in dns_list]), 200
+
+    def get_dns_spec(self, namespace, name):
+        """获取特定 DNS 配置"""
+        data = self.etcd.get(self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name))
+        if data:
+            return pickle.dumps(DNSConfig(pickle.loads(data), self.etcd).to_dict), 200
+        return json.dumps({"error": "DNS not found"}), 404
+
+    def create_dns(self, namespace, name):
+        """创建 DNS 配置"""
+        try:
+            dns_data = request.get_json()
+            dns_config = DNSConfig(dns_data, self.etcd)
+            dns_config.validate()
+            key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+            if self.etcd.get(key):
+                return json.dumps({"error": "DNS configuration already exists"}), 403
+            dns_config.status = "Active"
+            self.etcd.put(key, dns_config.to_etcd())
+            # 通知网络组件更新 DNS 映射
+            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps(dns_config.to_dict))
+            self.kafka_producer.flush()
+            return json.dumps({"message": "DNS created"}), 201
+        except ValueError as e:
+            return json.dumps({"error": str(e)}), 400
+
+    def update_dns(self, namespace, name):
+        """更新 DNS 配置"""
+        try:
+            dns_data = request.get_json()
+            dns_config = DNSConfig(dns_data, self.etcd)
+            dns_config.validate()
+            key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+            if not self.etcd.get(key):
+                return json.dumps({"error": "DNS not found"}), 404
+            dns_config.status = "Active"
+            self.etcd.put(key, dns_config.to_etcd())
+            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps(dns_config.to_dict))
+            self.kafka_producer.flush()
+            return json.dumps({"message": "DNS updated"}), 200
+        except ValueError as e:
+            return json.dumps({"error": str(e)}), 400
+
+    def delete_dns(self, namespace, name):
+        """删除 DNS 配置"""
+        key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+        if self.etcd.delete(key):
+            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps({"namespace": namespace, "name": name, "action": "delete"}))
+            self.kafka_producer.flush()
+            return json.dumps({"message": "DNS deleted"}), 200
+        return json.dumps({"error": "DNS not found"}), 404
+    
     def run(self):
         print('[INFO]ApiServer running...')
         Thread(target = self.node_health).start()
@@ -160,6 +231,26 @@ class ApiServer:
 
     def index(self):
         return "ApiServer Demo"
+
+    # # kafka与dns相关
+    # def set_dns_topic(self, topic: str):
+    #     """
+    #     设置 DNS 主题，用于 Kafka 消息传递。
+    #     这个方法可以在 ApiServer 初始化时调用，确保 DNS 相关操作的消息能够正确发送到指定的 Kafka 主题。
+    #     """
+    #     dns_topic = self.kafka_config.DNS_TOPIC            
+    #     fs = self.kafka.create_topics(
+    #         [NewTopic(dns_topic, num_partitions=1, replication_factor=1)]
+    #     )
+
+    #     for topic, f in fs.items():
+    #         f.result()
+    #         print(f"[INFO]Topic '{topic}' created successfully.")
+
+    #     return {
+    #         "kafka_server": self.kafka_config.BOOTSTRAP_SERVER,
+    #         "kafka_dns_topic": dns_topic,
+    #     }
 
     # 注册调度器
     def add_scheduler(self):

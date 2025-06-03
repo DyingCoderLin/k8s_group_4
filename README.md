@@ -32,6 +32,9 @@ docker run -d \
   /usr/local/bin/etcd \
   --listen-client-urls http://0.0.0.0:2379 \
   --advertise-client-urls http://localhost:2379
+
+  <!-- docker run -d --name etcd -p 2379:2379 -p 2380:2380 quay.io/coreos/etcd:v3.5.0 /usr/local/bin/etcd  --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls http://localhost:2379 -->
+
 ```
 直接使用host网络，因为bridge网络会被修改为flannel网络，然而flannel的修改依赖于etcd。可能会出问题？
 ```docker
