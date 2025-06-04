@@ -1,259 +1,186 @@
-# Minik8s 持久化存储实现方案
+# Minik8s PV/PVC 持久化存储实现
 
-## 1. 概述
+## 概述
 
-本实现基于 Kubernetes PV/PVC 模型，支持静态和动态供应，实现了 hostPath 和 NFS 两种存储类型，满足单机和多机持久化存储需求。
+本实现为 Minik8s 提供了完整的持久化存储功能，包括 PV (Persistent Volume) 和 PVC (Persistent Volume Claim) 抽象。系统支持动态供应和静态绑定两种模式，简化了 Kubernetes 的存储模型，专注于核心功能。
 
-## 2. 架构设计
+## 核心功能
 
-### 2.1 核心组件
+### 1. 存储类型支持
+- **hostPath**: 本地主机路径存储（单节点）
+- **NFS**: 网络文件系统存储（多节点共享）
 
-- **PV (Persistent Volume)**: 集群级别的存储资源抽象
-- **PVC (Persistent Volume Claim)**: 用户对存储资源的请求声明  
-- **SimplePV Controller**: 负责 PV/PVC 的生命周期管理和动态供应
+### 2. PVC 绑定模式
+- **动态供应**: 基于 `storageClassName` 自动创建匹配的 PV
+- **特定绑定**: 基于 `volumeName` 绑定到指定的 PV（不存在时自动创建）
+- **存储类型匹配**: 严格检查 PVC 的 storageClassName 与 PV 类型匹配
 
-### 2.2 存储类型
+### 3. Pod 卷集成
+- **纯 PVC 绑定**: Pod 只支持通过 PVC 挂载卷，移除了其他卷类型支持
+- **自动路径解析**: 运行时自动解析 PVC 到实际存储路径
+- **NFS 自动挂载**: 支持 NFS 卷的自动挂载和管理
 
-1. **hostPath**: 单机本地存储，适用于开发和测试
-2. **NFS**: 网络文件系统，支持多机共享访问
+## PVC 配置格式
 
-## 3. 实现特性
-
-### 3.1 PV/PVC 抽象 (简化版)
-
-- **PV**: 由管理员创建或动态供应的存储资源
-  - 容量 (capacity)
-  - 状态 (phase): Available, Bound, Released
-  - 存储源: hostPath 或 NFS
-  - 声明引用 (claimRef): 已绑定的 PVC 信息
-
-- **PVC**: 用户的存储请求
-  - 容量需求 (resources.requests.storage)
-  - 状态 (phase): Pending, Bound, Lost
-  - 标签 (labels): 用于指示存储类型 (如 storage-type: nfs)
-
-### 3.2 供应方式
-
-#### 静态供应
-1. 管理员预先创建 PV
-2. 用户创建 PVC
-3. 控制器根据需求匹配合适的 PV
-4. 绑定 PV 和 PVC
-
-#### 动态供应 (简化版)
-1. 用户创建 PVC，可通过标签指定存储类型 (如 storage-type: nfs)
-2. SimplePV 控制器检测到未绑定的 PVC
-3. 自动创建对应的 PV，默认使用 hostPath，或根据标签使用 NFS
-4. 自动绑定新创建的 PV 和 PVC
-
-### 3.3 生命周期管理
-
-```
-PV: Available -> Bound -> Released -> (Deleted/Available)
-PVC: Pending -> Bound -> (Deleted)
-```
-
-1. **Available**: PV 可用，等待绑定
-2. **Bound**: PV 已绑定到 PVC
-3. **Released**: PVC 被删除，PV 等待回收
-4. **Failed**: PV 回收失败
-
-## 4. NFS 多机存储实现
-
-### 4.1 架构
-```
-[Master Node] - [Worker Node 1] - [Worker Node 2]
-      |               |                |
-      +--- NFS Client ---+--- NFS Client
-                |
-          [NFS Server]
-          (存储节点)
-```
-
-### 4.2 NFS 服务器配置
-
-在专门的存储节点或 Master 节点上部署 NFS 服务器：
-
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install nfs-kernel-server
-
-# 创建共享目录
-sudo mkdir -p /nfs/pv-storage
-sudo chown nobody:nogroup /nfs/pv-storage
-sudo chmod 777 /nfs/pv-storage
-
-# 配置导出
-echo "/nfs/pv-storage *(rw,sync,no_subtree_check,no_root_squash)" | sudo tee -a /etc/exports
-
-# 启动服务
-sudo systemctl restart nfs-kernel-server
-sudo exportfs -a
-```
-
-### 4.3 客户端配置
-
-在所有工作节点上安装 NFS 客户端：
-
-```bash
-# Ubuntu/Debian
-sudo apt install nfs-common
-
-# macOS (使用内置 NFS 客户端或安装额外工具)
-# 已内置支持，无需额外安装
-```
-
-## 5. 实现细节
-
-### 5.1 目录结构
-```
-pkg/
-├── apiObject/
-│   ├── persistentVolume.py      # PV 对象
-│   └── persistentVolumeClaim.py # PVC 对象
-├── config/
-│   ├── pvConfig.py              # PV 配置
-│   └── pvcConfig.py             # PVC 配置
-├── controller/
-│   ├── pvController.py          # PV 控制器
-│   └── pvStarter.py            # PV 控制器启动器
-└── storage/
-    ├── __init__.py
-    ├── provisioner.py           # 动态供应器
-    ├── hostPathProvisioner.py   # hostPath 供应器
-    └── nfsProvisioner.py        # NFS 供应器
-```
-
-### 5.2 核心算法
-
-#### PV/PVC 匹配算法
-1. 容量匹配：PV 容量 >= PVC 请求容量
-
-#### 动态供应流程
-1. 监听 PVC 创建事件
-2. 检查是否有合适的 PV 可绑定
-3. 如果没有且指定了 StorageClass，触发动态供应
-4. 根据 StorageClass 配置创建新的 PV
-5. 绑定新 PV 和 PVC
-
-## 6. 使用示例
-
-### 6.1 静态供应示例
-
-创建 PV：
-```yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-pv-1
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
-  nfs:
-    server: 192.168.1.100
-    path: /nfs/pv-storage/vol1
-```
-
-创建 PVC：
+### 动态供应 PVC
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: nfs-pvc
+  name: pvc-dynamic-test
+  namespace: default
 spec:
-  accessModes:
-    - ReadWriteMany
+  storageClassName: hostPath  # 或 nfs
   resources:
     requests:
       storage: 500Mi
 ```
 
-### 6.2 动态供应示例
-
-创建 StorageClass：
-```yaml
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: nfs-dynamic
-provisioner: minik8s.io/nfs
-parameters:
-  server: 192.168.1.100
-  path: /nfs/pv-storage
-```
-
-创建 PVC（指定 StorageClass）：
+### 特定 PV 绑定 PVC
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: dynamic-pvc
+  name: pvc-specific-test
+  namespace: default
 spec:
-  accessModes:
-    - ReadWriteMany
+  storageClassName: hostPath  # 必须与目标 PV 类型匹配
+  volumeName: my-specific-pv  # 目标 PV 名称
   resources:
     requests:
       storage: 2Gi
-  storageClassName: nfs-dynamic
 ```
 
-### 6.3 Pod 中使用 PVC
+## 绑定逻辑
+
+### 1. 当 PVC 指定了 volumeName
+- 检查指定的 PV 是否存在
+- **如果存在**: 验证存储类型是否匹配
+  - 匹配：绑定到该 PV
+  - 不匹配：标记 PVC 为 Failed 状态
+- **如果不存在**: 根据 PVC 的 storageClassName 创建指定名称的 PV 并绑定
+
+### 2. 当 PVC 未指定 volumeName（动态供应）
+- 搜索可用的 PV，要求容量足够且存储类型匹配
+- **找到匹配的 PV**: 直接绑定
+- **未找到**: 根据 storageClassName 动态创建新 PV 并绑定
+
+## Pod 卷挂载
+
+Pod 现在只支持通过 PVC 挂载卷：
 
 ```yaml
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mysql-pod
+  name: test-pod
 spec:
   containers:
-  - name: mysql
-    image: mysql:5.7
-    env:
-    - name: MYSQL_ROOT_PASSWORD
-      value: "password"
-    volumeMounts:
-    - name: mysql-storage
-      mountPath: /var/lib/mysql
+    - name: test-container
+      image: busybox:latest
+      volumeMounts:
+        - name: data-volume
+          mountPath: /data
   volumes:
-  - name: mysql-storage
-    persistentVolumeClaim:
-      claimName: nfs-pvc
+    - name: data-volume
+      persistentVolumeClaim:
+        claimName: my-pvc  # 引用 PVC 名称
 ```
 
-## 7. 测试场景
+## 文件结构
 
-### 7.1 数据持久化测试
-1. 创建 Pod 并写入数据到 PV
-2. 删除 Pod
-3. 创建新 Pod 绑定同一 PVC
-4. 验证数据仍然存在
+```
+pkg/config/
+├── pvConfig.py          # PV 配置类
+└── pvcConfig.py         # PVC 配置类（支持 storageClassName 和 volumeName）
 
-### 7.2 多机访问测试
-1. 在节点 A 创建 Pod 写入数据
-2. 删除节点 A 的 Pod
-3. 在节点 B 创建 Pod 绑定同一 PVC
-4. 验证可以访问之前写入的数据
+pkg/apiObject/
+├── persistentVolume.py     # PV API 对象
+└── persistentVolumeClaim.py # PVC API 对象
 
-### 7.3 动态供应测试
-1. 创建 StorageClass
-2. 创建 PVC 指定该 StorageClass
-3. 验证自动创建对应 PV 并绑定
+pkg/controller/
+├── pvController.py      # PV 控制器（动态供应和绑定逻辑）
+└── pvStarter.py        # PV 控制器启动脚本
 
-## 8. 注意事项
+pkg/kubelet/
+└── volumeResolver.py   # 卷解析器（只支持 PVC）
 
-1. **权限管理**: 确保 NFS 服务器配置正确的权限
-2. **网络连通性**: 所有节点都能访问 NFS 服务器
-3. **错误处理**: 处理网络断开、服务器不可用等异常情况
-4. **资源清理**: 实现正确的 PV 回收策略
-5. **并发控制**: 处理多个 PVC 同时请求相同 PV 的情况
+testFile/
+├── pvc-dynamic-test.yaml           # 动态供应测试
+├── pvc-specific-pv-test.yaml       # 特定 PV 绑定测试
+├── pvc-specific-nfs-pv-test.yaml   # 特定 NFS PV 绑定测试
+└── pod-pvc-only-test.yaml          # 纯 PVC Pod 测试
+```
 
-## 9. 扩展功能
+## 启动和测试
 
-1. **快照支持**: 实现 VolumeSnapshot 功能
-2. **容量扩展**: 支持在线扩容 PV
-3. **监控指标**: 提供存储使用情况监控
-4. **多存储后端**: 支持更多存储类型（Ceph、GlusterFS 等）
+### 1. 启动 PV 控制器
+```bash
+./start_pv.sh
+```
+
+### 2. 运行新功能测试
+```bash
+./test_new_pv_pvc.sh
+```
+
+### 3. 运行完整测试
+```bash
+./test_pv_pvc.sh
+```
+
+## API 端点
+
+### PV 管理（集群级别）
+- `GET /api/v1/persistentvolumes` - 获取所有 PV
+- `POST /api/v1/persistentvolumes/{name}` - 创建 PV
+- `GET /api/v1/persistentvolumes/{name}` - 获取指定 PV
+- `PUT /api/v1/persistentvolumes/{name}` - 更新 PV
+- `DELETE /api/v1/persistentvolumes/{name}` - 删除 PV
+
+### PVC 管理（命名空间级别）
+- `GET /api/v1/persistentvolumeclaims` - 获取所有命名空间的 PVC
+- `GET /api/v1/namespaces/{namespace}/persistentvolumeclaims` - 获取指定命名空间的 PVC
+- `POST /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}` - 创建 PVC
+- `GET /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}` - 获取指定 PVC
+- `PUT /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}` - 更新 PVC
+- `DELETE /api/v1/namespaces/{namespace}/persistentvolumeclaims/{name}` - 删除 PVC
+
+## 特性说明
+
+### 1. 简化设计
+- 移除了 AccessMode、ReclaimPolicy 等复杂特性
+- 移除了 StorageClass 概念，直接使用 storageClassName 字段
+- 专注于核心的动态供应和绑定功能
+
+### 2. 自动化功能
+- PV 控制器自动监控 PVC 状态
+- 支持动态创建 PV 和自动绑定
+- 自动创建存储目录和设置权限
+- NFS 卷自动挂载和管理
+
+### 3. 错误处理
+- 存储类型不匹配时的明确错误提示
+- PV 不可用时的状态反馈
+- API 调用失败的优雅处理
+
+### 4. 持久化支持
+- 数据在 Pod 重启后保持不变
+- 支持多 Pod 共享同一 PVC（NFS）
+- 完整的生命周期管理
+
+## 环境变量配置
+
+### NFS 相关
+- `NFS_SERVER`: NFS 服务器地址（默认: localhost）
+- `IS_NFS_SERVER`: 是否运行在 NFS 服务器上（默认: false）
+
+## 测试场景
+
+1. **动态供应测试**: 创建不同存储类型的 PVC，验证自动 PV 创建
+2. **特定绑定测试**: 指定 PV 名称的 PVC 绑定和自动创建
+3. **类型匹配测试**: 验证存储类型不匹配的错误处理
+4. **Pod 集成测试**: 验证 Pod 只通过 PVC 挂载卷的功能
+5. **持久化测试**: 验证数据在 Pod 重启后的持久性
+
+这个实现提供了一个功能完整但简化的 Kubernetes 风格持久化存储系统，适合教学和小型部署环境使用。

@@ -4,8 +4,5 @@ metadata:
   name: pvc-hostpath-static
   namespace: default
 spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
+  storageClassName: hostPath  # 指定存储类型为hostPath
+  volumeName: pv-hostpath-static  # 绑定到特定的PV

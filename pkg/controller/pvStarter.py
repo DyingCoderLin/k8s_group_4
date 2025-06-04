@@ -9,7 +9,6 @@ import time
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from pkg.controller.pvController import PVController
-from pkg.config.etcdConfig import EtcdConfig
 
 def signal_handler(signum, frame):
     """信号处理器"""
@@ -30,7 +29,7 @@ def main():
     
     try:
         # 创建并启动控制器
-        controller = PVController(EtcdConfig)
+        controller = PVController()
         controller.start()
         
         print("[INFO] PV Controller is running. Press Ctrl+C to stop.")

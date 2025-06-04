@@ -4,9 +4,5 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-dynamic-test
   namespace: default
-  labels:
-    storage-type: hostPath  # 标记使用hostPath类型存储
 spec:
-  resources:
-    requests:
-      storage: 500Mi
+  storageClassName: hostPath  # 指定存储类型为hostPath

@@ -1,0 +1,23 @@
+# Pod 只使用 PVC 卷绑定测试
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-pvc-only-test
+  namespace: default
+spec:
+  containers:
+    - name: test-container
+      image: busybox:latest
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: data-volume
+          mountPath: /data
+        - name: logs-volume
+          mountPath: /logs
+  volumes:
+    - name: data-volume
+      persistentVolumeClaim:
+        claimName: pvc-dynamic-test  # 引用动态PVC
+    - name: logs-volume
+      persistentVolumeClaim:
+        claimName: pvc-specific-pv-test  # 引用特定PV的PVC

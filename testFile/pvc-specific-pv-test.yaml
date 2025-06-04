@@ -1,0 +1,9 @@
+# 绑定到特定PV的测试用例
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-specific-pv-test
+  namespace: default
+spec:
+  storageClassName: hostPath  # 指定存储类型为hostPath
+  volumeName: my-specific-pv  # 绑定到特定的PV，如果不存在会自动创建

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 import subprocess
 import platform
@@ -23,6 +22,7 @@ class VolumeResolver:
     def resolve_volumes(self, pod_volumes: List[Dict], namespace: str) -> Dict[str, str]:
         """
         解析Pod卷配置到实际挂载路径
+        只支持PVC类型的卷
         
         参数:
             pod_volumes: 卷配置列表
@@ -37,20 +37,8 @@ class VolumeResolver:
             volume_name = volume.get('name')
             volume_type = volume.get('type')
             
-            if volume_type == 'hostPath':
-                # 直接使用hostPath卷
-                resolved_volumes[volume_name] = volume.get('path', '')
-                print(f"[INFO] Resolved hostPath volume {volume_name} to {volume.get('path', '')}")
-                
-            elif volume_type == 'emptyDir':
-                # EmptyDir - 创建临时目录
-                temp_dir = f"/tmp/emptydir/{namespace}/{volume_name}"
-                os.makedirs(temp_dir, exist_ok=True)
-                resolved_volumes[volume_name] = temp_dir
-                print(f"[INFO] Created emptyDir volume {volume_name} at {temp_dir}")
-                
-            elif volume_type == 'pvc':
-                # PVC卷 - 需要通过API解析
+            if volume_type == 'pvc':
+                # PVC卷 - 通过API解析到实际存储路径
                 pvc_name = volume.get('claimName')
                 if pvc_name:
                     mount_path = self._resolve_pvc(pvc_name, namespace)
@@ -59,6 +47,11 @@ class VolumeResolver:
                         print(f"[INFO] Resolved PVC {pvc_name} to {mount_path}")
                     else:
                         print(f"[ERROR] Failed to resolve PVC {pvc_name} in namespace {namespace}")
+                else:
+                    print(f"[ERROR] PVC volume {volume_name} missing claimName")
+            else:
+                # 不支持的卷类型
+                print(f"[WARN] Unsupported volume type '{volume_type}' for volume '{volume_name}', only PVC is supported")
                         
         return resolved_volumes
     

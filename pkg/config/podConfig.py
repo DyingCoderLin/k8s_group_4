@@ -19,29 +19,20 @@ class PodConfig:
         self.node_selector = spec.get("nodeSelector", {})
         self.volume, self.containers = dict(), []
 
-        # 解析卷配置，支持 hostPath 和 PVC
+        # 解析卷配置，只支持 PVC 类型
         for volume in volumes:
             volume_name = volume.get("name")
-            if "hostPath" in volume:
-                # hostPath 类型
-                self.volume[volume_name] = {
-                    "type": "hostPath",
-                    "path": volume.get("hostPath").get("path")
-                }
-            elif "persistentVolumeClaim" in volume:
+            if "persistentVolumeClaim" in volume:
                 # PVC 类型
                 pvc = volume.get("persistentVolumeClaim")
                 self.volume[volume_name] = {
                     "type": "pvc",
                     "claimName": pvc.get("claimName"),
-                    "readOnly": pvc.get("readOnly", False)
                 }
             else:
-                # 默认为 emptyDir
-                self.volume[volume_name] = {
-                    "type": "emptyDir",
-                    "path": f"/tmp/emptydir-{volume_name}"
-                }
+                # 不支持的卷类型，跳过并记录警告
+                print(f"[WARN] Unsupported volume type in volume '{volume_name}', only persistentVolumeClaim is supported")
+                continue
 
         for container in containers:
             self.containers.append(ContainerConfig(self.volume, container))

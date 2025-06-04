@@ -1,8 +1,8 @@
-# 使用NFS的动态供应测试用例
+# 绑定到特定NFS PV的测试用例
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-nfs-dynamic-test
+  name: pvc-specific-nfs-pv-test
   namespace: default
 spec:
   storageClassName: nfs  # 指定存储类型为nfs

@@ -3,11 +3,6 @@ kind: PersistentVolume
 metadata:
   name: pv-nfs-static
 spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteMany
-  persistentVolumeReclaimPolicy: Retain
   nfs:
-    server: 192.168.1.100
+    server: 10.119.15.190
     path: /exports/minik8s/static-volume

@@ -3,11 +3,5 @@ kind: PersistentVolume
 metadata:
   name: pv-hostpath-static
 spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /tmp/minik8s-pv-static
-    type: DirectoryOrCreate
