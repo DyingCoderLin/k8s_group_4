@@ -94,6 +94,7 @@ class ServiceController:
             pods = self._get_all_pods()
             
             # 处理每个Service
+            print(f"[DEBUG]self.services: {self.services.keys()}")
             current_services = set()
             for service_dict in services_data:
                 try:
@@ -120,6 +121,7 @@ class ServiceController:
             # 清理不再存在的Service
             self._cleanup_services(current_services)
             
+            self.print(f"同步所有Service完成，self.services: {self.services.keys()}")
         except Exception as e:
             self.logger.error(f"同步所有Service失败: {e}")
     
