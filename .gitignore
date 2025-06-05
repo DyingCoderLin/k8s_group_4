@@ -18,3 +18,5 @@ yamls/zookeeper-logs/
 
 # pid文件
 *_pids
+.*_pids
+.k8s_pids
