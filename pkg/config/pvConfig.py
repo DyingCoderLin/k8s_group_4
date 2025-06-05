@@ -9,6 +9,9 @@ class PVConfig:
         # PV 规格
         spec = arg_json.get("spec", {})
         
+        # capacity（存储容量）
+        self.capacity = spec.get("capacity",None)
+        
         # 存储类型配置（只支持hostPath和nfs）
         self.volume_source = self._parse_volume_source(spec)
         
@@ -50,6 +53,7 @@ class PVConfig:
                 "name": self.name,
             },
             "spec": {
+                "capacity": self.capacity,
             },
             "status": self.status,
             "claimRef": self.claim_ref
@@ -72,6 +76,8 @@ class PVConfig:
         """绑定到指定的 PVC"""
         self.status = "Bound"
         self.claim_ref = pvc_config.name
+        if self.capacity == None and pvc_config.capacity != None:
+            self.capacity = pvc_config.capacity
     
     def release(self):
         """释放 PV(PVC 被删除时调用）"""

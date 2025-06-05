@@ -16,22 +16,22 @@ PID_FILE="${PROJECT_ROOT}/.k8s_pids"
 stop_all() {
     echo "${YELLOW}正在停止所有 K8S 组件...${NC}"
     
-    if [ -f "$PID_FILE" ]; then
-        while read pid name; do
-            if ps -p $pid > /dev/null 2>&1; then
-                echo "${GREEN}停止 $name (PID: $pid)${NC}"
-                kill -15 $pid 2>/dev/null || kill -9 $pid 2>/dev/null
-            else
-                echo "${BLUE}$name (PID: $pid) 已经不在运行${NC}"
-            fi
-        done < "$PID_FILE"
+    # if [ -f "$PID_FILE" ]; then
+    #     while read pid name; do
+    #         if ps -p $pid > /dev/null 2>&1; then
+    #             echo "${GREEN}停止 $name (PID: $pid)${NC}"
+    #             kill -15 $pid 2>/dev/null || kill -9 $pid 2>/dev/null
+    #         else
+    #             echo "${BLUE}$name (PID: $pid) 已经不在运行${NC}"
+    #         fi
+    #     done < "$PID_FILE"
         
-        # 删除PID文件
-        rm -f "$PID_FILE"
-        echo "${GREEN}所有组件已停止${NC}"
-    else
-        echo "${RED}找不到PID文件，无法停止组件${NC}"
-        echo "${YELLOW}尝试查找并停止相关进程...${NC}"
+    #     # 删除PID文件
+    #     rm -f "$PID_FILE"
+    #     echo "${GREEN}所有组件已停止${NC}"
+    # else
+    #     echo "${RED}找不到PID文件，无法停止组件${NC}"
+    #     echo "${YELLOW}尝试查找并停止相关进程...${NC}"
         
         # 尝试通过进程名停止
         pkill -f "python3 -m pkg.apiServer.apiServer" || true
@@ -39,6 +39,11 @@ stop_all() {
         pkill -f "python3 -m pkg.controller.rsStarter" || true
         pkill -f "python3 -m pkg.controller.hpaStarter" || true
         pkill -f "python3 -m pkg.controller.serviceStarter" || true
+        pkill -f "python3 -m pkg.controller.scheduler" || true
+        pkill -f "python3 -m pkg.controller.pvStarter" || true
+
+        if [ -f "$PID_FILE" ]; then
+            rm -f "$PID_FILE"
         
         echo "${GREEN}进程已停止${NC}"
     fi
@@ -118,9 +123,13 @@ pids+=($rs_controller_pid)
 hpa_controller_pid=$(start_component "HPAController" "python3 -m pkg.controller.hpaStarter" "${PROJECT_ROOT}/logs/hpa_controller.log")
 pids+=($hpa_controller_pid)
 
-# 6. 启动 ServiceController
-service_controller_pid=$(start_component "ServiceController" "python3 -m pkg.controller.serviceStarter" "${PROJECT_ROOT}/logs/service_controller.log")
-pids+=($service_controller_pid)
+# # 6. 启动 ServiceController
+# service_controller_pid=$(start_component "ServiceController" "python3 -m pkg.controller.serviceStarter" "${PROJECT_ROOT}/logs/service_controller.log")
+# pids+=($service_controller_pid)
+
+# 7. 启动 PV 控制器
+pv_controller_pid=$(start_component "PVController" "python3 -m pkg.controller.pvStarter" "${PROJECT_ROOT}/logs/pv_controller.log")
+pids+=($pv_controller_pid)
 
 echo "${YELLOW}===== 所有 K8S 组件已启动 =====${NC}"
 echo "${GREEN}ApiServer PID: $api_server_pid${NC}"
@@ -128,6 +137,9 @@ echo "${GREEN}Node/Kubelet PID: $node_pid${NC}"
 echo "${GREEN}ReplicaSetController PID: $rs_controller_pid${NC}"
 echo "${GREEN}HPAController PID: $hpa_controller_pid${NC}"
 echo "${GREEN}ServiceController PID: $service_controller_pid${NC}"
+# echo "${GREEN}PVController PID: $pv_controller_pid${NC}"
+echo "${GREEN}Scheduler PID: $scheduler_pid${NC}"
+echo "${YELLOW}===== 组件日志已保存到 ${PROJECT_ROOT}/logs/ =====${NC}"
 echo "${BLUE}查看组件日志: tail -f ${PROJECT_ROOT}/logs/*.log${NC}"
 echo "${YELLOW}运行 '$0 --stop' 停止所有组件${NC}"
 

@@ -42,9 +42,18 @@ class Pod:
         self.containers = []
 
         # Resolve volumes before creating containers
-        if hasattr(config, 'volumes') and config.volumes:
+        if hasattr(config, 'volume') and config.volume:
+            # Convert podConfig.volume dict to list format expected by VolumeResolver
+            volume_list = []
+            for volume_name, volume_spec in config.volume.items():
+                volume_list.append({
+                    'name': volume_name,
+                    'type': volume_spec['type'],
+                    'claimName': volume_spec.get('claimName')  # For PVC type
+                })
+            
             self.resolved_volumes = self.volume_resolver.resolve_volumes(
-                config.volumes, config.namespace
+                volume_list, config.namespace
             )
             print(f"[INFO]Resolved volumes: {self.resolved_volumes}")
 
@@ -69,17 +78,36 @@ class Pod:
             try:
                 args = container.dockerapi_args()
                 
-                # Add volume mounts if container has volume mounts
-                if hasattr(container, 'volume_mounts') and container.volume_mounts:
-                    volume_binds = self.volume_resolver.get_container_volume_mounts(
-                        container.volume_mounts, self.resolved_volumes
-                    )
-                    if volume_binds:
-                        if 'volumes' not in args:
+                # Add volume mounts if container has volumes configured
+                if hasattr(container, 'volumes') and 'volumes' in container.volumes and container.volumes['volumes']:
+                    # Extract volume mount information from container.volumes
+                    volume_mounts = []
+                    for host_path, mount_info in container.volumes['volumes'].items():
+                        # Skip PVC volumes as they need special handling
+                        if host_path.startswith('pvc:'):
+                            pvc_name = host_path[4:]  # Remove 'pvc:' prefix
+                            # Find the volume name that corresponds to this PVC
+                            volume_name = None
+                            for vol_name, vol_spec in config.volume.items():
+                                if vol_spec.get('type') == 'pvc' and vol_spec.get('claimName') == pvc_name:
+                                    volume_name = vol_name
+                                    break
+                            
+                            if volume_name:
+                                volume_mounts.append({
+                                    'name': volume_name,
+                                    'mountPath': mount_info['bind'],
+                                    'readOnly': mount_info['mode'] == 'ro'
+                                })
+                    
+                    if volume_mounts:
+                        volume_binds = self.volume_resolver.get_container_volume_mounts(
+                            volume_mounts, self.resolved_volumes
+                        )
+                        if volume_binds:
+                            # Update args to use the resolved volume binds instead of original volumes
                             args['volumes'] = volume_binds
-                        else:
-                            args['volumes'].extend(volume_binds)
-                        print(f"[INFO]Container {container.name} volume mounts: {volume_binds}")
+                            print(f"[INFO]Container {container.name} volume mounts: {volume_binds}")
                 
                 containers = self.client.containers.list(all=True, filters={"name": args['name']})
                 if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建

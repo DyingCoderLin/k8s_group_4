@@ -45,7 +45,7 @@ class EtcdConfig:
 
     # PersistentVolume相关 (集群级别)
     GLOBAL_PVS_KEY = "/api/v1/persistentvolumes"
-    PV_SPEC_KEY = "/api/v1/persistentvolumes/{namespace}/{name}"
+    PV_SPEC_KEY = "/api/v1/persistentvolumes/{name}"
     PVS_VALUE = PVConfig
 
     # PersistentVolumeClaim相关 (命名空间级别)

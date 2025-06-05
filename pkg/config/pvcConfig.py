@@ -11,6 +11,8 @@ class PVCConfig:
         # PVC 规格
         spec = arg_json.get("spec", {})
         
+        self.capacity = spec.get("capacity","1Gi")  # 默认容量为 1Gi
+        
         # 存储类名（hostPath 或 nfs）
         self.storage_class_name = spec.get("storageClassName", "hostPath")
         
@@ -32,6 +34,7 @@ class PVCConfig:
             "spec": {
                 "storageClassName": self.storage_class_name,
                 "volumeName": self.volume_name,
+                "capacity": self.capacity,
             },
             "status": self.status
         }
@@ -48,6 +51,10 @@ class PVCConfig:
     
     def matches_storage_type(self, pv_config):
         """检查存储类型是否匹配"""
+        # 检查存储的要求大小是否相同
+        if pv_config.capacity and self.capacity:
+            if self.capacity != pv_config.capacity:
+                return False
         pv_type = pv_config.volume_source.get("type", "hostPath")
         if self.storage_class_name == "nfs" and pv_type == "nfs":
             return True

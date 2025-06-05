@@ -99,9 +99,8 @@ class URIConfig:
 
     # PersistentVolume 相关 (集群级别)
     GLOBAL_PVS_URL = URIString("/api/v1/persistentvolumes")
-    PV_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumes")
-    PV_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumes/<name>")
-    PV_SPEC_STATUS_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumes/<name>/status")
+    PV_SPEC_URL = URIString("/api/v1/persistentvolumes/<name>")
+    PV_SPEC_STATUS_URL = URIString("/api/v1/persistentvolumes/<name>/status")
 
     # PersistentVolumeClaim 相关 (命名空间级别)
     GLOBAL_PVCS_URL = URIString("/api/v1/persistentvolumeclaims")

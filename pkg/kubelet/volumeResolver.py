@@ -178,24 +178,69 @@ class VolumeResolver:
             print(f"[ERROR] Failed to mount NFS volume: {str(e)}")
             return None
             
-    def cleanup_volumes(self, pod_volumes: List[Dict]) -> None:
+    def get_container_volume_mounts(self, volume_mounts: List[Dict], resolved_volumes: Dict[str, str]) -> List[str]:
         """
-        清理Pod使用的卷资源
+        根据容器的卷挂载配置和已解析的卷路径，生成Docker容器的挂载参数
         
         参数:
-            pod_volumes: 卷配置列表
+            volume_mounts: 容器的卷挂载配置列表
+            resolved_volumes: 已解析的卷名到实际路径映射
+            
+        返回:
+            Docker volume绑定参数列表
         """
-        for volume_name, mount_path in pod_volumes.items():
-            # 仅清理NFS挂载
-            if mount_path in self.mounted_nfs_volumes:
-                try:
-                    if platform.system() in ["Linux", "Darwin"]:
-                        unmount_cmd = ["sudo", "umount", mount_path]
-                        subprocess.run(unmount_cmd, capture_output=True, text=True)
+        volume_binds = []
+        
+        for mount in volume_mounts:
+            volume_name = mount.get('name')
+            mount_path = mount.get('mountPath')
+            read_only = mount.get('readOnly', False)
+            
+            if volume_name in resolved_volumes:
+                host_path = resolved_volumes[volume_name]
+                mode = 'ro' if read_only else 'rw'
+                
+                # 确保主机路径存在
+                if not os.path.exists(host_path):
+                    try:
+                        os.makedirs(host_path, exist_ok=True)
+                        print(f"[INFO] Created host directory: {host_path}")
+                    except Exception as e:
+                        print(f"[WARN] Failed to create host directory {host_path}: {str(e)}")
+                
+                # 创建Docker卷绑定字符串
+                volume_bind = f"{host_path}:{mount_path}:{mode}"
+                volume_binds.append(volume_bind)
+                print(f"[INFO] Volume bind: {volume_bind}")
+            else:
+                print(f"[ERROR] Volume {volume_name} not found in resolved volumes")
+        
+        return volume_binds
+
+    def cleanup_volumes(self) -> None:
+        """
+        清理挂载的卷资源
+        主要清理NFS挂载点
+        """
+        for mount_path in list(self.mounted_nfs_volumes.keys()):
+            try:
+                if platform.system() in ["Linux", "Darwin"]:
+                    unmount_cmd = ["sudo", "umount", mount_path]
+                    result = subprocess.run(unmount_cmd, capture_output=True, text=True)
+                    if result.returncode == 0:
                         print(f"[INFO] Unmounted NFS volume at {mount_path}")
+                    else:
+                        print(f"[WARN] Failed to unmount {mount_path}: {result.stderr}")
                         
-                    # 从跟踪列表中移除
-                    del self.mounted_nfs_volumes[mount_path]
+                # 从跟踪列表中移除
+                del self.mounted_nfs_volumes[mount_path]
+                
+                # 尝试删除挂载目录
+                try:
+                    os.rmdir(mount_path)
+                    print(f"[INFO] Removed mount directory: {mount_path}")
+                except OSError:
+                    print(f"[WARN] Mount directory {mount_path} not empty, leaving it")
                     
-                except Exception as e:
-                    print(f"[ERROR] Failed to unmount volume {volume_name} at {mount_path}: {str(e)}")
+            except Exception as e:
+                print(f"[ERROR] Failed to cleanup volume at {mount_path}: {str(e)}")

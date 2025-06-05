@@ -5,4 +5,4 @@ metadata:
 spec:
   nfs:
     server: 10.119.15.190
-    path: /exports/minik8s/static-volume
+    path: /nfs/pv-storage/static/pv-nfs-static

@@ -153,6 +153,7 @@ class ApiServer:
         self.app.route(config.PV_SPEC_URL, methods=["PUT"])(self.update_pv)
         self.app.route(config.PV_SPEC_URL, methods=["DELETE"])(self.delete_pv)
         self.app.route(config.PV_SPEC_STATUS_URL, methods=["GET"])(self.get_pv_status)
+        self.app.route(config.PV_SPEC_STATUS_URL, methods=["PUT"])(self.update_pv_status)
 
         # PersistentVolumeClaim相关 (命名空间级别)
         self.app.route(config.GLOBAL_PVCS_URL, methods=["GET"])(self.get_global_pvcs)
@@ -1141,12 +1142,12 @@ class ApiServer:
             print(f"[ERROR]Failed to get global PVs: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def get_pv(self,namespace:str ,name: str):
+    def get_pv(self, name: str):
         """获取指定PersistentVolume"""
-        print(f"[INFO]Get PersistentVolume {name} in namespace {namespace}")
+        print(f"[INFO]Get PersistentVolume {name}")
         try:
             
-            key = self.etcd_config.PV_SPEC_KEY.format(name=name,namespace=namespace)
+            key = self.etcd_config.PV_SPEC_KEY.format(name=name)
             pv = self.etcd.get(key)
             
             if pv is None:
@@ -1156,16 +1157,16 @@ class ApiServer:
             print(f"[ERROR]Failed to get PV: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def create_pv(self, namespace:str,name: str):
+    def create_pv(self, name: str):
         """创建PersistentVolume"""
-        print(f"[INFO]Create PersistentVolume {name} in namespace {namespace}")
+        print(f"[INFO]Create PersistentVolume {name}")
         try:
             pv_json = request.json
             pv_config = PVConfig(pv_json)
             pv_config.name = name
             
             # Check if PV already exists
-            key = self.etcd_config.PV_SPEC_KEY.format(name=name,namespace=namespace)
+            key = self.etcd_config.PV_SPEC_KEY.format(name=name)
             existing_pv = self.etcd.get(key)
             
             if existing_pv is not None:
@@ -1174,29 +1175,29 @@ class ApiServer:
             # Save to etcd
             self.etcd.put(key, pv_config)
             
-            print(f"[INFO]PersistentVolume {name} in namespace {namespace} created successfully")
+            print(f"[INFO]PersistentVolume {name} created successfully")
             return json.dumps({"message": f"PersistentVolume {name} created successfully"}), 200
             
         except Exception as e:
             print(f"[ERROR]Failed to create PV: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def update_pv(self, namespace:str,name: str):
+    def update_pv(self, name: str):
         """更新PersistentVolume"""
-        print(f"[INFO]Update PersistentVolume {name} in namespace {namespace}")
+        print(f"[INFO]Update PersistentVolume {name}")
         try:
             pv_json = request.json
-            key = self.etcd_config.PV_SPEC_KEY.format(name=name,namespace=namespace)
+            key = self.etcd_config.PV_SPEC_KEY.format(name=name)
             
             existing_pv = self.etcd.get(key)
             if existing_pv is None:
                 return json.dumps({"error": "PersistentVolume not found"}), 404
             
             # 不是所有都能更新的，只能更新status,claim_ref等
-            # 先检查name和namespace是否匹配
-            if not name == existing_pv.name or not namespace == existing_pv.namespace:
+            # 先检查name是否匹配
+            if not name == existing_pv.name:
                 return json.dumps({
-                    "error": "Name or namespace in URL does not match existing PersistentVolume"
+                    "error": "Name in URL does not match existing PersistentVolume"
                 }), 400
             status = pv_json.get('status', None)
             claim_ref = pv_json.get('claimRef', None)
@@ -1217,11 +1218,11 @@ class ApiServer:
             print(f"[ERROR]Failed to update PV: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def delete_pv(self,namespace:str, name: str):
+    def delete_pv(self, name: str):
         """删除PersistentVolume"""
         print(f"[INFO]Delete PersistentVolume {name}")
         try:
-            key = self.etcd_config.PV_SPEC_KEY.format(name=name,namespace=namespace)
+            key = self.etcd_config.PV_SPEC_KEY.format(name=name)
             pv = self.etcd.get(key)
             if pv is None:
                 return json.dumps({"error": "PersistentVolume not found"}), 404
@@ -1240,9 +1241,9 @@ class ApiServer:
             print(f"[ERROR]Failed to delete PV: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def get_pv_status_and_(self,namespace:str, name: str):
+    def get_pv_status(self, name: str):
         """获取PersistentVolume状态"""
-        print(f"[INFO]Get PersistentVolume {name} status in namespace {namespace}")
+        print(f"[INFO]Get PersistentVolume {name} status")
         try:
             key = self.etcd_config.PV_SPEC_KEY.format(name=name)
             pv = self.etcd.get(key)
@@ -1259,6 +1260,34 @@ class ApiServer:
             
         except Exception as e:
             print(f"[ERROR]Failed to get PV status: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+        
+    def update_pv_status(self, name: str):
+        """更新PersistentVolume状态"""
+        print(f"[INFO]Update PersistentVolume {name} status")
+        try:
+            status = request.json.get("status")
+            # claim_ref = request.json.get("claim_ref")
+            key = self.etcd_config.PV_SPEC_KEY.format(name=name)
+            
+            existing_pv = self.etcd.get(key)
+            if existing_pv is None:
+                return json.dumps({"error": "PersistentVolume not found"}), 404
+            
+            # Update status and claim_ref
+            if status:
+                existing_pv.status = status
+            # if claim_ref:
+            #     existing_pv.claim_ref = claim_ref
+            
+            # Save to etcd
+            self.etcd.put(key, existing_pv)
+            
+            print(f"[INFO]PersistentVolume {name} status updated successfully")
+            return json.dumps({"message": f"PersistentVolume {name} status updated successfully"}), 200
+            
+        except Exception as e:
+            print(f"[ERROR]Failed to update PV status: {str(e)}")
             return json.dumps({"error": str(e)}), 500
 
     # ==================== PersistentVolumeClaim API Methods ====================

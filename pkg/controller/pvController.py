@@ -6,6 +6,7 @@ from pkg.apiObject.persistentVolume import PersistentVolume
 from pkg.apiObject.persistentVolumeClaim import PersistentVolumeClaim
 from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
+from pkg.config.etcdConfig import EtcdConfig
 import os
 import subprocess
 
@@ -48,6 +49,9 @@ class PVController:
         """控制器主循环"""
         while self.running:
             try:
+                # 处理静态PV（检查status为static的PV并创建存储）
+                self._process_static_pvs()
+                
                 # 处理PVC绑定
                 self._process_pvcs()
                 
@@ -82,7 +86,7 @@ class PVController:
                 
             for pvc in pvcs_list:
                 if pvc.get("status","") == "Pending":
-                    print(f"[INFO] Found pending PVC: {pvc.get("metadata",{}).get("namespace")}/{pvc.get("metadata",{}).get("name")}")
+                    print(f"[INFO] Found pending PVC: {pvc.get('metadata',{}).get('namespace')}/{pvc.get('metadata',{}).get('name')}")
                     self._handle_pending_pvc(pvc)
                     
         except Exception as e:
@@ -100,10 +104,10 @@ class PVController:
             # 不存在volumeName，直接报错
             print(f"[ERROR] PVC {pvc.namespace}/{pvc.name} does not specify a volumeName, cannot bind to specific PV")
             
-    def get_pv_by_name(self, name, namespace):
+    def get_pv_by_name(self, name):
         try:
-            # 从etcd获取指定名称的PV
-            pv_key = self.uri_config.PV_SPEC_URL.format(namespace=namespace, name=name)
+            # 从etcd获取指定名称的PV (PV是集群级别资源，无namespace)
+            pv_key = self.uri_config.PV_SPEC_URL.format(name=name)
             pv_data = self.apiclient.get(pv_key)
             
             if pv_data.get("message","") == "PersistentVolume not found":
@@ -112,10 +116,6 @@ class PVController:
             
             # 解析PV数据
             pv_config = PVConfig(pv_data)
-            
-            if pv_config.namespace != namespace:
-                print(f"[ERROR] PV {name} is in namespace {pv_config.namespace}, expected {namespace}")
-                return None
             
             return pv_config
         except Exception as e:
@@ -138,8 +138,8 @@ class PVController:
     def _bind_to_specific_pv(self, pvc):
         """绑定到指定的PV"""
         try:
-            # 获取指定的PV
-            pv = self.get_pv_by_name(pvc.volume_name, pvc.namespace)
+            # 获取指定的PV (PV是集群级别资源，无需namespace)
+            pv = self.get_pv_by_name(pvc.volume_name)
             
             if not pv:
                 # PV不存在，创建新的PV
@@ -169,8 +169,7 @@ class PVController:
         """在etcd中创建PV"""
         try:
             pv_name = json_data["metadata"]["name"]
-            pv_namespace = json_data["metadata"].get("namespace", "default")
-            pv_key = self.uri_config.PV_SPEC_URL.format(name=pv_name,namespace = pv_namespace)
+            pv_key = self.uri_config.PV_SPEC_URL.format(name=pv_name)
             
             # 检查PV是否已存在
             response = self.apiclient.post(pv_key, json_data)
@@ -191,10 +190,14 @@ class PVController:
             pv_spec = self._generate_specific_pv_spec(pv_name, pvc)
             pv_config = PVConfig(pv_spec)
             
-            self._create_pv_remote(pv_spec)
+            # 动态创建的PV直接设置为Available（因为会立即provision）
+            pv_config.status = "Available"
             
             # 创建实际存储目录
             self._provision_storage(pv_config, pvc)
+            
+            # 保存到etcd（使用更新后的pv_config）
+            self._create_pv_remote(pv_config.to_dict())
             
             # 绑定PVC到新创建的PV
             self._bind_pvc_to_pv(pvc, pv_config)
@@ -207,9 +210,10 @@ class PVController:
     def _generate_specific_pv_spec(self, pv_name, pvc):
         """生成指定名称的PV规格"""
         if pvc.storage_class_name == "nfs":
-            # NFS类型
+            # NFS类型 - 确保路径在/nfs/pv-storage下
             nfs_server = "10.119.15.190"
-            storage_path = f"/exports/specific/{pvc.namespace}/{pvc.name}"
+            # 在NFS导出目录下创建子目录
+            storage_path = f"/nfs/pv-storage/specific/{pvc.namespace}/{pvc.name}"
             
             return {
                 "apiVersion": "v1",
@@ -218,6 +222,7 @@ class PVController:
                     "name": pv_name,
                 },
                 "spec": {
+                    "capacity": pvc.capacity,
                     "nfs": {
                         "server": nfs_server,
                         "path": storage_path
@@ -261,8 +266,7 @@ class PVController:
     def _update_pv_remote(self, pv):
         json_data = pv.to_dict()
         name = pv.name
-        namespace = pv.namespace or "default"
-        pv_key = self.uri_config.PV_SPEC_URL.format(name=name, namespace=namespace)
+        pv_key = self.uri_config.PV_SPEC_URL.format(name=name)
         """更新PV到etcd"""
         try:
             print(f"[INFO] Updating PV {name} in etcd")
@@ -322,17 +326,18 @@ class PVController:
             # 创建PV配置
             pv_spec = self._generate_pv_spec(pv_name, pvc)
             pv_config = PVConfig(pv_spec)
-            pv = PersistentVolume(pv_config)
+            
+            # 动态创建的PV直接设置为Available（因为会立即provision）
+            pv_config.status = "Available"
             
             # 创建实际存储目录
             self._provision_storage(pv_config, pvc)
             
-            # 保存PV到etcd
-            pv_key = EtcdConfig.PV_SPEC_KEY.format(name=pv_name)
-            self.etcd.put(pv_key, pv)
+            # 保存到etcd（使用API）
+            self._create_pv_remote(pv_config.to_dict())
             
             # 绑定PVC到新创建的PV
-            self._bind_pvc_to_pv(pvc, pv)
+            self._bind_pvc_to_pv(pvc, pv_config)
             
             print(f"[INFO] Successfully created and bound dynamic PV {pv_name}")
             
@@ -346,8 +351,8 @@ class PVController:
         
         if use_nfs:
             # NFS类型（需要配置NFS服务器）
-            nfs_server = os.environ.get("NFS_SERVER", "localhost")
-            storage_path = f"/exports/dynamic/{pvc.namespace}/{pvc.name}"
+            nfs_server = "10.119.15.190"
+            storage_path = f"/nfs/pv-storage/dynamic/{pvc.namespace}/{pvc.name}"
             
             return {
                 "apiVersion": "v1",
@@ -399,22 +404,27 @@ class PVController:
     
     def _provision_storage(self, pv_config, pvc):
         """提供实际存储"""
+        print(f"[INFO] Provisioning storage for PV {pv_config.name}")
+        print(f"[INFO] Storage type: {pv_config.volume_source['type']}")
         if pv_config.volume_source["type"] == "hostPath":
             storage_path = pv_config.volume_source["path"]
             
-            # 创建目录
-            os.makedirs(storage_path, exist_ok=True)
+            print(f"[INFO] Creating hostPath storage at {storage_path}")
             
-            # 设置权限
+            # 创建目录并设置权限
             try:
+                os.makedirs(storage_path, exist_ok=True)
                 os.chmod(storage_path, 0o755)
                 print(f"[INFO] Created hostPath storage at {storage_path}")
                 
                 # 添加默认文件作为示例
                 with open(os.path.join(storage_path, "README.txt"), "w") as f:
-                    f.write(f"This is a dynamically provisioned volume for PVC {pvc.namespace}/{pvc.name}\n")
-                    f.write("Created by MiniK8s PV Controller\n")
-                    f.write(f"Capacity: {pvc.storage}\n")
+                    if pvc:
+                        f.write(f"This is a dynamically provisioned volume for PVC {pvc.namespace}/{pvc.name}\n")
+                        f.write("Created by MiniK8s PV Controller\n")
+                        f.write(f"Capacity: {pvc.storage}\n")
+                    else:
+                        f.write(f"This is a static created PV storage at {storage_path}\n")
                     
             except Exception as e:
                 print(f"[WARN] Failed to set permissions for {storage_path}: {str(e)}")
@@ -427,46 +437,176 @@ class PVController:
             print(f"[INFO] Configuring NFS storage at {server}:{path}")
             
             try:
-                # 检查是否在NFS服务器上运行
-                is_nfs_server = os.environ.get("IS_NFS_SERVER", "false").lower() == "true"
-                
-                if is_nfs_server:
-                    # 在NFS服务器上创建目录
-                    os.makedirs(path, exist_ok=True)
-                    os.chmod(path, 0o777)  # 确保NFS客户端可以写入
+                # 通过SSH远程在NFS服务器上创建目录和配置导出
+                self._provision_nfs_storage_remote(server, path, pvc)
                     
-                    # 添加默认文件
-                    with open(os.path.join(path, "README.txt"), "w") as f:
-                        f.write(f"This is a dynamically provisioned NFS volume for PVC {pvc.namespace}/{pvc.name}\n")
-                        f.write("Created by MiniK8s PV Controller\n")
-                        f.write(f"Capacity: {pvc.storage}\n")
-                    
-                    print(f"[INFO] Created NFS directory at {path}")
-                    
-                    # 确保目录已导出
-                    try:
-                        export_cmd = f"exportfs -o rw,no_root_squash,async,no_subtree_check *:{path}"
-                        subprocess.run(export_cmd, shell=True, check=True)
-                        print(f"[INFO] Exported NFS path: {path}")
-                    except subprocess.CalledProcessError as e:
-                        print(f"[WARN] Failed to export NFS path: {str(e)}")
-                else:
-                    # 非NFS服务器，仅记录配置
-                    print(f"[INFO] NFS storage configured at {server}:{path}, but not creating directory (not running on NFS server)")
             except Exception as e:
                 print(f"[ERROR] Failed to provision NFS storage: {str(e)}")
-
-
-if __name__ == "__main__":
-    controller = PVController()
     
-    try:
-        controller.start()
-        
-        # 保持运行
-        while True:
-            time.sleep(1)
+    def _get_all_pvs(self):
+        """获取所有PV"""
+        try:
+            # 从etcd获取所有PV
+            global_pv_key = self.uri_config.GLOBAL_PVS_URL
+            response_list = self.apiclient.get(global_pv_key)
+                  
+            return response_list
+        except Exception as e:
+            print(f"[ERROR] Failed to get PVs from etcd: {str(e)}")
+            return []
+    
+    def _process_static_pvs(self):
+        """处理静态PV - 检查status为static的PV并创建存储"""
+        try:
+            # 获取所有PV
+            print("[INFO] Processing static PVs...")
+            pvs_list = self._get_all_pvs()
+            # print(f"pv_list: {pvs_list}")
             
-    except KeyboardInterrupt:
-        print("\n[INFO] Received shutdown signal")
-        controller.stop()
+            if not pvs_list:
+                return
+                
+            for pv_data in pvs_list:
+                if pv_data.get("status", "") == "static":
+                    print(f"[INFO] Found static PV: {pv_data.get('metadata', {}).get('name')}")
+                    self._provision_static_pv(pv_data)
+                    
+        except Exception as e:
+            print(f"[ERROR] Failed to process static PVs: {str(e)}")
+    
+    def _provision_static_pv(self, pv_data):
+        """为静态PV创建存储并更新状态为Available"""
+        try:
+            from pkg.config.pvConfig import PVConfig
+            pv_config = PVConfig(pv_data)
+            pv_name = pv_config.name
+            
+            print(f"[INFO] Provisioning storage for static PV: {pv_name}")
+            
+            # 创建实际存储
+            self._provision_storage(pv_config, None)  # 静态PV不需要PVC信息
+            
+            # 更新PV状态为Available
+            self._update_pv_status(pv_name, "Available")
+            
+            print(f"[INFO] Successfully provisioned static PV: {pv_name}")
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to provision static PV: {str(e)}")
+    
+    def _update_pv_status(self, pv_name, status):
+        """更新PV状态"""
+        try:
+            pv_status_url = self.uri_config.PV_SPEC_STATUS_URL.format(name=pv_name)
+            data = {"status": status}
+            
+            response = self.apiclient.put(pv_status_url, data)
+            print(f"[INFO] Updated PV {pv_name} status to {status}")
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to update PV {pv_name} status: {str(e)}")
+    
+    def _provision_nfs_storage_remote(self, server, path, pvc):
+        """通过SSH远程在NFS服务器上创建存储"""
+        try:
+            # 使用固定的NFS服务器配置
+            nfs_user = "root"
+            nfs_password = "Lin040430"
+            
+            print(f"[INFO] Connecting to NFS server {server} as user {nfs_user}")
+            
+            # 构建SSH命令前缀（使用密码认证）
+            ssh_cmd_prefix = f"sshpass -p '{nfs_password}' ssh -o StrictHostKeyChecking=no {nfs_user}@{server}"
+            
+            # 1. 首先检查/nfs/pv-storage目录是否存在
+            check_base_cmd = f"{ssh_cmd_prefix} 'ls -la /nfs/pv-storage'"
+            result = subprocess.run(check_base_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"[ERROR] Base directory /nfs/pv-storage does not exist or is not accessible")
+                print(f"[ERROR] {result.stderr}")
+                return False
+            
+            print(f"[INFO] Base NFS directory /nfs/pv-storage is accessible")
+            
+            # 2. 创建具体的PV目录
+            mkdir_cmd = f"{ssh_cmd_prefix} 'mkdir -p {path} && chmod 777 {path}'"
+            result = subprocess.run(mkdir_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"[ERROR] Failed to create directory {path} on NFS server: {result.stderr}")
+                return False
+            
+            print(f"[INFO] Successfully created directory {path} on NFS server {server}")
+            
+            # 3. 创建README文件
+            readme_content = self._generate_nfs_readme_content(pvc, path)
+            create_readme_cmd = f"{ssh_cmd_prefix} 'echo \"{readme_content}\" > {path}/README.txt'"
+            result = subprocess.run(create_readme_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print(f"[INFO] Created README.txt in {path}")
+            else:
+                print(f"[WARN] Failed to create README.txt: {result.stderr}")
+            
+            # 4. 验证目录创建成功
+            verify_cmd = f"{ssh_cmd_prefix} 'ls -la {path}'"
+            result = subprocess.run(verify_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print(f"[INFO] Directory verification successful:")
+                print(f"[INFO] {result.stdout.strip()}")
+            
+            # 5. NFS导出已经预配置为 /nfs/pv-storage *(rw,sync,insecure,anonuid=1000,anongid=1000,no_subtree_check,no_root_squash)
+            print(f"[INFO] NFS export already configured for /nfs/pv-storage")
+            
+            print(f"[INFO] Successfully provisioned NFS storage at {server}:{path}")
+            return True
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to provision NFS storage remotely: {str(e)}")
+            return False
+    
+    def _build_ssh_command(self, server, user, password, key_path):
+        """构建SSH命令前缀"""
+        if key_path and os.path.exists(key_path):
+            # 使用SSH密钥
+            return f"ssh -i {key_path} -o StrictHostKeyChecking=no {user}@{server}"
+        elif password:
+            # 使用sshpass和密码（需要安装sshpass）
+            return f"sshpass -p '{password}' ssh -o StrictHostKeyChecking=no {user}@{server}"
+        else:
+            # 假设已配置SSH密钥认证
+            return f"ssh -o StrictHostKeyChecking=no {user}@{server}"
+    
+    def _generate_nfs_readme_content(self, pvc, path):
+        """生成NFS README文件内容"""
+        if pvc:
+            return f"This is a dynamically provisioned NFS volume for PVC {pvc.namespace}/{pvc.name}\\nCreated by MiniK8s PV Controller\\nCapacity: {pvc.storage}\\nPath: {path}"
+        else:
+            return f"This is a static created NFS storage at {path}\\nCreated by MiniK8s PV Controller"
+    
+    def _configure_nfs_export_remote(self, ssh_cmd_prefix, path):
+        """远程配置NFS导出 - 由于已预配置/nfs/pv-storage导出，这里只需验证"""
+        try:
+            # 检查NFS导出配置
+            check_export_cmd = f"{ssh_cmd_prefix} 'showmount -e localhost'"
+            result = subprocess.run(check_export_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                print(f"[INFO] NFS exports verified:")
+                print(f"[INFO] {result.stdout.strip()}")
+                
+                if "/nfs/pv-storage" in result.stdout:
+                    print(f"[INFO] /nfs/pv-storage export confirmed")
+                    return True
+                else:
+                    print(f"[WARN] /nfs/pv-storage not found in exports")
+                    return False
+            else:
+                print(f"[WARN] Failed to check NFS exports: {result.stderr}")
+                return False
+                
+        except Exception as e:
+            print(f"[WARN] Failed to verify NFS export: {str(e)}")
+            return False
