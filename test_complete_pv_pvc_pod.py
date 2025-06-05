@@ -298,9 +298,9 @@ class PVCPodTester:
                 ("ls -la /hostpath-data/test.txt", "检查hostPath文件"),
                 ("ls -la /nfs-data/test.txt", "检查NFS文件"),
                 
-                # 第四步：尝试写入内容
-                ("echo 'hostPath test data' > /hostpath-data/test.txt", "hostPath存储写入"),
-                ("echo 'NFS test data' > /nfs-data/test.txt", "NFS存储写入"),
+                # 第四步：尝试写入内容 - 使用不同的方法
+                ("echo 'hostPath test data' | tee /hostpath-data/test.txt", "hostPath存储写入(tee)"),
+                ("echo 'NFS test data' | tee /nfs-data/test.txt", "NFS存储写入(tee)"),
                 
                 # 第五步：验证写入
                 ("cat /hostpath-data/test.txt", "hostPath存储读取"),
@@ -673,6 +673,132 @@ class PVCPodTester:
                 self.cleanup_pvc(pvc_name)
             
             print("✨ 清理完成，测试结束")
+
+    def test_write_methods(self, main_container):
+        """测试不同的写入方法来诊断问题"""
+        print("   🧪 测试不同的写入方法:")
+        
+        write_tests = [
+            # 测试hostPath写入
+            {
+                "path": "/hostpath-data",
+                "name": "hostPath",
+                "tests": [
+                    ("echo 'test1' > /hostpath-data/test1.txt", "重定向写入"),
+                    ("echo 'test2' | tee /hostpath-data/test2.txt", "tee写入"),
+                    ("printf 'test3\\n' > /hostpath-data/test3.txt", "printf重定向"),
+                    ("cat > /hostpath-data/test4.txt << 'EOF'\ntest4\nEOF", "cat heredoc"),
+                    ("dd if=/dev/zero bs=1 count=0 of=/hostpath-data/test5.txt && echo 'test5' >> /hostpath-data/test5.txt", "dd+append"),
+                ]
+            },
+            # 测试NFS写入
+            {
+                "path": "/nfs-data", 
+                "name": "NFS",
+                "tests": [
+                    ("echo 'test1' > /nfs-data/test1.txt", "重定向写入"),
+                    ("echo 'test2' | tee /nfs-data/test2.txt", "tee写入"),
+                    ("printf 'test3\\n' > /nfs-data/test3.txt", "printf重定向"),
+                    ("cat > /nfs-data/test4.txt << 'EOF'\ntest4\nEOF", "cat heredoc"),
+                    ("dd if=/dev/zero bs=1 count=0 of=/nfs-data/test5.txt && echo 'test5' >> /nfs-data/test5.txt", "dd+append"),
+                ]
+            }
+        ]
+        
+        for storage_test in write_tests:
+            print(f"      📁 测试 {storage_test['name']} 存储写入:")
+            
+            for cmd, method_name in storage_test["tests"]:
+                # 执行写入命令
+                docker_cmd = f"docker exec {main_container.id} bash -c '{cmd}'"
+                result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
+                
+                if result.returncode == 0:
+                    print(f"         ✅ {method_name} 命令执行成功")
+                else:
+                    print(f"         ❌ {method_name} 命令失败")
+                    print(f"            错误: {result.stderr.strip()}")
+                    print(f"            输出: {result.stdout.strip()}")
+                
+                # 检查文件内容
+                file_num = cmd.split('test')[1].split('.')[0] if 'test' in cmd else "unknown"
+                check_cmd = f"docker exec {main_container.id} cat {storage_test['path']}/test{file_num}.txt 2>/dev/null || echo 'FILE_NOT_FOUND'"
+                check_result = subprocess.run(check_cmd, shell=True, capture_output=True, text=True)
+                
+                content = check_result.stdout.strip()
+                if content and content != "FILE_NOT_FOUND":
+                    print(f"            📄 文件内容: '{content}'")
+                else:
+                    print(f"            📄 文件为空或不存在")
+                    
+                print()
+    
+    def diagnose_shell_redirection(self, main_container):
+        """诊断shell重定向问题"""
+        print("   🔍 诊断shell重定向问题:")
+        
+        # 1. 检查shell类型
+        shell_cmd = f"docker exec {main_container.id} echo $SHELL"
+        shell_result = subprocess.run(shell_cmd, shell=True, capture_output=True, text=True)
+        print(f"      🐚 容器shell: {shell_result.stdout.strip()}")
+        
+        # 2. 检查bash是否可用
+        bash_cmd = f"docker exec {main_container.id} which bash"
+        bash_result = subprocess.run(bash_cmd, shell=True, capture_output=True, text=True)
+        if bash_result.returncode == 0:
+            print(f"      ✅ bash路径: {bash_result.stdout.strip()}")
+        else:
+            print(f"      ❌ bash不可用")
+        
+        # 3. 测试重定向在不同shell下的行为
+        shells_to_test = ["sh", "bash"]
+        
+        for shell in shells_to_test:
+            print(f"      🧪 测试 {shell} 重定向:")
+            
+            # 测试简单重定向
+            test_cmd = f"docker exec {main_container.id} {shell} -c 'echo test_redirect > /tmp/redirect_test.txt'"
+            test_result = subprocess.run(test_cmd, shell=True, capture_output=True, text=True)
+            
+            if test_result.returncode == 0:
+                # 检查文件内容
+                check_cmd = f"docker exec {main_container.id} cat /tmp/redirect_test.txt"
+                check_result = subprocess.run(check_cmd, shell=True, capture_output=True, text=True)
+                print(f"         ✅ {shell} 重定向成功: '{check_result.stdout.strip()}'")
+            else:
+                print(f"         ❌ {shell} 重定向失败: {test_result.stderr.strip()}")
+        
+        # 4. 测试权限问题
+        print(f"      🔐 测试文件权限:")
+        perm_tests = [
+            ("/hostpath-data/perm_test.txt", "hostPath"),
+            ("/nfs-data/perm_test.txt", "NFS")
+        ]
+        
+        for test_file, storage_type in perm_tests:
+            # 创建文件
+            touch_cmd = f"docker exec {main_container.id} touch {test_file}"
+            touch_result = subprocess.run(touch_cmd, shell=True, capture_output=True, text=True)
+            
+            if touch_result.returncode == 0:
+                # 检查权限
+                perm_cmd = f"docker exec {main_container.id} ls -la {test_file}"
+                perm_result = subprocess.run(perm_cmd, shell=True, capture_output=True, text=True)
+                print(f"         📁 {storage_type} 文件权限: {perm_result.stdout.strip()}")
+                
+                # 尝试写入
+                write_cmd = f"docker exec {main_container.id} bash -c 'echo write_test > {test_file}'"
+                write_result = subprocess.run(write_cmd, shell=True, capture_output=True, text=True)
+                
+                if write_result.returncode == 0:
+                    # 验证内容
+                    read_cmd = f"docker exec {main_container.id} cat {test_file}"
+                    read_result = subprocess.run(read_cmd, shell=True, capture_output=True, text=True)
+                    print(f"         ✅ {storage_type} 写入成功: '{read_result.stdout.strip()}'")
+                else:
+                    print(f"         ❌ {storage_type} 写入失败: {write_result.stderr.strip()}")
+            else:
+                print(f"         ❌ {storage_type} 无法创建文件: {touch_result.stderr.strip()}")
 
 def main():
     """主函数"""
