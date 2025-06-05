@@ -2,16 +2,29 @@ import subprocess
 import logging
 import platform
 import shutil
+import json
+import sys
 from typing import List, Optional
+from confluent_kafka import Consumer, KafkaError
+from threading import Thread
+from time import sleep
 
 
 class ServiceProxy:
     """Service代理类，负责管理iptables规则和NAT转换"""
     
-    def __init__(self):
+    def __init__(self, node_name: str = None, kafka_config: dict = None):
         self.logger = logging.getLogger(__name__)
         self.nat_chain = "KUBE-SERVICES"
         self.endpoint_chain_prefix = "KUBE-SVC-"
+        
+        # 节点信息
+        self.node_name = node_name
+        
+        # Kafka配置（用于接收ServiceController的规则更新）
+        self.kafka_config = kafka_config
+        self.consumer = None
+        self.running = False
         
         # 检查是否在macOS上运行
         self.is_macos = platform.system() == "Darwin"
@@ -24,6 +37,93 @@ class ServiceProxy:
             self.logger.warning("iptables命令不可用，网络代理功能将被禁用")
         else:
             self.setup_base_chains()
+            
+        # 如果提供了Kafka配置，初始化消费者
+        if self.kafka_config and self.node_name:
+            self._init_kafka_consumer()
+    
+    def _init_kafka_consumer(self):
+        """初始化Kafka消费者"""
+        try:
+            topic = f"serviceproxy.{self.node_name}"
+            consumer_config = {
+                'bootstrap.servers': self.kafka_config['bootstrap_servers'],
+                'group.id': f'serviceproxy-{self.node_name}',
+                'auto.offset.reset': 'latest',
+                'enable.auto.commit': False,
+            }
+            
+            self.consumer = Consumer(consumer_config)
+            self.consumer.subscribe([topic])
+            self.logger.info(f"ServiceProxy已订阅Kafka主题: {topic}")
+            
+        except Exception as e:
+            self.logger.error(f"初始化Kafka消费者失败: {e}")
+    
+    def start_daemon(self):
+        """启动ServiceProxy守护进程"""
+        if not self.consumer:
+            self.logger.warning("未配置Kafka消费者，ServiceProxy将以静态模式运行")
+            return
+            
+        self.running = True
+        daemon_thread = Thread(target=self._daemon_loop, daemon=True)
+        daemon_thread.start()
+        self.logger.info(f"ServiceProxy守护进程已启动，节点: {self.node_name}")
+    
+    def stop_daemon(self):
+        """停止ServiceProxy守护进程"""
+        self.running = False
+        if self.consumer:
+            self.consumer.close()
+        self.logger.info("ServiceProxy守护进程已停止")
+    
+    def _daemon_loop(self):
+        """守护进程主循环"""
+        while self.running:
+            try:
+                msg = self.consumer.poll(timeout=1.0)
+                if msg is not None:
+                    if not msg.error():
+                        self._handle_service_update(msg)
+                        self.consumer.commit(asynchronous=False)
+                    elif msg.error().code() != KafkaError._PARTITION_EOF:
+                        self.logger.error(f"Kafka消费错误: {msg.error()}")
+                
+                sleep(0.1)  # 防止CPU占用过高
+                
+            except Exception as e:
+                self.logger.error(f"ServiceProxy守护进程异常: {e}")
+                sleep(1)
+    
+    def _handle_service_update(self, msg):
+        """处理Service更新消息"""
+        try:
+            action = msg.key().decode('utf-8') if msg.key() else "UPDATE"
+            data = json.loads(msg.value().decode('utf-8'))
+            
+            service_name = data.get('service_name')
+            cluster_ip = data.get('cluster_ip')
+            port = data.get('port')
+            protocol = data.get('protocol', 'tcp')
+            endpoints = data.get('endpoints', [])
+            node_port = data.get('node_port')
+            
+            self.logger.info(f"收到Service {action}消息: {service_name}")
+            
+            if action == "CREATE" or action == "UPDATE":
+                self.create_service_rules(
+                    service_name, cluster_ip, port, protocol, endpoints, node_port
+                )
+            elif action == "DELETE":
+                self.delete_service_rules(
+                    service_name, cluster_ip, port, protocol, node_port
+                )
+            else:
+                self.logger.warning(f"未知的Service操作: {action}")
+                
+        except Exception as e:
+            self.logger.error(f"处理Service更新消息失败: {e}")
     
     def setup_base_chains(self):
         """设置基础iptables链"""
@@ -249,3 +349,76 @@ class ServiceProxy:
             return {"error": f"Service {service_name} 统计信息不存在"}
         except Exception as e:
             return {"error": f"获取统计信息失败: {e}"}
+    
+def main():
+    """ServiceProxy主函数，在每个节点上启动"""
+    import argparse
+    import signal
+    import os
+    from pkg.config.globalConfig import GlobalConfig
+    
+    # 设置日志
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+        ]
+    )
+    
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description='Kubernetes ServiceProxy - kube-proxy替代')
+    parser.add_argument('--node-name', required=True, help='节点名称')
+    parser.add_argument('--kafka-server', help='Kafka服务器地址', 
+                       default='10.119.15.182:9092')
+    parser.add_argument('--cleanup', action='store_true', help='清理所有iptables规则后退出')
+    
+    args = parser.parse_args()
+    
+    # 配置Kafka
+    kafka_config = {
+        'bootstrap_servers': args.kafka_server
+    }
+    
+    # 创建ServiceProxy实例
+    service_proxy = ServiceProxy(
+        node_name=args.node_name,
+        kafka_config=kafka_config
+    )
+    
+    # 如果是清理模式
+    if args.cleanup:
+        print(f"[INFO]清理节点 {args.node_name} 的所有Service iptables规则...")
+        service_proxy.cleanup_all_rules()
+        print("[INFO]清理完成")
+        return
+    
+    # 设置信号处理
+    def signal_handler(signum, frame):
+        print(f"\n[INFO]收到退出信号 {signum}，正在关闭ServiceProxy...")
+        service_proxy.stop_daemon()
+        sys.exit(0)
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    print(f"[INFO]在节点 {args.node_name} 上启动ServiceProxy...")
+    print(f"[INFO]Kafka服务器: {args.kafka_server}")
+    print(f"[INFO]iptables支持: {'否 (模拟模式)' if service_proxy.is_macos or not service_proxy.iptables_available else '是'}")
+    
+    # 启动守护进程
+    service_proxy.start_daemon()
+    
+    print("[INFO]ServiceProxy已启动，按 Ctrl+C 退出")
+    
+    # 保持主线程运行
+    try:
+        while True:
+            sleep(1)
+    except KeyboardInterrupt:
+        print("\n[INFO]用户中断，正在关闭ServiceProxy...")
+        service_proxy.stop_daemon()
+
+
+if __name__ == "__main__":
+    main()
