@@ -171,8 +171,8 @@ class PVCPodTester:
         print(f"💾 检查卷挂载情况...")
         
         try:
-            if not hasattr(pod, 'container_id') or not pod.container_id:
-                print(f"   ❌ Pod没有容器ID")
+            if not hasattr(pod, 'containers') or not pod.containers:
+                print(f"   ❌ Pod没有容器信息")
                 return False
             
             # 检查容器内的挂载点
@@ -184,7 +184,7 @@ class PVCPodTester:
             all_mounted = True
             
             for mount_path, mount_type in mount_checks:
-                cmd = f"docker exec {pod.container_id} ls -la {mount_path}"
+                cmd = f"docker exec {pod.containers[0].id} ls -la {mount_path}"
                 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 
                 if result.returncode == 0:
@@ -205,8 +205,8 @@ class PVCPodTester:
         print(f"💽 测试数据持久性...")
         
         try:
-            if not hasattr(pod, 'container_id') or not pod.container_id:
-                print(f"   ❌ Pod没有容器ID")
+            if not hasattr(pod, 'containers') or not pod.containers:
+                print(f"   ❌ Pod没有容器信息")
                 return False
             
             # 在挂载的卷中创建测试文件
@@ -218,7 +218,7 @@ class PVCPodTester:
             ]
             
             for cmd, description in test_commands:
-                docker_cmd = f"docker exec {pod.container_id} bash -c '{cmd}'"
+                docker_cmd = f"docker exec {pod.containers[0].id} bash -c '{cmd}'"
                 result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
                 
                 if result.returncode == 0:
