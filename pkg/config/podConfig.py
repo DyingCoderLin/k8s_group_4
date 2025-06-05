@@ -31,7 +31,9 @@ class PodConfig:
                 }
             else:
                 # 不支持的卷类型，跳过并记录警告
-                print(f"[WARN] Unsupported volume type in volume '{volume_name}', only persistentVolumeClaim is supported")
+                print(
+                    f"[WARN] Unsupported volume type in volume '{volume_name}', only persistentVolumeClaim is supported"
+                )
                 continue
 
         for container in containers:

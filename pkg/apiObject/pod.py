@@ -14,14 +14,16 @@ import yaml
 from pkg.apiServer.apiClient import ApiClient
 from pkg.kubelet.volumeResolver import VolumeResolver
 
+
 class STATUS:
     CREATING = "CREATING"
     STOPPED = "STOPPED"
     RUNNING = "RUNNING"
     KILLED = "KILLED"
 
+
 class Pod:
-    def __init__(self, config,api_client: ApiClient = None,uri_config =None):
+    def __init__(self, config, api_client: ApiClient = None, uri_config=None):
         self.status = STATUS.CREATING
         self.config = config
         print(f"[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}")
@@ -42,16 +44,18 @@ class Pod:
         self.containers = []
 
         # Resolve volumes before creating containers
-        if hasattr(config, 'volume') and config.volume:
+        if hasattr(config, "volume") and config.volume:
             # Convert podConfig.volume dict to list format expected by VolumeResolver
             volume_list = []
             for volume_name, volume_spec in config.volume.items():
-                volume_list.append({
-                    'name': volume_name,
-                    'type': volume_spec['type'],
-                    'claimName': volume_spec.get('claimName')  # For PVC type
-                })
-            
+                volume_list.append(
+                    {
+                        "name": volume_name,
+                        "type": volume_spec["type"],
+                        "claimName": volume_spec.get("claimName"),  # For PVC type
+                    }
+                )
+
             self.resolved_volumes = self.volume_resolver.resolve_volumes(
                 volume_list, config.namespace
             )
@@ -66,57 +70,83 @@ class Pod:
         # --- 使用cni网络 ---
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
 
-        containers = self.client.containers.list(all=True, filters={"name": pause_docker_name})
+        containers = self.client.containers.list(
+            all=True, filters={"name": pause_docker_name}
+        )
         if len(containers) == 0:
-            self.containers.append(self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
-                               command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-                               network = self.config.cni_name))
+            self.containers.append(
+                self.client.containers.run(
+                    image="busybox",
+                    name=pause_docker_name,
+                    detach=True,
+                    command=["sh", "-c", "echo [INFO]pod network init. && sleep 3600"],
+                    network=self.config.cni_name,
+                )
+            )
         else:
             self.containers.append(containers[0])
 
         for container in self.config.containers:
             try:
                 args = container.dockerapi_args()
-                
+
                 # Add volume mounts if container has volumes configured
-                if hasattr(container, 'volumes') and 'volumes' in container.volumes and container.volumes['volumes']:
+                if (
+                    hasattr(container, "volumes")
+                    and "volumes" in container.volumes
+                    and container.volumes["volumes"]
+                ):
                     # Extract volume mount information from container.volumes
                     volume_mounts = []
-                    for host_path, mount_info in container.volumes['volumes'].items():
+                    for host_path, mount_info in container.volumes["volumes"].items():
                         # Skip PVC volumes as they need special handling
-                        if host_path.startswith('pvc:'):
+                        if host_path.startswith("pvc:"):
                             pvc_name = host_path[4:]  # Remove 'pvc:' prefix
                             # Find the volume name that corresponds to this PVC
                             volume_name = None
                             for vol_name, vol_spec in config.volume.items():
-                                if vol_spec.get('type') == 'pvc' and vol_spec.get('claimName') == pvc_name:
+                                if (
+                                    vol_spec.get("type") == "pvc"
+                                    and vol_spec.get("claimName") == pvc_name
+                                ):
                                     volume_name = vol_name
                                     break
-                            
+
                             if volume_name:
-                                volume_mounts.append({
-                                    'name': volume_name,
-                                    'mountPath': mount_info['bind'],
-                                    'readOnly': mount_info['mode'] == 'ro'
-                                })
-                    
+                                volume_mounts.append(
+                                    {
+                                        "name": volume_name,
+                                        "mountPath": mount_info["bind"],
+                                        "readOnly": mount_info["mode"] == "ro",
+                                    }
+                                )
+
                     if volume_mounts:
                         volume_binds = self.volume_resolver.get_container_volume_mounts(
                             volume_mounts, self.resolved_volumes
                         )
                         if volume_binds:
                             # Update args to use the resolved volume binds instead of original volumes
-                            args['volumes'] = volume_binds
-                            print(f"[INFO]Container {container.name} volume mounts: {volume_binds}")
-                
-                containers = self.client.containers.list(all=True, filters={"name": args['name']})
-                if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
-                    for container in containers: container.remove(force=True)
-                self.containers.append(self.client.containers.run(
-                    **args,
-                    detach=True,
-                    network_mode=f'container:{pause_docker_name}'
-                ))
+                            args["volumes"] = volume_binds
+                            print(
+                                f"[INFO]Container {container.name} volume mounts: {volume_binds}"
+                            )
+
+                containers = self.client.containers.list(
+                    all=True, filters={"name": args["name"]}
+                )
+                if (
+                    len(containers) > 0
+                ):  # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
+                    for container in containers:
+                        container.remove(force=True)
+                self.containers.append(
+                    self.client.containers.run(
+                        **args,
+                        detach=True,
+                        network_mode=f"container:{pause_docker_name}",
+                    )
+                )
 
             except Exception as e:
                 print(f"[ERROR]Failed to create container {container.name}: {str(e)}")
@@ -124,10 +154,12 @@ class Pod:
                 import traceback
 
                 print(f"[DEBUG]详细错误: {traceback.format_exc()}")
-        
+
         # 获取Pod的IP地址
         self.subnet_ip = self._get_pod_ip()
-        print(f"[INFO]Pod {self.config.namespace}:{self.config.name} IP地址: {self.subnet_ip}")
+        print(
+            f"[INFO]Pod {self.config.namespace}:{self.config.name} IP地址: {self.subnet_ip}"
+        )
         if api_client and uri_config:
             api_client.put(
                 uri_config.POD_SPEC_IP_URL.format(
@@ -135,7 +167,7 @@ class Pod:
                 ),
                 {"subnet_ip": self.subnet_ip},
             )
-        
+
         self.status = STATUS.RUNNING
 
     def _get_pod_ip(self) -> str:
@@ -143,21 +175,21 @@ class Pod:
         try:
             pause_container = self.containers[0]  # pause容器是第一个创建的
             pause_container.reload()  # 确保获取最新状态
-            
+
             # 使用docker inspect获取容器网络信息
             container_info = self.client.api.inspect_container(pause_container.id)
-            
+
             # 获取IP地址
-            ip_address = container_info['NetworkSettings']['IPAddress']
-            
+            ip_address = container_info["NetworkSettings"]["IPAddress"]
+
             # 如果默认网络模式没有IP，尝试从自定义网络获取
             if not ip_address:
-                networks = container_info['NetworkSettings']['Networks']
+                networks = container_info["NetworkSettings"]["Networks"]
                 for network_name, network_config in networks.items():
-                    if network_config.get('IPAddress'):
-                        ip_address = network_config['IPAddress']
+                    if network_config.get("IPAddress"):
+                        ip_address = network_config["IPAddress"]
                         break
-            
+
             return ip_address
         except Exception as e:
             print(f"[ERROR]获取Pod IP地址失败: {str(e)}")
@@ -169,11 +201,11 @@ class Pod:
         for container in self.containers:
             self.client.api.stop(container.id)
             self.client.api.remove_container(container.id)
-        
+
         # Cleanup mounted volumes
-        if hasattr(self, 'volume_resolver'):
+        if hasattr(self, "volume_resolver"):
             self.volume_resolver.cleanup_volumes()
-            
+
         print(f"[INFO]Pod {self.config.namespace}:{self.config.name} removed.")
 
     # docker start

@@ -5,6 +5,4 @@ Provides ServiceProxy for traffic forwarding and network rules.
 
 from .serviceProxy import ServiceProxy
 
-__all__ = [
-    'ServiceProxy'
-]
+__all__ = ["ServiceProxy"]

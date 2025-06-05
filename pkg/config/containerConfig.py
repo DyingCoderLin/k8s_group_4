@@ -10,8 +10,8 @@ class ContainerConfig:
             port = dict()
             for port_json in arg_json.get("port"):
                 protocol = port_json.get("protocol", "tcp").lower()
-                port[f"{port_json.get('containerPort')}/{protocol}"] = (
-                    port_json.get("hostPort", None)
+                port[f"{port_json.get('containerPort')}/{protocol}"] = port_json.get(
+                    "hostPort", None
                 )
             self.port["ports"] = port
 
@@ -61,24 +61,28 @@ class ContainerConfig:
                         elif volume_config["type"] == "emptyDir":
                             host_path = volume_config["path"]
                         else:
-                            raise ValueError(f"Unsupported volume type: {volume_config['type']}")
+                            raise ValueError(
+                                f"Unsupported volume type: {volume_config['type']}"
+                            )
                     else:
                         raise ValueError(f"Invalid volume config for {volume_name}")
-                    
+
                     volumes[host_path] = {"bind": bind_path, "mode": mode}
             self.volumes["volumes"] = volumes
 
     def dockerapi_args(self):
         container_args = {
-            'image': self.image,
-            'name': self.name,
-            'command': self.command + self.args,
+            "image": self.image,
+            "name": self.name,
+            "command": self.command + self.args,
             **self.volumes,
             **self.port,
             **self.resources,
         }
-        if 'cpu_quota' in container_args and isinstance(container_args['cpu_quota'], float):
-            container_args['cpu_quota'] = int(container_args['cpu_quota'])
+        if "cpu_quota" in container_args and isinstance(
+            container_args["cpu_quota"], float
+        ):
+            container_args["cpu_quota"] = int(container_args["cpu_quota"])
         return container_args
 
     def to_dict(self):

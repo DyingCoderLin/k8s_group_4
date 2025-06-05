@@ -36,11 +36,15 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
-    
+
     # Service相关
     GLOBAL_SERVICES_KEY = "/api/v1/namespaces/services"  # 修正为与 uriConfig.py 一致
-    SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
-    SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
+    SERVICES_KEY = (
+        "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
+    )
+    SERVICE_SPEC_KEY = (
+        "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
+    )
     SERVICES_VALUE = ServiceConfig
 
     # PersistentVolume相关 (集群级别)
@@ -53,5 +57,3 @@ class EtcdConfig:
     PVCS_KEY = "/api/v1/namespaces/persistentvolumeclaims/{namespace}"
     PVC_SPEC_KEY = "/api/v1/namespaces/persistentvolumeclaims/{namespace}/{name}"
     PVCS_VALUE = PVCConfig
-    
-    

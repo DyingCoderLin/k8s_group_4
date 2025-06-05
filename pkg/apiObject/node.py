@@ -20,7 +20,7 @@ class Node:
     def __init__(self, node_config: NodeConfig, uri_config: URIConfig = None):
         self.config = node_config
         self.uri_config = uri_config
-        
+
         # 设置标准输出无缓冲，确保日志实时写入
         sys.stdout.reconfigure(write_through=True)
         sys.stderr.reconfigure(write_through=True)
@@ -31,7 +31,9 @@ class Node:
         )
         register_response = requests.post(uri, json=self.config.json)
         if register_response.status_code != 200:
-            print(f"[ERROR]Cannot register to ApiServer with code {register_response.status_code}")
+            print(
+                f"[ERROR]Cannot register to ApiServer with code {register_response.status_code}"
+            )
             return
         self.config.status = STATUS.ONLINE
         res_json = register_response.json()
@@ -41,7 +43,9 @@ class Node:
         print(f"[INFO]Successfully register to ApiServer.")
 
         # 从apiServer索要持久化的Pod状态信息，并运行kubelet
-        uri = self.uri_config.PREFIX + self.uri_config.NODE_ALL_PODS_URL.format(name = self.config.name)
+        uri = self.uri_config.PREFIX + self.uri_config.NODE_ALL_PODS_URL.format(
+            name=self.config.name
+        )
         register_response = requests.get(uri)
         if register_response.status_code != 200:
             print(f"[ERROR]Cannot fetch Pod status from apiServer")
@@ -53,7 +57,9 @@ class Node:
         # 定期发送心跳
         while True:
             sleep(2)
-            uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(name=self.config.name)
+            uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(
+                name=self.config.name
+            )
             register_response = requests.put(uri, json=self.config.json)
 
 
@@ -62,12 +68,12 @@ if __name__ == "__main__":
     # 设置标准输出无缓冲，确保日志实时写入
     sys.stdout.reconfigure(write_through=True)
     sys.stderr.reconfigure(write_through=True)
-    
+
     # 记录日志文件路径
-    log_file = os.environ.get('NODE_LOG_FILE')
+    log_file = os.environ.get("NODE_LOG_FILE")
     if log_file:
         print(f"[INFO]Node logs will be written to: {log_file}")
-        
+
     import yaml
     from pkg.config.globalConfig import GlobalConfig
 

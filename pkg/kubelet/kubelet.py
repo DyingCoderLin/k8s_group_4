@@ -13,12 +13,13 @@ from pkg.apiServer.apiClient import ApiClient
 # 配置日志记录
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),  # 输出到标准输出
-    ]
+    ],
 )
-logger = logging.getLogger('Kubelet')
+logger = logging.getLogger("Kubelet")
+
 
 class Kubelet:
     """
@@ -94,7 +95,7 @@ class Kubelet:
                     )
                     return
             try:  # 尝试创建docker，可能出现名称重复、客户端未连接等容器运行时错误
-                new_pod = Pod(config,self.api_client,self.uri_config)
+                new_pod = Pod(config, self.api_client, self.uri_config)
             except Exception as e:
                 print(f"[ERROR]Docker create fail: {e}")
                 return

@@ -105,8 +105,12 @@ class URIConfig:
     # PersistentVolumeClaim 相关 (命名空间级别)
     GLOBAL_PVCS_URL = URIString("/api/v1/persistentvolumeclaims")
     PVCS_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims")
-    PVC_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>")
-    PVC_SPEC_STATUS_URL = URIString("/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>/status")
+    PVC_SPEC_URL = URIString(
+        "/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>"
+    )
+    PVC_SPEC_STATUS_URL = URIString(
+        "/api/v1/namespaces/<namespace>/persistentvolumeclaims/<name>/status"
+    )
     # Scheduler 相关
     SCHEDULER_URL = URIString("/api/v1/scheduler")
     SCHEDULER_POD_URL = URIString(
