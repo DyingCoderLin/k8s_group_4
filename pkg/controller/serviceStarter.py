@@ -18,6 +18,7 @@ sys.path.insert(0, project_root)
 from pkg.controller.serviceController import ServiceController
 from pkg.config.uriConfig import URIConfig
 from pkg.config.etcdConfig import EtcdConfig
+from pkg.config.kafkaConfig import KafkaConfig
 from pkg.apiServer.etcd import Etcd
 
 
@@ -57,9 +58,11 @@ class ServiceStarter:
             
             # 初始化Service控制器
             uri_config = URIConfig()
+            kafka_config = KafkaConfig()
             self.service_controller = ServiceController(
                 etcd_client=self.etcd_client,
                 uri_config=uri_config,
+                kafka_config=kafka_config,
             )
             
             # 启动控制器
