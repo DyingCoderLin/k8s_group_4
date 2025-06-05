@@ -77,7 +77,7 @@ class ServiceController:
                 self._sync_services()
                 time.sleep(self.sync_interval)
             except Exception as e:
-                self.logger.error(f"同步Service失败: {e}")
+                print(f"同步Service失败: {e}")
                 time.sleep(self.sync_interval)
     
     def _sync_services(self):
@@ -86,7 +86,7 @@ class ServiceController:
             # 从API Server获取所有Service
             services_data = self._get_all_services()
             if not services_data:
-                self.logger.warning("从API Server获取Service列表失败或者目前还没有service")
+                print("从API Server获取Service列表失败或者目前还没有service")
                 return
             
             # 获取所有Pod
@@ -115,14 +115,14 @@ class ServiceController:
                         self._create_service(service_name, service_config, pods)
                         
                 except Exception as e:
-                    self.logger.error(f"处理Service {service_name} 失败: {e}")
+                    print(f"处理Service {service_name} 失败: {e}")
             
             # 清理不再存在的Service
             self._cleanup_services(current_services)
             
             print(f"同步所有Service完成，self.services: {self.services.keys()}")
         except Exception as e:
-            self.logger.error(f"同步所有Service失败: {e}")
+            print(f"同步所有Service失败: {e}")
     
     def _get_all_services(self):
         """从API Server获取所有Service"""
@@ -138,7 +138,7 @@ class ServiceController:
             return []
             
         except Exception as e:
-            self.logger.error(f"获取Service列表失败: {e}")
+            print(f"获取Service列表失败: {e}")
             return []
     
     def _get_all_pods(self) -> List:
@@ -167,7 +167,7 @@ class ServiceController:
                 return result
             return []
         except Exception as e:
-            self.logger.error(f"获取Pod列表失败: {e}")
+            print(f"获取Pod列表失败: {e}")
             return []
     
     def _create_service(self, service_name: str, service_config: ServiceConfig, pods: List):
@@ -199,7 +199,7 @@ class ServiceController:
             print(f"Service {service_name} 创建成功")
             
         except Exception as e:
-            self.logger.error(f"创建Service {service_name} 失败: {e}")
+            print(f"创建Service {service_name} 失败: {e}")
             raise
     
     def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
@@ -224,7 +224,7 @@ class ServiceController:
             self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
 
         except Exception as e:
-            self.logger.error(f"更新Service {service_name} 失败: {e}")
+            print(f"更新Service {service_name} 失败: {e}")
             raise
     
     def _cleanup_services(self, current_services: Set[str]):
@@ -243,7 +243,7 @@ class ServiceController:
                     del self.services[service_name]
                     del self.service_configs[service_name]
                 except Exception as e:
-                    self.logger.error(f"清理Service {service_name} 失败: {e}")
+                    print(f"清理Service {service_name} 失败: {e}")
     
     def get_service(self, service_name: str) -> Service:
         """获取Service"""
@@ -283,7 +283,7 @@ class ServiceController:
             self._sync_services()
             
         except Exception as e:
-            self.logger.error(f"处理Pod事件失败: {e}")
+            print(f"处理Pod事件失败: {e}")
     
     def force_sync(self):
         """强制同步所有Service"""
@@ -291,7 +291,7 @@ class ServiceController:
             self._sync_services()
             print("强制同步完成")
         except Exception as e:
-            self.logger.error(f"强制同步失败: {e}")
+            print(f"强制同步失败: {e}")
             raise
     
     def _get_all_nodes(self) -> List:
@@ -306,20 +306,20 @@ class ServiceController:
             return []
             
         except Exception as e:
-            self.logger.error(f"获取节点列表失败: {e}")
+            print(f"获取节点列表失败: {e}")
             return []
     
     def _broadcast_service_rules(self, action: str, service_name: str, service_config: ServiceConfig, endpoints: List[str] = None):
         """向所有节点广播Service规则更新"""
         if not self.kafka_producer:
-            self.logger.warning("Kafka生产者未配置，无法广播Service规则")
+            print("Kafka生产者未配置，无法广播Service规则")
             return
             
         try:
             # 获取所有节点
             nodes = self._get_all_nodes()
             if not nodes:
-                self.logger.warning("未找到任何节点，无法广播Service规则")
+                print("未找到任何节点，无法广播Service规则")
                 return
             
             # 准备Service规则数据
@@ -345,14 +345,14 @@ class ServiceController:
                         value=json.dumps(rule_data).encode('utf-8')
                     )
                     
-                    self.logger.debug(f"已向节点 {node_name} 发送Service {action}消息")
+                    print(f"已向节点 {node_name} 发送Service {action}消息")
                     
                 except Exception as e:
-                    self.logger.error(f"向节点发送Service规则失败: {e}")
+                    print(f"向节点发送Service规则失败: {e}")
             
             # 确保消息发送
             self.kafka_producer.flush()
             print(f"已向 {len(nodes)} 个节点广播Service {action}规则: {service_name}")
             
         except Exception as e:
-            self.logger.error(f"广播Service规则失败: {e}")
+            print(f"广播Service规则失败: {e}")
