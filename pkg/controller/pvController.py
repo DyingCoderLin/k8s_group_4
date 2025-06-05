@@ -306,7 +306,7 @@ class PVController:
         try:
             pv_key = self.uri_config.PV_SPEC_URL.format(name=name)
             print(f"[INFO] Unbinding PV {name} in etcd")
-            response = self.apiclient.put(pv_key, {"status": "Available", "claimRef": None})
+            response = self.apiclient.put(pv_key, {"status": "Available", "claimRef": ""})
 
         except Exception as e:
             print(f"[ERROR] Failed to unbind PV {name} in etcd: {str(e)}")

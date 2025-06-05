@@ -17,7 +17,7 @@ class PVConfig:
         
         # 状态信息
         self.status = arg_json.get("status", "Available")  # Available, Bound, Released
-        self.claim_ref = arg_json.get("claimRef", None)  # 绑定的 PVC 引用
+        self.claim_ref = arg_json.get("claimRef", "")  # 绑定的 PVC 引用
         
     def _parse_volume_source(self, spec):
         """解析存储源配置"""
