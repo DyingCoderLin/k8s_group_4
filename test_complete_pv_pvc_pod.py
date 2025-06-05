@@ -129,7 +129,11 @@ class PVCPodTester:
             print(f"   ✅ Pod {pod_config.name} 创建成功")
             print(f"   📍 Pod 容器数量: {len(pod.containers)}")
             if pod.containers:
-                print(f"   📍 主容器 ID: {pod.containers[0].id}...")
+                main_container = self.get_main_container(pod)
+                if main_container:
+                    print(f"   📍 主容器 ID: {main_container.id[:12]}...")
+                else:
+                    print(f"   📍 主容器 ID: {pod.containers[0].id[:12]}...")
             print(f"   📊 Pod 状态: {pod.status}")
             print(f"   🌐 Pod IP: {pod.subnet_ip}")
             
@@ -141,22 +145,47 @@ class PVCPodTester:
             print(f"   🔍 错误详情: {traceback.format_exc()}")
             return None
     
+    def get_main_container(self, pod):
+        """获取主容器（非pause容器）"""
+        if not hasattr(pod, 'containers') or not pod.containers:
+            return None
+            
+        # 查找非pause容器
+        for container in pod.containers:
+            # 获取容器名称信息
+            cmd = f"docker inspect {container.id} --format '{{{{.Name}}}}'"
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                container_name = result.stdout.strip()
+                print(f"   🔍 检查容器: {container.id[:12]} - {container_name}")
+                
+                # 如果容器名不包含pause，则认为是主容器
+                if 'pause' not in container_name.lower():
+                    print(f"   ✅ 找到主容器: {container.id[:12]}")
+                    return container
+                    
+        # 如果没找到非pause容器，返回第一个容器
+        print(f"   ⚠️ 未找到非pause容器，使用第一个容器")
+        return pod.containers[0] if pod.containers else None
+
     def check_pod_status(self, pod):
         """检查Pod状态"""
         print(f"🔍 检查Pod状态...")
         
         try:
-            if hasattr(pod, 'containers') and pod.containers:
+            main_container = self.get_main_container(pod)
+            if main_container:
                 # 检查容器是否在运行
-                cmd = f"docker ps --filter id={pod.containers[0].id} --format 'table {{{{.ID}}}}\\t{{{{.Image}}}}\\t{{{{.Status}}}}'"
+                cmd = f"docker ps --filter id={main_container.id} --format 'table {{{{.ID}}}}\\t{{{{.Image}}}}\\t{{{{.Status}}}}'"
                 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 
-                if result.returncode == 0 and pod.containers[0].id in result.stdout:
-                    print(f"   ✅ Pod容器正在运行")
+                if result.returncode == 0 and main_container.id in result.stdout:
+                    print(f"   ✅ Pod主容器正在运行")
                     print(f"   📊 容器信息: {result.stdout.strip()}")
                     return True
                 else:
-                    print(f"   ❌ Pod容器未运行")
+                    print(f"   ❌ Pod主容器未运行")
                     return False
             else:
                 print(f"   ❌ Pod没有容器ID")
@@ -171,8 +200,9 @@ class PVCPodTester:
         print(f"💾 检查卷挂载情况...")
         
         try:
-            if not hasattr(pod, 'containers') or not pod.containers:
-                print(f"   ❌ Pod没有容器信息")
+            main_container = self.get_main_container(pod)
+            if not main_container:
+                print(f"   ❌ Pod没有主容器信息")
                 return False
             
             # 检查容器内的挂载点
@@ -184,7 +214,7 @@ class PVCPodTester:
             all_mounted = True
             
             for mount_path, mount_type in mount_checks:
-                cmd = f"docker exec {pod.containers[0].id} ls -la {mount_path}"
+                cmd = f"docker exec {main_container.id} ls -la {mount_path}"
                 result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
                 
                 if result.returncode == 0:
@@ -205,8 +235,9 @@ class PVCPodTester:
         print(f"💽 测试数据持久性...")
         
         try:
-            if not hasattr(pod, 'containers') or not pod.containers:
-                print(f"   ❌ Pod没有容器信息")
+            main_container = self.get_main_container(pod)
+            if not main_container:
+                print(f"   ❌ Pod没有主容器信息")
                 return False
             
             # 在挂载的卷中创建测试文件
@@ -218,7 +249,7 @@ class PVCPodTester:
             ]
             
             for cmd, description in test_commands:
-                docker_cmd = f"docker exec {pod.containers[0].id} bash -c '{cmd}'"
+                docker_cmd = f"docker exec {main_container.id} bash -c '{cmd}'"
                 result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
                 
                 if result.returncode == 0:
