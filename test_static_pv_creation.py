@@ -180,7 +180,7 @@ def list_all_pvs():
                     spec = pv.get('spec', {})
                     name = metadata.get('name', 'Unknown')
                     status = pv.get('status', 'Unknown')
-                    claim_ref = pv.get('claim_ref', 'None')
+                    claim_ref = pv.get('claimRef', 'None')
                     
                     # 确定存储类型
                     storage_type = "Unknown"
