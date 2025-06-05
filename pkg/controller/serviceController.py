@@ -191,8 +191,8 @@ class ServiceController:
             self.service_configs[service_name] = service_config
             
             # 向所有节点广播Service创建规则
-            endpoints = [f"{pod.get('status', {}).get('podIP', '')}:{service_config.get_port_config()['targetPort']}" 
-                        for pod in matching_pods if pod.get('status', {}).get('podIP')]
+            endpoints = [f"{pod.get('subnet_ip', '')}:{service_config.get_port_config()['targetPort']}" 
+                        for pod in matching_pods if pod.get('subnet_ip')]
             self._broadcast_service_rules("CREATE", service_name, service_config, endpoints)
             
             self.logger.info(f"Service {service_name} 创建成功")
