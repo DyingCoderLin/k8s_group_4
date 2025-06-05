@@ -218,8 +218,8 @@ class ServiceController:
             old_service.update_endpoints(matching_pods)
             
             # 向所有节点广播Service更新规则
-            endpoints = [f"{pod.get('status', {}).get('podIP', '')}:{new_config.get_port_config()['targetPort']}" 
-                        for pod in matching_pods if pod.get('status', {}).get('podIP')]
+            endpoints = [f"{pod.get("subnet_ip","")}:{new_config.get_port_config()['targetPort']}" 
+                        for pod in matching_pods if pod.get('subnet_ip')]
             self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
 
         except Exception as e:

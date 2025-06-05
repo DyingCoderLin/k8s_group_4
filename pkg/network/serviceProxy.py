@@ -195,6 +195,7 @@ class ServiceProxy:
                     # 最后一个端点不需要概率判断
                     self._run_iptables([
                         "-t", "nat", "-A", chain_name,
+                        "-p", protocol.lower(),
                         "-j", "DNAT",
                         "--to-destination", endpoint
                     ])
@@ -203,6 +204,7 @@ class ServiceProxy:
                     probability = 1.0 / (endpoint_count - i)
                     self._run_iptables([
                         "-t", "nat", "-A", chain_name,
+                        "-p", protocol.lower(),
                         "-m", "statistic",
                         "--mode", "random",
                         "--probability", f"{probability:.6f}",
