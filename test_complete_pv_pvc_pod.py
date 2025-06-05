@@ -467,15 +467,26 @@ class PVCPodTester:
             return False
             
         finally:
-            # 清理资源
-            print("\n🧹 清理资源")
+            # 用户确认后清理资源
+            print("\n" + "="*60)
+            print("🧹 测试完成，准备清理资源")
+            print(f"📦 将要清理的资源:")
+            if pod:
+                print(f"   - Pod: {pod_data.get('metadata', {}).get('name', 'unknown')}")
+            for pvc_name in created_pvcs:
+                print(f"   - PVC: {pvc_name}")
+            
+            print("\n⚠️  注意: 清理后所有测试数据将被删除")
+            input("🔄 按 Enter 键开始清理资源...")
+            
+            print("\n🧹 开始清理资源...")
             if pod:
                 self.cleanup_pod(pod)
             
             for pvc_name in created_pvcs:
                 self.cleanup_pvc(pvc_name)
             
-            print("✨ 测试完成")
+            print("✨ 清理完成，测试结束")
 
 def main():
     """主函数"""
@@ -516,6 +527,12 @@ def main():
             else:
                 print(f"\n❌ PVC列表获取失败！")
                 return 1
+            
+        elif command == "--clean":
+            # 添加清理功能的实现
+            print("🧹 清理功能暂未实现")
+            return 0
+            
                 
         else:
             print("❌ 未知的命令参数")
