@@ -205,6 +205,26 @@ class PVCPodTester:
                 print(f"   ❌ Pod没有主容器信息")
                 return False
             
+            # 首先检查Docker容器的卷挂载信息
+            print(f"   🔍 检查Docker容器卷挂载:")
+            inspect_cmd = f"docker inspect {main_container.id}"
+            inspect_result = subprocess.run(inspect_cmd, shell=True, capture_output=True, text=True)
+            
+            if inspect_result.returncode == 0:
+                import json
+                try:
+                    container_info = json.loads(inspect_result.stdout)[0]
+                    mounts = container_info.get('Mounts', [])
+                    print(f"      📋 容器挂载信息:")
+                    for mount in mounts:
+                        source = mount.get('Source', 'Unknown')
+                        destination = mount.get('Destination', 'Unknown')
+                        mount_type = mount.get('Type', 'Unknown')
+                        rw = mount.get('RW', False)
+                        print(f"         📁 {mount_type}: {source} -> {destination} (RW: {rw})")
+                except json.JSONDecodeError:
+                    print(f"      ❌ 无法解析容器信息")
+            
             # 检查容器内的挂载点
             mount_checks = [
                 ("/hostpath-data", "hostPath存储"),
@@ -222,6 +242,7 @@ class PVCPodTester:
                     print(f"      内容: {result.stdout.strip()}")
                 else:
                     print(f"   ❌ {mount_type} 挂载失败: {mount_path}")
+                    print(f"      错误: {result.stderr.strip()}")
                     all_mounted = False
             
             return all_mounted
@@ -240,30 +261,90 @@ class PVCPodTester:
                 print(f"   ❌ Pod没有主容器信息")
                 return False
             
-            # 在挂载的卷中创建测试文件
+            print(f"   🔍 使用主容器 {main_container.id[:12]} 进行测试")
+            
+            # 首先检查目录是否存在和权限
+            check_commands = [
+                ("ls -la /", "检查根目录"),
+                ("ls -la /hostpath-data", "检查hostPath目录"),
+                ("ls -la /nfs-data", "检查NFS目录"),
+                ("whoami", "检查当前用户"),
+                ("id", "检查用户权限"),
+                ("pwd", "检查当前工作目录")
+            ]
+            
+            print("   📋 首先检查容器环境:")
+            for cmd, description in check_commands:
+                docker_cmd = f"docker exec {main_container.id} {cmd}"
+                result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
+                
+                print(f"      🔍 {description}: {cmd}")
+                if result.returncode == 0:
+                    print(f"         ✅ 成功: {result.stdout.strip()}")
+                else:
+                    print(f"         ❌ 失败: {result.stderr.strip()}")
+            
+            # 尝试创建测试文件，使用更详细的错误报告
             test_commands = [
-                ("echo 'hostPath test data' > /hostpath-data/test.txt", "hostPath存储写入"),
-                ("echo 'NFS test data' > /nfs-data/test.txt", "NFS存储写入"),
+                ("touch /hostpath-data/test.txt && echo 'hostPath test data' > /hostpath-data/test.txt", "hostPath存储写入"),
+                ("touch /nfs-data/test.txt && echo 'NFS test data' > /nfs-data/test.txt", "NFS存储写入"),
                 ("cat /hostpath-data/test.txt", "hostPath存储读取"),
                 ("cat /nfs-data/test.txt", "NFS存储读取")
             ]
+            
+            print("   📝 执行数据持久性测试:")
+            all_success = True
             
             for cmd, description in test_commands:
                 docker_cmd = f"docker exec {main_container.id} bash -c '{cmd}'"
                 result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
                 
+                print(f"      🔍 {description}: {cmd}")
                 if result.returncode == 0:
-                    print(f"   ✅ {description} 成功")
+                    print(f"         ✅ 成功")
                     if "读取" in description:
-                        print(f"      内容: {result.stdout.strip()}")
+                        print(f"         📄 内容: {result.stdout.strip()}")
                 else:
-                    print(f"   ❌ {description} 失败: {result.stderr}")
-                    return False
+                    print(f"         ❌ 失败")
+                    print(f"         🔴 错误输出: {result.stderr.strip()}")
+                    print(f"         🔵 标准输出: {result.stdout.strip()}")
+                    
+                    # 如果是写入失败，尝试更详细的权限检查
+                    if "写入" in description:
+                        dir_path = "/hostpath-data" if "hostPath" in description else "/nfs-data"
+                        perm_cmd = f"docker exec {main_container.id} ls -ld {dir_path}"
+                        perm_result = subprocess.run(perm_cmd, shell=True, capture_output=True, text=True)
+                        print(f"         📁 目录权限: {perm_result.stdout.strip()}")
+                        
+                        # 尝试使用sudo（如果容器中有）
+                        sudo_cmd = f"docker exec {main_container.id} bash -c 'echo \"test with sudo\" | sudo tee {dir_path}/test_sudo.txt'"
+                        sudo_result = subprocess.run(sudo_cmd, shell=True, capture_output=True, text=True)
+                        if sudo_result.returncode == 0:
+                            print(f"         🔧 sudo写入成功，可能是权限问题")
+                        else:
+                            print(f"         🔧 sudo也失败: {sudo_result.stderr.strip()}")
+                    
+                    all_success = False
             
-            return True
+            # 最后再次检查文件是否存在
+            print("   🔍 最终文件检查:")
+            final_checks = [
+                ("ls -la /hostpath-data/", "hostPath目录内容"),
+                ("ls -la /nfs-data/", "NFS目录内容")
+            ]
+            
+            for cmd, description in final_checks:
+                docker_cmd = f"docker exec {main_container.id} {cmd}"
+                result = subprocess.run(docker_cmd, shell=True, capture_output=True, text=True)
+                print(f"      📁 {description}:")
+                print(f"         {result.stdout.strip()}")
+            
+            return all_success
             
         except Exception as e:
             print(f"   ❌ 测试数据持久性异常: {str(e)}")
+            import traceback
+            print(f"   🔍 异常详情: {traceback.format_exc()}")
             return False
     
     def verify_nfs_remote_data(self):
