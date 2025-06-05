@@ -232,7 +232,7 @@ class ApiServer:
         return {
             "kafka_server": self.kafka_config.BOOTSTRAP_SERVER,
             "kafka_topic": pod_topic,
-            "serviceproxy_topic": serviceproxy_topic,
+            # "serviceproxy_topic": serviceproxy_topic,
         }
 
     # 获取集群中所有node
