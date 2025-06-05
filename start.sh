@@ -128,8 +128,8 @@ service_controller_pid=$(start_component "ServiceController" "python3 -m pkg.con
 pids+=($service_controller_pid)
 
 # 7. 启动 PV 控制器
-# pv_controller_pid=$(start_component "PVController" "python3 -m pkg.controller.pvStarter" "${PROJECT_ROOT}/logs/pv_controller.log")
-# pids+=($pv_controller_pid)
+pv_controller_pid=$(start_component "PVController" "python3 -m pkg.controller.pvStarter" "${PROJECT_ROOT}/logs/pv_controller.log")
+pids+=($pv_controller_pid)
 
 echo "${YELLOW}===== 所有 K8S 组件已启动 =====${NC}"
 echo "${GREEN}ApiServer PID: $api_server_pid${NC}"
