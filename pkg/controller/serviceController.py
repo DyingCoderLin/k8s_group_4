@@ -28,9 +28,9 @@ class ServiceController:
                 self.kafka_producer = Producer({
                     'bootstrap.servers': kafka_config.BOOTSTRAP_SERVER
                 })
-                self.logger.info("ServiceController已连接到Kafka")
+                print("ServiceController已连接到Kafka")
             except Exception as e:
-                self.logger.error(f"连接Kafka失败: {e}")
+                print(f"连接Kafka失败: {e}")
         
         # Service缓存
         self.services: Dict[str, Service] = {}  # service_name -> Service
@@ -41,18 +41,18 @@ class ServiceController:
         self.sync_thread = None
         self.sync_interval = 10  # 同步间隔（秒）
         
-        # self.logger.info(f"ServiceController初始化完成，namespace: {namespace}")
+        # self.print(f"ServiceController初始化完成，namespace: {namespace}")
     
     def start(self):
         """启动Service控制器"""
         if self.running:
-            self.logger.warning("ServiceController已经在运行")
+            print("ServiceController已经在运行")
             return
         
         self.running = True
         self.sync_thread = threading.Thread(target=self._sync_loop, daemon=True)
         self.sync_thread.start()
-        self.logger.info("ServiceController已启动")
+        print("ServiceController已启动")
     
     def stop(self):
         """停止Service控制器"""
@@ -65,11 +65,11 @@ class ServiceController:
             try:
                 service.stop()
             except Exception as e:
-                self.logger.error(f"停止Service失败: {e}")
+                print(f"停止Service失败: {e}")
         
         self.services.clear()
         self.service_configs.clear()
-        self.logger.info("ServiceController已停止")
+        self.print("ServiceController已停止")
     
     def _sync_loop(self):
         """同步循环"""
@@ -172,7 +172,7 @@ class ServiceController:
     def _create_service(self, service_name: str, service_config: ServiceConfig, pods: List):
         """创建新的Service"""
         try:
-            self.logger.info(f"创建新Service: {service_name}")
+            self.print(f"创建新Service: {service_name}")
             
             # 创建Service实例
             service = Service(service_config)
@@ -195,7 +195,7 @@ class ServiceController:
                         for pod in matching_pods if pod.get('subnet_ip')]
             self._broadcast_service_rules("CREATE", service_name, service_config, endpoints)
             
-            self.logger.info(f"Service {service_name} 创建成功")
+            self.print(f"Service {service_name} 创建成功")
             
         except Exception as e:
             self.logger.error(f"创建Service {service_name} 失败: {e}")
@@ -204,7 +204,7 @@ class ServiceController:
     def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
         """更新现有Service"""
         try:
-            self.logger.info(f"更新Service: {service_name}")
+            self.print(f"更新Service: {service_name}")
             
             old_service = self.services[service_name]
             
@@ -231,7 +231,7 @@ class ServiceController:
         for service_name in list(self.services.keys()):
             if service_name not in current_services:
                 try:
-                    self.logger.info(f"清理不再存在的Service: {service_name}")
+                    self.print(f"清理不再存在的Service: {service_name}")
                     service = self.services[service_name]
                     service_config = self.service_configs[service_name]
                     
@@ -276,7 +276,7 @@ class ServiceController:
     def handle_pod_event(self, event_type: str, pod):
         """处理Pod事件（添加、删除、更新）"""
         try:
-            self.logger.info(f"处理Pod事件: {event_type}, Pod: {pod.get('name', 'unknown') if isinstance(pod, dict) else getattr(pod, 'name', 'unknown')}")
+            self.print(f"处理Pod事件: {event_type}, Pod: {pod.get('name', 'unknown') if isinstance(pod, dict) else getattr(pod, 'name', 'unknown')}")
             
             # 对于Pod变化，我们简单地触发一次同步
             self._sync_services()
@@ -288,7 +288,7 @@ class ServiceController:
         """强制同步所有Service"""
         try:
             self._sync_services()
-            self.logger.info("强制同步完成")
+            self.print("强制同步完成")
         except Exception as e:
             self.logger.error(f"强制同步失败: {e}")
             raise
@@ -351,7 +351,7 @@ class ServiceController:
             
             # 确保消息发送
             self.kafka_producer.flush()
-            self.logger.info(f"已向 {len(nodes)} 个节点广播Service {action}规则: {service_name}")
+            self.print(f"已向 {len(nodes)} 个节点广播Service {action}规则: {service_name}")
             
         except Exception as e:
             self.logger.error(f"广播Service规则失败: {e}")
