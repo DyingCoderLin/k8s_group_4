@@ -44,7 +44,7 @@ class ServiceStarter:
     def setup_signal_handlers(self):
         """设置信号处理器"""
         def signal_handler(signum, frame):
-            self.logger.info(f"接收到信号 {signum}，正在关闭Service控制器...")
+            self.print(f"接收到信号 {signum}，正在关闭Service控制器...")
             self.stop()
             sys.exit(0)
         
@@ -54,7 +54,7 @@ class ServiceStarter:
     def start(self):
         """启动Service控制器"""
         try:
-            self.logger.info("启动Service控制器...")
+            self.print("启动Service控制器...")
             
             # 初始化Service控制器
             uri_config = URIConfig()
@@ -74,7 +74,7 @@ class ServiceStarter:
                 time.sleep(1)
                 
         except KeyboardInterrupt:
-            self.logger.info("接收到键盘中断，正在停止...")
+            self.print("接收到键盘中断，正在停止...")
             self.stop()
         except Exception as e:
             self.logger.error(f"Service控制器启动失败: {e}")
