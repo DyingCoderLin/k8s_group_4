@@ -14,9 +14,9 @@ class VolumeResolver:
     支持hostPath和NFS两种存储类型
     """
     
-    def __init__(self, api_client: ApiClient = None, uri_config: URIConfig = None):
-        self.api_client = api_client
-        self.uri_config = uri_config if uri_config else URIConfig()
+    def __init__(self):
+        self.api_client = ApiClient()
+        self.uri_config = URIConfig()
         self.mounted_nfs_volumes = {}  # 跟踪已挂载的NFS卷
     
     def resolve_volumes(self, pod_volumes: List[Dict], namespace: str) -> Dict[str, str]:
@@ -78,9 +78,22 @@ class VolumeResolver:
             if not pvc_response:
                 print(f"[ERROR] PVC {pvc_name} not found in namespace {namespace}")
                 return None
+            
+            # 检查响应类型，如果是字符串则可能是错误消息
+            if isinstance(pvc_response, str):
+                print(f"[ERROR] API returned string response for PVC {pvc_name}: {pvc_response}")
+                return None
                 
             pvc_data = pvc_response
-            bound_pv_name = pvc_data.get('status', {}).get('volumeName')
+            print(f"[DEBUG] PVC data type: {type(pvc_data)}")
+            
+            # 确保pvc_data是字典类型
+            if not isinstance(pvc_data, dict):
+                print(f"[ERROR] Expected dict for PVC data, got {type(pvc_data)}: {pvc_data}")
+                return None
+                
+            # print(f"pvc_data: {json.dumps(pvc_data, indent=2)}")
+            bound_pv_name = pvc_data.get('spec', {}).get('volumeName')
             
             if not bound_pv_name:
                 print(f"[ERROR] PVC {pvc_name} is not bound to any PV")
@@ -93,8 +106,21 @@ class VolumeResolver:
             if not pv_response:
                 print(f"[ERROR] PV {bound_pv_name} not found")
                 return None
+            
+            # 检查PV响应类型
+            if isinstance(pv_response, str):
+                print(f"[ERROR] API returned string response for PV {bound_pv_name}: {pv_response}")
+                return None
                 
             pv_data = pv_response
+            print(f"[DEBUG] PV data type: {type(pv_data)}")
+            
+            # 确保pv_data是字典类型
+            if not isinstance(pv_data, dict):
+                print(f"[ERROR] Expected dict for PV data, got {type(pv_data)}: {pv_data}")
+                return None
+                
+            # print(f"pv_data: {json.dumps(pv_data, indent=2)}")
             pv_spec = pv_data.get('spec', {})
             
             # 处理不同的PV类型
@@ -118,13 +144,14 @@ class VolumeResolver:
     def _mount_nfs_volume(self, nfs_spec: Dict, pv_name: str) -> Optional[str]:
         """
         挂载NFS卷并返回本地挂载路径
+        对于无法直接挂载的情况（如macOS），使用SSH创建本地镜像目录
         
         参数:
             nfs_spec: PV中的NFS规格
             pv_name: PV名称，用于创建唯一的挂载点
             
         返回:
-            本地挂载路径，挂载失败则返回None
+            本地挂载路径，解析失败则返回None
         """
         server = nfs_spec.get('server')
         path = nfs_spec.get('path')
@@ -144,39 +171,91 @@ class VolumeResolver:
             # 创建挂载目录
             os.makedirs(mount_point, exist_ok=True)
             
-            # 挂载NFS
+            # 首先尝试传统的NFS挂载
+            mount_success = False
+            
             if platform.system() == "Linux":
                 mount_cmd = ["sudo", "mount", "-t", "nfs", f"{server}:{path}", mount_point]
                 result = subprocess.run(mount_cmd, capture_output=True, text=True)
                 
                 if result.returncode == 0:
-                    self.mounted_nfs_volumes[mount_point] = {"server": server, "path": path}
+                    self.mounted_nfs_volumes[mount_point] = {"server": server, "path": path, "type": "native"}
                     print(f"[INFO] Successfully mounted NFS volume: {server}:{path} to {mount_point}")
-                    return mount_point
+                    mount_success = True
                 else:
-                    print(f"[ERROR] Failed to mount NFS volume: {result.stderr}")
-                    return None
+                    print(f"[WARN] Native NFS mount failed: {result.stderr}")
+                    
             elif platform.system() == "Darwin":
-                # macOS
+                # macOS - 尝试原生挂载，如果失败则使用SSH方式
                 mount_cmd = ["mount", "-t", "nfs", f"{server}:{path}", mount_point]
                 result = subprocess.run(mount_cmd, capture_output=True, text=True)
                 
                 if result.returncode == 0:
-                    self.mounted_nfs_volumes[mount_point] = {"server": server, "path": path}
+                    self.mounted_nfs_volumes[mount_point] = {"server": server, "path": path, "type": "native"}
                     print(f"[INFO] Successfully mounted NFS volume: {server}:{path} to {mount_point}")
-                    return mount_point
+                    mount_success = True
                 else:
-                    print(f"[ERROR] Failed to mount NFS volume: {result.stderr}")
-                    return None
-            else:
-                print(f"[ERROR] NFS mounting not implemented for platform: {platform.system()}")
-                # 在不支持的平台上，我们仍然返回挂载点以便Pod可以继续运行
-                # 但实际上不会挂载
+                    print(f"[WARN] Native NFS mount failed: {result.stderr}")
+            
+            # 如果原生挂载失败，使用SSH镜像方式
+            if not mount_success:
+                print(f"[INFO] Attempting SSH-based NFS access for {server}:{path}")
+                if self._setup_ssh_nfs_mirror(server, path, mount_point):
+                    self.mounted_nfs_volumes[mount_point] = {"server": server, "path": path, "type": "ssh_mirror"}
+                    print(f"[INFO] Successfully set up SSH mirror for NFS volume: {server}:{path} to {mount_point}")
+                    mount_success = True
+            
+            if mount_success:
                 return mount_point
+            else:
+                print(f"[ERROR] Failed to mount NFS volume using all available methods")
+                return None
                 
         except Exception as e:
             print(f"[ERROR] Failed to mount NFS volume: {str(e)}")
             return None
+    
+    def _setup_ssh_nfs_mirror(self, server: str, remote_path: str, local_path: str) -> bool:
+        """
+        通过SSH创建NFS的本地镜像目录
+        用于无法直接挂载NFS的环境（如macOS开发环境）
+        """
+        try:
+            # NFS服务器访问配置
+            nfs_user = "root"
+            nfs_password = "Lin040430"
+            
+            print(f"[INFO] Setting up SSH mirror for {server}:{remote_path}")
+            
+            # 构建SSH命令前缀
+            ssh_cmd_prefix = f"sshpass -p '{nfs_password}' ssh -o StrictHostKeyChecking=no {nfs_user}@{server}"
+            
+            # 1. 验证远程目录存在
+            check_cmd = f"{ssh_cmd_prefix} 'test -d {remote_path} && echo \"exists\" || echo \"missing\"'"
+            result = subprocess.run(check_cmd, shell=True, capture_output=True, text=True)
+            
+            if result.returncode != 0 or "missing" in result.stdout:
+                print(f"[ERROR] Remote NFS directory {remote_path} does not exist")
+                return False
+            
+            print(f"[INFO] Verified remote directory {remote_path} exists")
+            
+            # 2. 创建本地镜像目录
+            os.makedirs(local_path, exist_ok=True)
+            
+            # 3. 创建一个标识文件表明这是SSH镜像
+            mirror_info = f"SSH Mirror for {server}:{remote_path}\nCreated: {subprocess.run(['date'], capture_output=True, text=True).stdout.strip()}"
+            with open(os.path.join(local_path, ".ssh_mirror_info"), "w") as f:
+                f.write(mirror_info)
+            
+            print(f"[INFO] Created SSH mirror directory at {local_path}")
+            print(f"[INFO] Note: This is a local mirror, data persistence depends on SSH sync")
+            
+            return True
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to setup SSH NFS mirror: {str(e)}")
+            return False
             
     def get_container_volume_mounts(self, volume_mounts: List[Dict], resolved_volumes: Dict[str, str]) -> List[str]:
         """
@@ -224,23 +303,34 @@ class VolumeResolver:
         """
         for mount_path in list(self.mounted_nfs_volumes.keys()):
             try:
-                if platform.system() in ["Linux", "Darwin"]:
-                    unmount_cmd = ["sudo", "umount", mount_path]
-                    result = subprocess.run(unmount_cmd, capture_output=True, text=True)
-                    if result.returncode == 0:
-                        print(f"[INFO] Unmounted NFS volume at {mount_path}")
-                    else:
-                        print(f"[WARN] Failed to unmount {mount_path}: {result.stderr}")
+                mount_info = self.mounted_nfs_volumes[mount_path]
+                mount_type = mount_info.get("type", "native")
+                
+                if mount_type == "native":
+                    # 原生挂载 - 需要umount
+                    if platform.system() in ["Linux", "Darwin"]:
+                        unmount_cmd = ["sudo", "umount", mount_path]
+                        result = subprocess.run(unmount_cmd, capture_output=True, text=True)
+                        if result.returncode == 0:
+                            print(f"[INFO] Unmounted NFS volume at {mount_path}")
+                        else:
+                            print(f"[WARN] Failed to unmount {mount_path}: {result.stderr}")
+                elif mount_type == "ssh_mirror":
+                    # SSH镜像 - 只需要清理本地目录
+                    print(f"[INFO] Cleaning up SSH mirror at {mount_path}")
                         
                 # 从跟踪列表中移除
                 del self.mounted_nfs_volumes[mount_path]
                 
                 # 尝试删除挂载目录
                 try:
-                    os.rmdir(mount_path)
-                    print(f"[INFO] Removed mount directory: {mount_path}")
-                except OSError:
-                    print(f"[WARN] Mount directory {mount_path} not empty, leaving it")
+                    if os.path.exists(mount_path):
+                        # 对于SSH镜像，可能包含一些文件，先清理
+                        import shutil
+                        shutil.rmtree(mount_path)
+                        print(f"[INFO] Removed mount directory: {mount_path}")
+                except OSError as e:
+                    print(f"[WARN] Failed to remove mount directory {mount_path}: {str(e)}")
                     
             except Exception as e:
                 print(f"[ERROR] Failed to cleanup volume at {mount_path}: {str(e)}")

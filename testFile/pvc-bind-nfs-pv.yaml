@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-bind-nfs
+  namespace: default
+spec:
+  storageClassName: nfs
+  volumeName: test-nfs-pv
+  capacity: 2Gi

@@ -1352,11 +1352,8 @@ class ApiServer:
             if existing_pvc is not None:
                 return json.dumps({"error": "PersistentVolumeClaim already exists"}), 409
             
-            # Create PVC object
-            pvc = PersistentVolumeClaim(pvc_config)
-            
             # Save to etcd
-            self.etcd.put(key, pvc)
+            self.etcd.put(key, pvc_config)
             
             print(f"[INFO]PersistentVolumeClaim {name} created successfully")
             return json.dumps({"message": f"PersistentVolumeClaim {name} created successfully"}), 200

@@ -25,6 +25,8 @@ class PVController:
         self.uri_config = URIConfig()
         self.running = False
         self.dynamic_pv_counter = 0
+        # 维护已分配的PVC列表 - 格式: {namespace/name: pvc_config}
+        self.allocated_pvcs = {}
         
     def start(self):
         """启动控制器"""
@@ -80,6 +82,32 @@ class PVController:
             # 获取所有PVC
             pvcs_list = self._get_all_pvcs()
             
+            try:
+                print("[INFO] Checking allocated PVCs consistency...")
+                
+                # 构建当前PVC的键集合（namespace/name）
+                current_pvc_keys = set()
+                for pvc_data in pvcs_list:
+                    metadata = pvc_data.get('metadata', {})
+                    namespace = metadata.get('namespace', '')
+                    name = metadata.get('name', '')
+                    if namespace and name:
+                        current_pvc_keys.add(f"{namespace}/{name}")
+                
+                # 检查已分配的PVC是否还存在
+                allocated_keys_to_remove = []
+                for allocated_key in self.allocated_pvcs.keys():
+                    if allocated_key not in current_pvc_keys:
+                        print(f"[INFO] Found orphaned allocated PVC: {allocated_key}")
+                        allocated_keys_to_remove.append(allocated_key)
+                
+                # 清理不存在的已分配PVC并解绑相关PV
+                for key_to_remove in allocated_keys_to_remove:
+                    self._cleanup_orphaned_pvc(key_to_remove)
+                
+            except Exception as e:
+                print(f"[ERROR] Failed to check PVC consistency: {str(e)}")
+            
             if not pvcs_list:
                 print("[INFO] No PVCs found in etcd")
                 return
@@ -97,7 +125,7 @@ class PVController:
         # 这里刚刚传入的pvc是一个dict类，要先转成pvcconfig类
         # 检查是否指定了特定的PV名称，没有指定的话进行报错
         pvc = PVCConfig(pvc)
-        if pvc.spec["volumeName"]:
+        if pvc.volume_name:
             # 尝试绑定到指定的PV
             self._bind_to_specific_pv(pvc)
         else:
@@ -135,6 +163,7 @@ class PVController:
         except Exception as e:
             print(f"[ERROR] Failed to update PVC {name} status: {str(e)}")
     
+    # 核心函数，pvc动态创建pv和绑定已有pv都依靠这个
     def _bind_to_specific_pv(self, pvc):
         """绑定到指定的PV"""
         try:
@@ -173,9 +202,6 @@ class PVController:
             
             # 检查PV是否已存在
             response = self.apiclient.post(pv_key, json_data)
-            
-            if response.status_code ==200:
-                print(f"[INFO] Created PV {pv_name} in etcd")
             
         except Exception as e:
             print(f"[ERROR] Failed to create PV in etcd: {str(e)}")
@@ -272,12 +298,18 @@ class PVController:
             print(f"[INFO] Updating PV {name} in etcd")
             response = self.apiclient.put(pv_key, json_data)
             
-            if response.status_code == 200:
-                print(f"[INFO] Successfully updated PV {name} in etcd")
-            else:
-                print(f"[ERROR] Failed to update PV {name} in etcd: {response.text}")
         except Exception as e:
             print(f"[ERROR] Failed to update PV {name} in etcd: {str(e)}")
+            
+    def _unbind_pv_remote(self, name):
+        """从etcd中解绑PV"""
+        try:
+            pv_key = self.uri_config.PV_SPEC_URL.format(name=name)
+            print(f"[INFO] Unbinding PV {name} in etcd")
+            response = self.apiclient.put(pv_key, {"status": "Available", "claimRef": None})
+
+        except Exception as e:
+            print(f"[ERROR] Failed to unbind PV {name} in etcd: {str(e)}")
         
     def _update_pvc_remote(self, pvc):
         """更新PVC到etcd"""
@@ -288,10 +320,6 @@ class PVController:
             print(f"[INFO] Updating PVC {pvc.name} in etcd")
             response = self.apiclient.put(pvc_key, json_data)
             
-            if response.status_code == 200:
-                print(f"[INFO] Successfully updated PVC {pvc.name} in etcd")
-            else:
-                print(f"[ERROR] Failed to update PVC {pvc.name} in etcd: {response.text}")
         except Exception as e:
             print(f"[ERROR] Failed to update PVC {pvc.name} in etcd: {str(e)}")
     
@@ -307,10 +335,11 @@ class PVController:
             self._update_pv_remote(pv)
             
             # 更新PVC状态
-            pvc.bind_to_pv(pv)
+            pvc.bind_to_pv()
             self._update_pvc_status(pvc.name, pvc.namespace, pvc.status)
             
             print(f"[INFO] Successfully bound PVC {pvc.namespace}/{pvc.name} to PV {pv.name}")
+            self._add_allocated_pvc(pvc)
             
         except Exception as e:
             print(f"[ERROR] Failed to bind PVC to PV: {str(e)}")
@@ -610,3 +639,54 @@ class PVController:
         except Exception as e:
             print(f"[WARN] Failed to verify NFS export: {str(e)}")
             return False
+    
+    def _cleanup_orphaned_pvc(self, pvc_key):
+        """清理孤立的PVC并解绑相关PV"""
+        try:
+            print(f"[INFO] Cleaning up orphaned PVC: {pvc_key}")
+            
+            # 获取要清理的PVC配置
+            pvc_config = self.allocated_pvcs.get(pvc_key)
+            
+            # 如果PVC绑定了PV，需要解绑PV
+            if hasattr(pvc_config, 'volume_name') and pvc_config.volume_name:
+                self._unbind_pv_from_pvc(pvc_config.volume_name, pvc_key)
+            
+            # 从已分配PVC列表中移除
+            del self.allocated_pvcs[pvc_key]
+            print(f"[INFO] Removed orphaned PVC {pvc_key} from allocated list")
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to cleanup orphaned PVC {pvc_key}: {str(e)}")
+    
+    def _unbind_pv_from_pvc(self, pv_name, pvc_key):
+        """解绑PV与PVC的绑定关系"""
+        try:
+            print(f"[INFO] Unbinding PV {pv_name} from orphaned PVC {pvc_key}")
+            
+            # 更新PV到etcd
+            self._unbind_pv_remote(pv_name)
+            
+            print(f"[INFO] Successfully unbound PV {pv_name} from PVC {pvc_key}")
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to unbind PV {pv_name} from PVC {pvc_key}: {str(e)}")
+    
+    def _add_allocated_pvc(self, pvc_config):
+        """添加PVC到已分配列表"""
+        try:
+            pvc_key = f"{pvc_config.namespace}/{pvc_config.name}"
+            self.allocated_pvcs[pvc_key] = pvc_config
+            print(f"[INFO] Added PVC {pvc_key} to allocated list")
+        except Exception as e:
+            print(f"[ERROR] Failed to add PVC to allocated list: {str(e)}")
+    
+    def _remove_allocated_pvc(self, pvc_config):
+        """从已分配列表中移除PVC"""
+        try:
+            pvc_key = f"{pvc_config.namespace}/{pvc_config.name}"
+            if pvc_key in self.allocated_pvcs:
+                del self.allocated_pvcs[pvc_key]
+                print(f"[INFO] Removed PVC {pvc_key} from allocated list")
+        except Exception as e:
+            print(f"[ERROR] Failed to remove PVC from allocated list: {str(e)}")

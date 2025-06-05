@@ -54,6 +54,7 @@ class PVCConfig:
         # 检查存储的要求大小是否相同
         if pv_config.capacity and self.capacity:
             if self.capacity != pv_config.capacity:
+                print(f"[ERROR] PVC '{self.name}' capacity '{self.capacity}' does not match PV '{pv_config.name}' capacity '{pv_config.capacity}'")
                 return False
         pv_type = pv_config.volume_source.get("type", "hostPath")
         if self.storage_class_name == "nfs" and pv_type == "nfs":

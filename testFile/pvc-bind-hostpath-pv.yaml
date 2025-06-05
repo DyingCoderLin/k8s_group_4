@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-bind-hostpath
+  namespace: default
+spec:
+  storageClassName: hostPath
+  volumeName: test-hostpath-pv
+  capacity: 1Gi

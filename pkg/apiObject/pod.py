@@ -27,7 +27,7 @@ class Pod:
         print(f"[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}")
 
         # 使用VolumeResolver处理PVC
-        self.volume_resolver = VolumeResolver(api_client, uri_config)
+        self.volume_resolver = VolumeResolver()
         self.resolved_volumes = {}
 
         if platform.system() == "Windows":

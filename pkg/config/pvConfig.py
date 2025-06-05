@@ -16,7 +16,6 @@ class PVConfig:
         self.volume_source = self._parse_volume_source(spec)
         
         # 状态信息
-        status = arg_json.get("status", {})
         self.status = arg_json.get("status", "Available")  # Available, Bound, Released
         self.claim_ref = arg_json.get("claimRef", None)  # 绑定的 PVC 引用
         
@@ -79,7 +78,8 @@ class PVConfig:
         if self.capacity == None and pvc_config.capacity != None:
             self.capacity = pvc_config.capacity
     
-    def release(self):
+    def unbind(self):
+        """解除绑定"""
         """释放 PV(PVC 被删除时调用）"""
-        self.status = "Released"
+        self.status = "Available"
         self.claim_ref = None

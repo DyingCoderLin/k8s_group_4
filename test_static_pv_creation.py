@@ -31,9 +31,7 @@ def test_static_pv_creation():
             "name": "test-hostpath-pv"
         },
         "spec": {
-            "capacity": {
-                "storage": "1Gi"
-            },
+            "capacity": "1Gi",
             "hostPath": {
                 "path": "/tmp/test-hostpath-storage"
             }
@@ -49,9 +47,7 @@ def test_static_pv_creation():
             "name": "test-nfs-pv"
         },
         "spec": {
-            "capacity": {
-                "storage": "2Gi"
-            },
+            "capacity": "2Gi",
             "nfs": {
                 "server": "10.119.15.190",
                 "path": "/nfs/pv-storage/exports/test-nfs-storage"
@@ -164,6 +160,55 @@ def do_delete(pv_name):
     except Exception as e:
         print(f"✗ 删除PV {pv_name} 时发生异常: {str(e)}")
 
+def list_all_pvs():
+    """列出所有PV"""
+    print("📋 列出所有PV:")
+    
+    uri_config = URIConfig()
+    base_url = f"http://{uri_config.HOST}:{uri_config.PORT}"
+    
+    try:
+        all_pvs_url = f"{base_url}{uri_config.GLOBAL_PVS_URL}"
+        response = requests.get(all_pvs_url)
+        
+        if response.status_code == 200:
+            pvs = response.json()
+            if pvs:
+                print(f"✅ 找到 {len(pvs)} 个PV:")
+                for i, pv in enumerate(pvs, 1):
+                    metadata = pv.get('metadata', {})
+                    spec = pv.get('spec', {})
+                    name = metadata.get('name', 'Unknown')
+                    status = pv.get('status', 'Unknown')
+                    claim_ref = pv.get('claim_ref', 'None')
+                    
+                    # 确定存储类型
+                    storage_type = "Unknown"
+                    storage_info = ""
+                    if 'hostPath' in spec:
+                        storage_type = "hostPath"
+                        storage_info = f"路径: {spec['hostPath'].get('path', 'Unknown')}"
+                    elif 'nfs' in spec:
+                        storage_type = "NFS"
+                        storage_info = f"服务器: {spec['nfs'].get('server', 'Unknown')}, 路径: {spec['nfs'].get('path', 'Unknown')}"
+                    
+                    print(f"   {i}. PV名称: {name}")
+                    print(f"      状态: {status}")
+                    print(f"      存储类型: {storage_type}")
+                    print(f"      存储信息: {storage_info}")
+                    print(f"      绑定PVC: {claim_ref}")
+                    print()
+                return True
+            else:
+                print("🔍 没有找到任何PV")
+                return True
+        else:
+            print(f"❌ 获取PV列表失败: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ 列出PV时发生异常: {str(e)}")
+        return False
+
 if __name__ == "__main__":
     # 接收命令行参数，如果有--delete，则删除指定的PV
     if len(sys.argv) > 1 and sys.argv[1] == "--delete":
@@ -173,7 +218,14 @@ if __name__ == "__main__":
         pv_name = sys.argv[2]
         do_delete(pv_name)
         exit(0)
+        
+    if len(sys.argv) > 1 and sys.argv[1] == "--list":
+        # 列出所有PV
+        list_all_pvs()
+        exit(0)
+        
     else:
         # 运行静态PV创建测试
         print("开始测试静态PV创建功能...")
-    test_static_pv_creation()
+        test_static_pv_creation()
+

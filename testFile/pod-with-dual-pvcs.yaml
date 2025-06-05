@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-dual-pvcs
+  namespace: default
+  labels:
+    app: dual-pvc-test
+spec:
+  containers:
+  - name: test-container
+    image: ubuntu:latest
+    command: ["/bin/bash"]
+    args: ["-c", "while true; do echo 'Container running...' >> /hostpath-data/container.log; echo 'NFS test' >> /nfs-data/nfs.log; sleep 30; done"]
+    volumeMounts:
+    - name: hostpath-volume
+      mountPath: /hostpath-data
+    - name: nfs-volume
+      mountPath: /nfs-data
+  volumes:
+  - name: hostpath-volume
+    persistentVolumeClaim:
+      claimName: pvc-bind-hostpath
+  - name: nfs-volume
+    persistentVolumeClaim:
+      claimName: pvc-bind-nfs
+  restartPolicy: Always
