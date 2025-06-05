@@ -300,10 +300,8 @@ class ServiceController:
             response = self.api_client.get(nodes_url)
             
             if response:
-                # 解析节点数据（类似add_pod中的逻辑）
-                import pickle
-                nodes = pickle.loads(response)
-                return nodes
+                # API客户端已经自动解析了pickled数据，直接返回即可
+                return response
             return []
             
         except Exception as e:
