@@ -68,7 +68,7 @@ class ServiceController:
         
         self.services.clear()
         self.service_configs.clear()
-        self.print("ServiceController已停止")
+        print("ServiceController已停止")
     
     def _sync_loop(self):
         """同步循环"""
@@ -120,7 +120,7 @@ class ServiceController:
             # 清理不再存在的Service
             self._cleanup_services(current_services)
             
-            self.print(f"同步所有Service完成，self.services: {self.services.keys()}")
+            print(f"同步所有Service完成，self.services: {self.services.keys()}")
         except Exception as e:
             self.logger.error(f"同步所有Service失败: {e}")
     
@@ -173,7 +173,7 @@ class ServiceController:
     def _create_service(self, service_name: str, service_config: ServiceConfig, pods: List):
         """创建新的Service"""
         try:
-            self.print(f"创建新Service: {service_name}")
+            print(f"创建新Service: {service_name}")
             
             # 创建Service实例
             service = Service(service_config)
@@ -196,7 +196,7 @@ class ServiceController:
                         for pod in matching_pods if pod.get('subnet_ip')]
             self._broadcast_service_rules("CREATE", service_name, service_config, endpoints)
             
-            self.print(f"Service {service_name} 创建成功")
+            print(f"Service {service_name} 创建成功")
             
         except Exception as e:
             self.logger.error(f"创建Service {service_name} 失败: {e}")
@@ -205,7 +205,7 @@ class ServiceController:
     def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
         """更新现有Service"""
         try:
-            self.print(f"更新Service: {service_name}")
+            print(f"更新Service: {service_name}")
             
             old_service = self.services[service_name]
             
@@ -232,7 +232,7 @@ class ServiceController:
         for service_name in list(self.services.keys()):
             if service_name not in current_services:
                 try:
-                    self.print(f"清理不再存在的Service: {service_name}")
+                    print(f"清理不再存在的Service: {service_name}")
                     service = self.services[service_name]
                     service_config = self.service_configs[service_name]
                     
