@@ -284,12 +284,31 @@ class PVCPodTester:
                 else:
                     print(f"         ❌ 失败: {result.stderr.strip()}")
             
-            # 尝试创建测试文件，使用更详细的错误报告
+            # 分步测试写入操作，更好地诊断问题
             test_commands = [
-                ("touch /hostpath-data/test.txt && echo 'hostPath test data' > /hostpath-data/test.txt", "hostPath存储写入"),
-                ("touch /nfs-data/test.txt && echo 'NFS test data' > /nfs-data/test.txt", "NFS存储写入"),
+                # 第一步：测试目录权限
+                ("ls -ld /hostpath-data", "检查hostPath目录权限"),
+                ("ls -ld /nfs-data", "检查NFS目录权限"),
+                
+                # 第二步：尝试创建文件
+                ("touch /hostpath-data/test.txt", "hostPath创建文件"),
+                ("touch /nfs-data/test.txt", "NFS创建文件"),
+                
+                # 第三步：检查文件是否创建成功
+                ("ls -la /hostpath-data/test.txt", "检查hostPath文件"),
+                ("ls -la /nfs-data/test.txt", "检查NFS文件"),
+                
+                # 第四步：尝试写入内容
+                ("echo 'hostPath test data' > /hostpath-data/test.txt", "hostPath存储写入"),
+                ("echo 'NFS test data' > /nfs-data/test.txt", "NFS存储写入"),
+                
+                # 第五步：验证写入
                 ("cat /hostpath-data/test.txt", "hostPath存储读取"),
-                ("cat /nfs-data/test.txt", "NFS存储读取")
+                ("cat /nfs-data/test.txt", "NFS存储读取"),
+                
+                # 第六步：检查磁盘空间
+                ("df -h /hostpath-data", "检查hostPath磁盘空间"),
+                ("df -h /nfs-data", "检查NFS磁盘空间")
             ]
             
             print("   📝 执行数据持久性测试:")
@@ -312,17 +331,72 @@ class PVCPodTester:
                     # 如果是写入失败，尝试更详细的权限检查
                     if "写入" in description:
                         dir_path = "/hostpath-data" if "hostPath" in description else "/nfs-data"
+                        
+                        # 详细的权限诊断
+                        print(f"         🔍 开始详细诊断 {dir_path} 写入问题:")
+                        
+                        # 1. 检查目录权限
                         perm_cmd = f"docker exec {main_container.id} ls -ld {dir_path}"
                         perm_result = subprocess.run(perm_cmd, shell=True, capture_output=True, text=True)
                         print(f"         📁 目录权限: {perm_result.stdout.strip()}")
                         
-                        # 尝试使用sudo（如果容器中有）
-                        sudo_cmd = f"docker exec {main_container.id} bash -c 'echo \"test with sudo\" | sudo tee {dir_path}/test_sudo.txt'"
-                        sudo_result = subprocess.run(sudo_cmd, shell=True, capture_output=True, text=True)
-                        if sudo_result.returncode == 0:
-                            print(f"         🔧 sudo写入成功，可能是权限问题")
+                        # 2. 检查目录所有者
+                        owner_cmd = f"docker exec {main_container.id} stat -c '%U:%G' {dir_path}"
+                        owner_result = subprocess.run(owner_cmd, shell=True, capture_output=True, text=True)
+                        print(f"         👤 目录所有者: {owner_result.stdout.strip()}")
+                        
+                        # 3. 检查当前用户
+                        user_cmd = f"docker exec {main_container.id} whoami"
+                        user_result = subprocess.run(user_cmd, shell=True, capture_output=True, text=True)
+                        print(f"         👤 当前用户: {user_result.stdout.strip()}")
+                        
+                        # 4. 检查用户ID
+                        id_cmd = f"docker exec {main_container.id} id"
+                        id_result = subprocess.run(id_cmd, shell=True, capture_output=True, text=True)
+                        print(f"         🆔 用户ID: {id_result.stdout.strip()}")
+                        
+                        # 5. 尝试不同的写入方式
+                        print(f"         🧪 尝试不同的写入方式:")
+                        
+                        # 尝试使用tee命令
+                        tee_cmd = f"docker exec {main_container.id} bash -c 'echo \"test with tee\" | tee {dir_path}/test_tee.txt'"
+                        tee_result = subprocess.run(tee_cmd, shell=True, capture_output=True, text=True)
+                        if tee_result.returncode == 0:
+                            print(f"            ✅ tee命令写入成功")
                         else:
-                            print(f"         🔧 sudo也失败: {sudo_result.stderr.strip()}")
+                            print(f"            ❌ tee命令失败: {tee_result.stderr.strip()}")
+                        
+                        # 尝试使用dd命令
+                        dd_cmd = f"docker exec {main_container.id} bash -c 'echo \"test with dd\" | dd of={dir_path}/test_dd.txt 2>/dev/null'"
+                        dd_result = subprocess.run(dd_cmd, shell=True, capture_output=True, text=True)
+                        if dd_result.returncode == 0:
+                            print(f"            ✅ dd命令写入成功")
+                        else:
+                            print(f"            ❌ dd命令失败")
+                        
+                        # 尝试使用cat重定向
+                        cat_cmd = f"docker exec {main_container.id} bash -c 'cat > {dir_path}/test_cat.txt << EOF\ntest with cat\nEOF'"
+                        cat_result = subprocess.run(cat_cmd, shell=True, capture_output=True, text=True)
+                        if cat_result.returncode == 0:
+                            print(f"            ✅ cat重定向写入成功")
+                        else:
+                            print(f"            ❌ cat重定向失败: {cat_result.stderr.strip()}")
+                        
+                        # 6. 检查文件系统类型
+                        fs_cmd = f"docker exec {main_container.id} df -T {dir_path}"
+                        fs_result = subprocess.run(fs_cmd, shell=True, capture_output=True, text=True)
+                        print(f"         💾 文件系统类型: {fs_result.stdout.strip()}")
+                        
+                        # 7. 检查挂载选项
+                        mount_cmd = f"docker exec {main_container.id} mount | grep {dir_path}"
+                        mount_result = subprocess.run(mount_cmd, shell=True, capture_output=True, text=True)
+                        if mount_result.stdout.strip():
+                            print(f"         🔗 挂载信息: {mount_result.stdout.strip()}")
+                        else:
+                            print(f"         🔗 未找到特定挂载信息，检查所有挂载:")
+                            all_mount_cmd = f"docker exec {main_container.id} mount"
+                            all_mount_result = subprocess.run(all_mount_cmd, shell=True, capture_output=True, text=True)
+                            print(f"            {all_mount_result.stdout.strip()}")
                     
                     all_success = False
             
