@@ -258,7 +258,8 @@ class ServiceProxy:
         if self.is_macos or not self.iptables_available:
             self.logger.info(f"模拟更新Service {service_name}的端点: {endpoints}")
             return
-            
+        
+        self.logger.info(f"更新Service {service_name} 的端点: {endpoints}")    
         self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
     
     def _run_iptables(self, args: List[str], ignore_errors: bool = False):
