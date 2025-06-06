@@ -203,8 +203,15 @@ class KubectlClient:
     def add_node_from_file(self, filename: str) -> None:
         """专门用于节点加入的命令"""
         try:
+            import yaml
+            import os
+        
+            # 检查文件是否存在
+            if not os.path.exists(filename):
+                print(f"Error: File {filename} not found")
+                return
            # 直接读取文件，不使用 StringIO
-            with open(file_path, 'r', encoding='utf-8') as file:
+            with open(filename, 'r', encoding='utf-8') as file:
                 try:
                     # 使用 safe_load 而不是 load
                     node_data = yaml.safe_load(file)
