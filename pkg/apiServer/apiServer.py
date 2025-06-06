@@ -800,10 +800,11 @@ class ApiServer:
 
         # 格式化输出
         result = []
-        for hpa in hpas:
-            result.append(
-                {hpa.name: hpa.to_dict() if hasattr(hpa, "to_dict") else vars(hpa)}
-            )
+        if hpas:
+            for hpa in hpas:
+                result.append(
+                    {hpa.name: hpa.to_dict() if hasattr(hpa, "to_dict") else vars(hpa)}
+                )
 
         return json.dumps(result)
 

@@ -35,6 +35,7 @@ stop_all() {
         
         # 尝试通过进程名停止
         pkill -f "python3 -m pkg.apiServer.apiServer" || true
+        pkill -f "python3 -m pkg.controller.scheduler" || true
         pkill -f "python3 -m pkg.apiObject.node" || true
         pkill -f "python3 -m pkg.controller.rsStarter" || true
         pkill -f "python3 -m pkg.controller.hpaStarter" || true
