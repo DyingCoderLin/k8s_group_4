@@ -54,8 +54,15 @@ class Node:
         Thread(target=self.kubelet.run).start()
 
         # 设置信号处理器，确保优雅关闭
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
+        try:
+            if self._is_main_thread():
+                signal.signal(signal.SIGINT, self._signal_handler)
+                signal.signal(signal.SIGTERM, self._signal_handler)
+                print("[INFO]信号处理器已设置")
+            else:
+                print("[INFO]非主线程环境，跳过信号处理器设置")
+        except Exception as e:
+            print(f"[WARNING]设置信号处理器失败: {e}")
 
         # 定期发送心跳
         while True:
@@ -99,6 +106,11 @@ class Node:
         
         # 这里可以添加其他清理逻辑
         sys.exit(0)
+        
+    def _is_main_thread(self):
+        """检查是否在主线程中"""
+        import threading
+        return threading.current_thread() is threading.main_thread()
 
 
 if __name__ == "__main__":
@@ -125,5 +137,5 @@ if __name__ == "__main__":
     print(f"[INFO]节点名称: {node_config.name}")
     print(f"[INFO]ServiceProxy将以节点名称 '{node_config.name}' 启动")
     
-    node = Node(node_config, URIConfig)
+    node = Node(node_config, URIConfig())
     node.run()
