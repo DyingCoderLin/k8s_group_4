@@ -901,7 +901,7 @@ class ApiServer:
                 )
 
             # 获取现有HPA
-            key = self.etcd_config.HPA_SPCE_KEY.format(namespace=namespace, name=name)
+            key = self.etcd_config.HPA_SPEC_KEY.format(namespace=namespace, name=name)
             hpa = self.etcd.get(key)
 
             if not hpa:
