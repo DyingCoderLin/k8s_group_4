@@ -103,9 +103,6 @@ class Node:
 
 if __name__ == "__main__":
     print("[INFO]Starting Node with integrated ServiceProxy.")
-    # 设置标准输出无缓冲，确保日志实时写入
-    sys.stdout.reconfigure(write_through=True)
-    sys.stderr.reconfigure(write_through=True)
     
     # 记录日志文件路径
     log_file = os.environ.get('NODE_LOG_FILE')
