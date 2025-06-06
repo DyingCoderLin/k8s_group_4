@@ -192,7 +192,7 @@ class Service:
             # 将self.endpoints和new_endpoints比较，如果没有变化，直接返回
             if self._are_endpoints_equal(self.endpoints, new_endpoints):
                 self.logger.info(f"Service {self.config.name} 端点未变化，跳过更新")
-                return
+                return False
             
             self.endpoint_pods.clear()
             
@@ -230,13 +230,15 @@ class Service:
             except Exception as e:
                 self.logger.error(f"更新iptables规则失败: {e}")
                 self.config.status = "Failed"
-                return
+                return False
             
             self.logger.info(f"Service {self.config.name} 端点尝试过更新: {new_endpoints}")
             
         except Exception as e:
             self.logger.error(f"更新Service端点失败: {e}")
             self.config.status = "Failed"
+            return False
+        return True
     
     def get_endpoint(self) -> Optional[str]:
         """获取下一个可用端点（用于客户端负载均衡）"""

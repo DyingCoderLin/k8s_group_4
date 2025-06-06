@@ -85,39 +85,41 @@ class ServiceController:
         try:
             # 从API Server获取所有Service
             services_data = self._get_all_services()
-            if not services_data:
-                print("从API Server获取Service列表失败或者目前还没有service")
-                return
             
             # 获取所有Pod
             pods = self._get_all_pods()
             
             # 处理每个Service
             print(f"[DEBUG]self.services: {self.services.keys()}")
-            current_services = set()
-            for service_dict in services_data:
-                try:
-                    # 解析Service数据
-                    service_name = list(service_dict.keys())[0]
-                    # service_name = next(iter(service_dict.keys()))
-                    service_info = service_dict[service_name]
-                    
-                    # 创建Service配置
-                    service_config = ServiceConfig(service_info)
-                    current_services.add(service_name)
-                    
-                    # 检查Service是否已经在缓存中
-                    if service_name in self.services:
-                        # 更新现有Service
-                        self._update_service(service_name, service_config, pods)
-                    else:
-                        # 创建新Service
-                        self._create_service(service_name, service_config, pods)
+            if not services_data:
+                current_services = None
+                print("从API Server获取Service列表失败或者目前还没有service")
+            else:
+                current_services = set()
+                for service_dict in services_data:
+                    try:
+                        # 解析Service数据
+                        service_name = list(service_dict.keys())[0]
+                        # service_name = next(iter(service_dict.keys()))
+                        service_info = service_dict[service_name]
                         
-                except Exception as e:
-                    print(f"处理Service {service_name} 失败: {e}")
+                        # 创建Service配置
+                        service_config = ServiceConfig(service_info)
+                        current_services.add(service_name)
+                        
+                        # 检查Service是否已经在缓存中
+                        if service_name in self.services:
+                            # 更新现有Service
+                            self._update_service(service_name, service_config, pods)
+                        else:
+                            # 创建新Service
+                            self._create_service(service_name, service_config, pods)
+                            
+                    except Exception as e:
+                        print(f"处理Service {service_name} 失败: {e}")
             
             # 清理不再存在的Service
+            print(f"当前存在的Service: {current_services}")
             self._cleanup_services(current_services)
             
             print(f"同步所有Service完成，self.services: {self.services.keys()}")
@@ -216,12 +218,13 @@ class ServiceController:
                 if new_config.matches_pod(pod.get("metadata", {}).get("labels", {}))
             ]
             # print(f"matching_pods: {matching_pods}")
-            old_service.update_endpoints(matching_pods)
+            is_updated = old_service.update_endpoints(matching_pods)
             
-            # 向所有节点广播Service更新规则
-            endpoints = [f"{pod.get("subnet_ip","")}:{new_config.get_port_config()['targetPort']}" 
-                        for pod in matching_pods if pod.get('subnet_ip')]
-            self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
+            if is_updated:
+                # 向所有节点广播Service更新规则
+                endpoints = [f"{pod.get("subnet_ip","")}:{new_config.get_port_config()['targetPort']}" 
+                            for pod in matching_pods if pod.get('subnet_ip')]
+                self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
 
         except Exception as e:
             print(f"更新Service {service_name} 失败: {e}")
@@ -229,6 +232,21 @@ class ServiceController:
     
     def _cleanup_services(self, current_services: Set[str]):
         """清理不再存在的Service"""
+        if current_services is None:
+            for service_name in list(self.services.keys()):
+                try:
+                    print(f"清理不再存在的Service: {service_name}")
+                    service = self.services[service_name]
+                    service_config = self.service_configs[service_name]
+                    
+                    # 向所有节点广播Service删除规则
+                    self._broadcast_service_rules("DELETE", service_name, service_config, [])
+                    
+                    service.stop()
+                    del self.services[service_name]
+                    del self.service_configs[service_name]
+                except Exception as e:
+                    print(f"清理Service {service_name} 失败: {e}")
         for service_name in list(self.services.keys()):
             if service_name not in current_services:
                 try:
