@@ -1,0 +1,118 @@
+# filepath: /Users/liang/code/cloud_OS/k8s/k8s_group_4/kubectl
+#!/bin/bash
+# kubectl - kubectl命令行包装脚本
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DAEMON_SCRIPT="$SCRIPT_DIR/kubectl_daemon.py"
+SOCKET_PATH="/tmp/kubectl_daemon.sock"
+PID_FILE="/tmp/kubectl_daemon.pid"
+
+# 设置API服务器地址 - 根据您的实际情况修改
+# export API_SERVER_HOST="10.181.22.193"
+# export API_SERVER_HOST="localhost"
+export API_SERVER_HOST="10.181.22.193"
+export API_SERVER_PORT="5050"
+
+# 检查守护进程是否在运行
+check_daemon() {
+    if [ -S "$SOCKET_PATH" ] && [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# 启动守护进程
+start_daemon() {
+    echo "Starting kubectl daemon..."
+    
+    # 清理旧文件
+    [ -f "$PID_FILE" ] && rm -f "$PID_FILE"
+    [ -S "$SOCKET_PATH" ] && rm -f "$SOCKET_PATH"
+    
+    cd "$SCRIPT_DIR"
+    
+    # 启动守护进程
+    nohup python3 "$DAEMON_SCRIPT" --socket "$SOCKET_PATH" > /tmp/kubectl_daemon_startup.log 2>&1 &
+    local daemon_pid=$!
+    
+    echo "$daemon_pid" > "$PID_FILE"
+    
+    # 等待守护进程启动
+    local max_wait=10
+    local count=0
+    while [ $count -lt $max_wait ]; do
+        if [ -S "$SOCKET_PATH" ] && ps -p "$daemon_pid" > /dev/null 2>&1; then
+            return 0
+        fi
+        sleep 1
+        count=$((count + 1))
+    done
+    
+    echo "Failed to start kubectl daemon"
+    return 1
+}
+
+# 向守护进程发送命令
+send_command() {
+    local command_json=$(python3 -c "
+import json
+import sys
+args = sys.argv[1:]
+data = {'args': args}
+print(json.dumps(data))
+" "$@")
+    
+    # 使用Python发送命令到Unix socket
+    python3 -c "
+import socket
+import json
+import sys
+
+try:
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    sock.connect('$SOCKET_PATH')
+    
+    command_data = '''$command_json'''
+    sock.send(command_data.encode('utf-8'))
+    
+    response = sock.recv(8192).decode('utf-8')
+    sock.close()
+    
+    result = json.loads(response)
+    if 'output' in result:
+        print(result['output'], end='')
+    if 'error' in result:
+        print(result['error'], file=sys.stderr)
+        sys.exit(1)
+        
+except Exception as e:
+    print(f'Error communicating with daemon: {e}', file=sys.stderr)
+    sys.exit(1)
+"
+}
+
+# 主逻辑
+main() {
+    # 如果没有参数，显示帮助
+    if [ $# -eq 0 ]; then
+        python3 "$SCRIPT_DIR/kubectl.py" --help
+        exit 0
+    fi
+    
+    # 检查守护进程状态
+    if ! check_daemon; then
+        if ! start_daemon; then
+            echo "Failed to start kubectl daemon. Trying direct execution..."
+            python3 "$SCRIPT_DIR/kubectl.py" "$@"
+            exit $?
+        fi
+    fi
+    
+    # 发送命令到守护进程
+    send_command "$@"
+}
+
+main "$@"

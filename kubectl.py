@@ -8,20 +8,12 @@ import argparse
 import json
 import sys
 import yaml
-from typing import Dict, List, Optional, Any
-from datetime import datetime
 
 # 导入项目依赖
 from pkg.config.uriConfig import URIConfig
 from pkg.apiServer.apiClient import ApiClient
-from pkg.apiObject.pod import Pod
-from pkg.apiObject.service import Service
-from pkg.apiObject.replicaSet import ReplicaSet
-from pkg.apiObject.hpa import HorizontalPodAutoscaler
-from pkg.config.podConfig import PodConfig
-from pkg.config.serviceConfig import ServiceConfig
-from pkg.config.replicaSetConfig import ReplicaSetConfig
-from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
+from pkg.apiObject.node import Node
+from pkg.config.nodeConfig import NodeConfig
 
 
 class KubectlClient:
@@ -31,68 +23,220 @@ class KubectlClient:
         """初始化 kubectl 客户端"""
         self.uri_config = URIConfig()
         self.api_client = ApiClient(self.uri_config.HOST, self.uri_config.PORT)
+        print(f"Connecting to API server at {self.uri_config.HOST}:{self.uri_config.PORT}")
         self.default_namespace = "default"
         
-    def format_table_output(self, headers: List[str], rows: List[List[str]]) -> str:
-        """格式化表格输出"""
+    def format_table_output(self, headers: list, rows: list) -> str:
+        """
+        格式化表格输出，模仿 kubectl 的输出格式
+        """
         if not rows:
-            return f"No resources found in {self.default_namespace} namespace."
+            return ""
         
         # 计算每列的最大宽度
-        col_widths = [len(header) for header in headers]
+        col_widths = []
+        
+        # 初始化列宽为表头的长度
+        for header in headers:
+            col_widths.append(len(str(header)))
+        
+        # 检查数据行，更新列宽
         for row in rows:
             for i, cell in enumerate(row):
                 if i < len(col_widths):
                     col_widths[i] = max(col_widths[i], len(str(cell)))
         
-        # 构建表格
+        # 构建输出字符串
         output_lines = []
         
-        # 表头
-        header_line = "  ".join(header.ljust(col_widths[i]) for i, header in enumerate(headers))
-        output_lines.append(header_line)
+        # 添加表头
+        header_parts = []
+        for i, header in enumerate(headers):
+            if i < len(col_widths):
+                header_parts.append(str(header).ljust(col_widths[i]))
+        output_lines.append("  ".join(header_parts))
         
-        # 数据行
+        # 添加数据行
         for row in rows:
-            row_line = "  ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row))
-            output_lines.append(row_line)
+            row_parts = []
+            for i, cell in enumerate(row):
+                if i < len(col_widths):
+                    row_parts.append(str(cell).ljust(col_widths[i]))
+            output_lines.append("  ".join(row_parts))
         
         return "\n".join(output_lines)
     
-    def format_age(self, creation_time: str) -> str:
-        """格式化资源年龄"""
+    # ============= 通用 Apply 命令 =============
+    
+    def apply_from_file(self, filename: str) -> None:
+        """通用的 apply 命令，根据 kind 字段自动识别资源类型并创建"""
         try:
-            if not creation_time:
-                return "<unknown>"
-                
-            # 尝试解析时间戳
-            if isinstance(creation_time, str):
-                try:
-                    create_dt = datetime.fromisoformat(creation_time.replace('Z', '+00:00'))
-                except ValueError:
-                    # 尝试其他格式
-                    create_dt = datetime.strptime(creation_time, "%Y-%m-%d %H:%M:%S")
-            else:
-                return "<unknown>"
-                
-            now = datetime.now(create_dt.tzinfo) if create_dt.tzinfo else datetime.now()
-            delta = now - create_dt
+            with open(filename, 'r', encoding='utf-8') as f:
+                if filename.endswith('.yaml') or filename.endswith('.yml'):
+                    resource_data = yaml.safe_load(f)
+                else:
+                    resource_data = json.load(f)
             
-            days = delta.days
-            hours, remainder = divmod(delta.seconds, 3600)
-            minutes, seconds = divmod(remainder, 60)
+            # 检查是否为有效的 Kubernetes 资源
+            if not isinstance(resource_data, dict):
+                print(f"Error: Invalid resource format in '{filename}'")
+                return
             
-            if days > 0:
-                return f"{days}d"
-            elif hours > 0:
-                return f"{hours}h"
-            elif minutes > 0:
-                return f"{minutes}m"
+            kind = resource_data.get("kind")
+            if not kind:
+                print(f"Error: Missing 'kind' field in '{filename}'")
+                return
+            
+            metadata = resource_data.get("metadata", {})
+            name = metadata.get("name")
+            namespace = metadata.get("namespace", self.default_namespace)
+            
+            if not name:
+                print(f"Error: Missing resource name in '{filename}'")
+                return
+            
+            print(f"Applying {kind} '{name}' in namespace '{namespace}'...")
+            
+            # 根据 kind 字段调用相应的创建方法
+            if kind == "Pod":
+                self._apply_pod(resource_data, name, namespace)
+            elif kind == "Service":
+                self._apply_service(resource_data, name, namespace)
+            elif kind == "ReplicaSet":
+                self._apply_replicaset(resource_data, name, namespace)
+            elif kind == "HorizontalPodAutoscaler":
+                self._apply_hpa(resource_data, name, namespace)
+            elif kind == "Node":
+                self._apply_node(resource_data, name)
             else:
-                return f"{seconds}s"
-        except Exception:
-            return "<unknown>"
+                print(f"Error: Unsupported resource kind '{kind}'")
+                return
+                
+        except FileNotFoundError:
+            print(f"Error: File '{filename}' not found")
+        except yaml.YAMLError as e:
+            print(f"Error: Invalid YAML format in '{filename}': {e}")
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON format in '{filename}': {e}")
+        except Exception as e:
+            print(f"Error applying resource from '{filename}': {e}")
+    
+    def _apply_pod(self, pod_data: dict, name: str, namespace: str) -> None:
+        """应用Pod资源"""
+        try:
+            key = URIConfig.POD_SPEC_URL.format(
+                        namespace=namespace,
+                        name=name,
+                    )
+            self.api_client.post(key, pod_data)
+            
+            print(f"pod/{name} created")
+            
+        except Exception as e:
+            print(f"Error creating pod/{name}: {e}")
+    
+    def _apply_service(self, service_data: dict, name: str, namespace: str) -> None:
+        """应用Service资源"""
+        try:
+            # 通过 API 创建 Service
+            key = self.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=name)
+            response = self.api_client.post(key, service_data)
+            
+            if response:
+                print(f"service/{name} created")
+            else:
+                print(f"Error creating service/{name}")
+                
+        except Exception as e:
+            print(f"Error creating service/{name}: {e}")
+    
+    def _apply_replicaset(self, rs_data: dict, name: str, namespace: str) -> None:
+        """应用ReplicaSet资源"""
+        try:
+            path = self.uri_config.REPLICA_SET_SPEC_URL.format(
+                namespace=namespace, name=name
+            )
+            response = self.api_client.post(path, rs_data)
+            
+            if response:
+                print(f"replicaset.apps/{name} created")
+                
+        except Exception as e:
+            print(f"Error creating replicaset.apps/{name}: {e}")
+    
+    def _apply_hpa(self, hpa_data: dict, name: str, namespace: str) -> None:
+        """应用HPA资源"""
+        try:
+            # 使用 HorizontalPodAutoscalerConfig 创建配置对象
+            path = self.uri_config.HPA_SPEC_URL.format(
+                namespace=namespace, name=name
+            )
 
+            response = self.api_client.post(path, hpa_data)
+            
+            # 调用创建方法
+            if response:
+                print(f"horizontalpodautoscaler.autoscaling/{name} created")
+            
+        except Exception as e:
+            print(f"Error creating horizontalpodautoscaler.autoscaling/{name}: {e}")
+    
+    def _apply_node(self, node_data: dict, name: str) -> None:
+        """应用Node资源（特殊处理）"""
+        try:
+            # Node 是特殊的，需要在节点上执行
+            print(f"Warning: Node resources should be applied on the target node itself")
+            print(f"Please run 'kubectl add node {name}' on the target node")
+            
+            # 这里可以选择直接通过 API 注册节点（如果支持）
+            # 使用 NodeConfig 创建配置对象
+            node_config = NodeConfig(node_data)
+            
+            node = Node(node_config, URIConfig)
+            # 这会阻塞进程
+            print(f"Starting node '{name}', note that this will block the current process...")
+            node.run()
+            
+        except Exception as e:
+            print(f"Error creating node/{name}: {e}")
+    
+    def add_node_from_file(self, filename: str) -> None:
+        """专门用于节点加入的命令"""
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                if filename.endswith('.yaml') or filename.endswith('.yml'):
+                    node_data = yaml.safe_load(f)
+                else:
+                    node_data = json.load(f)
+            
+            # 验证 Node 数据
+            if node_data.get("kind") != "Node":
+                print(f"Error: File does not contain a Node resource")
+                return
+            
+            metadata = node_data.get("metadata", {})
+            name = metadata.get("name")
+            
+            if not name:
+                print("Error: Node name is required")
+                return
+            
+            # 使用 NodeConfig 和 Node 对象
+            from pkg.apiObject.node import Node
+            
+            node_config = NodeConfig(node_data)
+            node = Node(node_config, self.uri_config)
+            
+            print(f"Starting node '{name}', note that this will block the current process...")
+            
+            # 启动节点（这会阻塞当前进程）
+            node.run()
+                
+        except FileNotFoundError:
+            print(f"Error: File '{filename}' not found")
+        except Exception as e:
+            print(f"Error adding node from file: {e}")
+    
     # ============= Node 相关操作 =============
     
     def get_nodes(self) -> None:
@@ -103,7 +247,7 @@ class KubectlClient:
                 print("No nodes found.")
                 return
             
-            headers = ["NAME", "STATUS", "ROLES", "AGE", "VERSION"]
+            headers = ["NAME", "STATUS", "ROLES", "VERSION"]
             rows = []
             
             for node_entry in response:
@@ -119,10 +263,9 @@ class KubectlClient:
                     else:
                         roles_str = str(roles)
                     
-                    age = self.format_age(node_data.get("creation_time", ""))
                     version = node_data.get("version", "Unknown")
                     
-                    rows.append([node_name, status, roles_str, age, version])
+                    rows.append([node_name, status, roles_str, version])
             
             print(self.format_table_output(headers, rows))
             
@@ -192,9 +335,9 @@ class KubectlClient:
                 print(f"No pods found in {ns_info}.")
                 return
             
-            headers = ["NAME", "READY", "STATUS", "RESTARTS", "AGE"]
+            headers = ["NAME", "READY", "STATUS"]
             if all_namespaces:
-                headers.insert(1, "NAMESPACE")
+                headers.insert(0, "NAMESPACE")
             
             rows = []
             
@@ -204,19 +347,17 @@ class KubectlClient:
                     pod_data = pod_entry[pod_name]
                     
                     # 提取 Pod 信息
-                    ready_containers = pod_data.get("ready_containers", 0)
+                    # ready_containers = len(pod_data.get("containers", 0))
                     total_containers = len(pod_data.get("spec", {}).get("containers", []))
-                    ready = f"{ready_containers}/{total_containers}"
+                    ready = f"{total_containers}/{total_containers}"
                     
                     status = pod_data.get("status", "Unknown")
-                    restarts = pod_data.get("restart_count", 0)
-                    age = self.format_age(pod_data.get("creation_time", ""))
                     
                     if all_namespaces:
-                        pod_namespace = pod_data.get("namespace", "Unknown")
-                        rows.append([pod_name, pod_namespace, ready, status, str(restarts), age])
+                        pod_namespace = pod_data.get("metadata",{}).get("namespace", "Unknown")
+                        rows.append([pod_namespace,pod_name, ready, status])
                     else:
-                        rows.append([pod_name, ready, status, str(restarts), age])
+                        rows.append([pod_name, ready, status])
             
             print(self.format_table_output(headers, rows))
             
@@ -343,7 +484,7 @@ class KubectlClient:
                 print(f"No services found in {ns_info}.")
                 return
             
-            headers = ["NAME", "TYPE", "CLUSTER-IP", "EXTERNAL-IP", "PORT(S)", "AGE"]
+            headers = ["NAME", "TYPE", "CLUSTER-IP", "EXTERNAL-IP", "PORT(S)"]
             if all_namespaces:
                 headers.insert(1, "NAMESPACE")
             
@@ -371,13 +512,11 @@ class KubectlClient:
                         port_strs.append(port_str)
                     ports_str = ",".join(port_strs) if port_strs else "<none>"
                     
-                    age = self.format_age(svc_data.get("metadata", {}).get("creation_time", ""))
-                    
                     if all_namespaces:
                         svc_namespace = svc_data.get("metadata", {}).get("namespace", "Unknown")
-                        rows.append([svc_name, svc_namespace, svc_type, cluster_ip, external_ip, ports_str, age])
+                        rows.append([svc_name, svc_namespace, svc_type, cluster_ip, external_ip, ports_str])
                     else:
-                        rows.append([svc_name, svc_type, cluster_ip, external_ip, ports_str, age])
+                        rows.append([svc_name, svc_type, cluster_ip, external_ip, ports_str])
             
             print(self.format_table_output(headers, rows))
             
@@ -494,7 +633,7 @@ class KubectlClient:
                 print(f"No replicasets found in {ns_info}.")
                 return
             
-            headers = ["NAME", "DESIRED", "CURRENT", "READY", "AGE"]
+            headers = ["NAME", "DESIRED", "CURRENT", "READY"]
             if all_namespaces:
                 headers.insert(1, "NAMESPACE")
             
@@ -516,13 +655,11 @@ class KubectlClient:
                     elif isinstance(current_replicas, int):
                         ready_count = current_replicas
                     
-                    age = self.format_age(rs_data.get("metadata", {}).get("creation_time", ""))
-                    
                     if all_namespaces:
                         rs_namespace = rs_data.get("metadata", {}).get("namespace", "Unknown")
-                        rows.append([rs_name, rs_namespace, str(desired), str(ready_count), str(ready_count), age])
+                        rows.append([rs_name, rs_namespace, str(desired), str(ready_count), str(ready_count)])
                     else:
-                        rows.append([rs_name, str(desired), str(ready_count), str(ready_count), age])
+                        rows.append([rs_name, str(desired), str(ready_count), str(ready_count)])
             
             print(self.format_table_output(headers, rows))
             
@@ -682,7 +819,7 @@ class KubectlClient:
                 print(f"No hpa found in {ns_info}.")
                 return
             
-            headers = ["NAME", "REFERENCE", "TARGETS", "MINPODS", "MAXPODS", "REPLICAS", "AGE"]
+            headers = ["NAME", "REFERENCE", "TARGETS", "MINPODS", "MAXPODS", "REPLICAS"]
             if all_namespaces:
                 headers.insert(1, "NAMESPACE")
             
@@ -711,13 +848,11 @@ class KubectlClient:
                     max_replicas = spec.get("maxReplicas", 10)
                     current_replicas = hpa_data.get("current_replicas", 0)
                     
-                    age = self.format_age(hpa_data.get("metadata", {}).get("creation_time", ""))
-                    
                     if all_namespaces:
                         hpa_namespace = hpa_data.get("metadata", {}).get("namespace", "Unknown")
-                        rows.append([hpa_name, hpa_namespace, reference, targets_str, str(min_replicas), str(max_replicas), str(current_replicas), age])
+                        rows.append([hpa_name, hpa_namespace, reference, targets_str, str(min_replicas), str(max_replicas), str(current_replicas)])
                     else:
-                        rows.append([hpa_name, reference, targets_str, str(min_replicas), str(max_replicas), str(current_replicas), age])
+                        rows.append([hpa_name, reference, targets_str, str(min_replicas), str(max_replicas), str(current_replicas)])
             
             print(self.format_table_output(headers, rows))
             
@@ -857,6 +992,15 @@ def main():
     create_parser = subparsers.add_parser("create", help="从文件或stdin创建资源")
     create_parser.add_argument("-f", "--filename", required=True, help="文件名")
     
+    # apply 命令 (新增)
+    apply_parser = subparsers.add_parser("apply", help="通过文件名或stdin对资源进行配置")
+    apply_parser.add_argument("-f", "--filename", required=True, help="文件名")
+    
+    # add 命令 (专门用于节点加入)
+    add_parser = subparsers.add_parser("add", help="添加节点到集群")
+    add_parser.add_argument("resource", choices=["node"], help="资源类型")
+    add_parser.add_argument("filename", help="节点配置文件")
+    
     # delete 命令
     delete_parser = subparsers.add_parser("delete", help="删除资源")
     delete_parser.add_argument("resource", choices=["pod", "service", "svc", "replicaset", "rs", "hpa"], 
@@ -908,7 +1052,16 @@ def main():
                 
         elif args.command == "create":
             # 根据文件内容判断资源类型
-            kubectl.create_pod_from_file(args.filename)  # 这里简化处理，实际应该解析文件判断类型
+            kubectl.apply_from_file(args.filename)  # 使用统一的 apply 方法
+            
+        elif args.command == "apply":
+            # 新的 apply 命令
+            kubectl.apply_from_file(args.filename)
+            
+        elif args.command == "add":
+            # 专门用于节点加入
+            if args.resource == "node":
+                kubectl.add_node_from_file(args.filename)
             
         elif args.command == "delete":
             if args.resource == "pod":

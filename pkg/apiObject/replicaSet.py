@@ -413,11 +413,11 @@ def test_replica_set(ci_mode=False):
             # 设置API客户端
             rs.set_api_client(ApiClient(), URIConfig())
 
-            # # 测试1: 创建ReplicaSet
-            # print("\n[TEST]1. 创建ReplicaSet...")
-            # create_success = rs.create()
-            # assert create_success, "创建ReplicaSet失败"
-            # print("[PASS]创建ReplicaSet成功")
+            # 测试1: 创建ReplicaSet
+            print("\n[TEST]1. 创建ReplicaSet...")
+            create_success = rs.create()
+            assert create_success, "创建ReplicaSet失败"
+            print("[PASS]创建ReplicaSet成功")
 
             # return
 
@@ -466,6 +466,7 @@ def test_replica_set(ci_mode=False):
                 and updated_rs["current_replicas"][0] == 3
             ), "Pod创建数量不匹配"
             print("[PASS]验证Pod创建成功")
+            input("press Enter to continue...")  # 暂停，便于观察
 
             # return
 
