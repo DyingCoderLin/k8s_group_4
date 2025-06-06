@@ -484,7 +484,7 @@ class KubectlClient:
                 print(f"No services found in {ns_info}.")
                 return
             
-            headers = ["NAME", "TYPE", "CLUSTER-IP", "EXTERNAL-IP", "PORT(S)"]
+            headers = ["NAME", "TYPE", "CLUSTER-IP", "PORT(S)"]
             if all_namespaces:
                 headers.insert(1, "NAMESPACE")
             
@@ -497,8 +497,8 @@ class KubectlClient:
                     
                     # 提取 Service 信息
                     svc_type = svc_data.get("spec", {}).get("type", "ClusterIP")
-                    cluster_ip = svc_data.get("spec", {}).get("cluster_ip", "<none>")
-                    external_ip = svc_data.get("spec", {}).get("external_ip", "<none>")
+                    cluster_ip = svc_data.get("spec", {}).get("clusterIP", "<none>")
+                    # external_ip = svc_data.get("spec", {}).get("external_ip", "<none>")
                     
                     # 端口信息
                     ports = svc_data.get("spec", {}).get("ports", [])
@@ -514,9 +514,9 @@ class KubectlClient:
                     
                     if all_namespaces:
                         svc_namespace = svc_data.get("metadata", {}).get("namespace", "Unknown")
-                        rows.append([svc_name, svc_namespace, svc_type, cluster_ip, external_ip, ports_str])
+                        rows.append([svc_name, svc_namespace, svc_type, cluster_ip, ports_str])
                     else:
-                        rows.append([svc_name, svc_type, cluster_ip, external_ip, ports_str])
+                        rows.append([svc_name, svc_type, cluster_ip, ports_str])
             
             print(self.format_table_output(headers, rows))
             
