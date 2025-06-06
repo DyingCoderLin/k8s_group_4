@@ -285,3 +285,28 @@ docker run --rm --net=bridge alpine sh -c "apk add --no-cache curl && curl --max
   ```
 
 - 如果在一台新机器上，需要配置flannel，参考上面的指南
+
+### 配置cicd
+- 首选确保服务器上有python和docker（这两个没有的话一切都进行不了）
+```
+sudo apt install python3 python3-pip
+sudo apt install python3-dev build-essential
+sudo apt install python-is-python3
+
+wget https://github.com/edenhill/librdkafka/archive/refs/tags/v2.10.0.tar.gz
+tar -xzf v2.10.0.tar.gz
+cd librdkafka-2.10.0
+./configure
+make
+sudo make install
+sudo ldconfig
+pip install --no-binary :all: confluent-kafka
+# 给容器授权
+sudo chown -R 1001:1001 /home/chenglianglin/actions-runner/_work/k8s_group_4/k8s_group_4/yamls
+```
+- 配置服务器上的runner
+  - 首先创建一个非root用户，并给予它/home/<username>下文件的创建、修改权限
+  ```
+
+  ```
+  - 然后根据github action中对于self host的指令进行配置，最后在该用户下运行./run.sh

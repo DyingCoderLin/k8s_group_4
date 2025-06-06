@@ -32,7 +32,25 @@ ETCD_RUNNING=$?
 nc -z localhost 9092 > /dev/null 2>&1
 KAFKA_RUNNING=$?
 
-if [ $ETCD_RUNNING -ne 0 ] || [ $KAFKA_RUNNING -ne 0 ]; then
+if [ $ETCD_RUNNING -ne 0 ]; then
+    echo -e "${RED}etcd服务未运行，启动所需容器...${NC}"
+    # 如果存在名为etcd的容器，则直接启动该容器
+    if [ $(docker ps -aq -f name=etcd) ]; then
+        echo -e "${YELLOW}正在启动已存在的etcd容器...${NC}"
+        docker start etcd
+    fi
+    # 如果叫做etcd的容器不存在，则创建并启动
+    docker run -d --name etcd -p 2379:2379 -p 2380:2380 \
+        quay.io/coreos/etcd:v3.5.0 \
+        /usr/local/bin/etcd \
+        --listen-client-urls http://0.0.0.0:2379 \
+        --advertise-client-urls http://localhost:2379
+    
+else
+    echo -e "${GREEN}etcd服务正在运行${NC}"
+fi
+
+if [ $KAFKA_RUNNING -ne 0 ]; then
     echo -e "${RED}etcd或kafka服务未运行，启动所需容器...${NC}"
     
     # 检查docker是否运行
