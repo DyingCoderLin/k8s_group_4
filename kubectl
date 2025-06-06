@@ -10,7 +10,7 @@ PID_FILE="/tmp/kubectl_daemon.pid"
 # 设置API服务器地址 - 根据您的实际情况修改
 # export API_SERVER_HOST="10.181.22.193"
 # export API_SERVER_HOST="localhost"
-export API_SERVER_HOST="10.181.22.193"
+export API_SERVER_HOST="10.119.15.182"
 export API_SERVER_PORT="5050"
 
 # 检查守护进程是否在运行

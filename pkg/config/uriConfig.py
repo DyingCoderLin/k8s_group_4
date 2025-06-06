@@ -15,10 +15,11 @@ class URIConfig:
     HOST = os.getenv('API_SERVER_HOST')
     PORT = int(os.getenv('API_SERVER_PORT', '5050'))
     # URI 协议方案
-    # HOST = "10.119.15.182"
+
     if HOST is None:
         import sys
-        HOST = "localhost"
+        # HOST = "localhost"
+        HOST = "10.119.15.182"
         if sys.platform == "darwin":
             
             import socket
