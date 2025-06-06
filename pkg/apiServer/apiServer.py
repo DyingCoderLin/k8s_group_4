@@ -21,6 +21,7 @@ from pkg.config.nodeConfig import NodeConfig
 from pkg.config.podConfig import PodConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
+from pkg.config.serviceConfig import ServiceConfig
 
 
 class ApiServer:
@@ -90,6 +91,8 @@ class ApiServer:
         self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(
             self.update_pod_status
         )
+        self.app.route(config.POD_SPEC_IP_URL, methods=["PUT"])(self.update_pod_subnet_ip)
+        self.app.route(config.POD_SPEC_IP_URL, methods=["GET"])(self.get_pod_subnet_ip)
 
         # replicaSet相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的rs，读取某个namespace下的rs，读取某个rs
@@ -126,6 +129,18 @@ class ApiServer:
         self.app.route(config.HPA_SPEC_URL, methods=["PUT"])(self.update_hpa)
         # 删除hpa
         self.app.route(config.HPA_SPEC_URL, methods=["DELETE"])(self.delete_hpa)
+
+        # service相关
+        # 获取全部Service和指定namespace下的Service
+        self.app.route(config.GLOBAL_SERVICES_URL, methods=["GET"])(self.get_global_services)
+        self.app.route(config.SERVICE_URL, methods=["GET"])(self.get_services)
+        # 指定Service的增删改查
+        self.app.route(config.SERVICE_SPEC_URL, methods=["GET"])(self.get_service)
+        self.app.route(config.SERVICE_SPEC_URL, methods=["POST"])(self.create_service)
+        self.app.route(config.SERVICE_SPEC_URL, methods=["PUT"])(self.update_service)
+        self.app.route(config.SERVICE_SPEC_URL, methods=["DELETE"])(self.delete_service)
+        # Service状态和统计信息
+        self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
     def run(self):
         print('[INFO]ApiServer running...')
@@ -183,31 +198,41 @@ class ApiServer:
                 return json.dumps({'error': 'Node name duplicated'}), 403
 
         try:
-            # 创建kafka主题
-            kafka_topic = self.kafka_config.POD_TOPIC.format(name=name)
-            fs = self.kafka.create_topics(
-                [NewTopic(kafka_topic, num_partitions=1, replication_factor=1)]
-            )
+            # 创建Pod主题（用于kubelet）
+            pod_topic = self.kafka_config.POD_TOPIC.format(name=name)
+            # 创建ServiceProxy主题（用于ServiceProxy）
+            serviceproxy_topic = f"serviceproxy.{name}"
+            
+            # 批量创建主题
+            topics_to_create = [
+                NewTopic(pod_topic, num_partitions=1, replication_factor=1),
+                NewTopic(serviceproxy_topic, num_partitions=1, replication_factor=1)
+            ]
+            
+            fs = self.kafka.create_topics(topics_to_create)
             for topic, f in fs.items():
                 f.result()
                 print(f"[INFO]Topic '{topic}' created successfully.")
+            
+            # 发送心跳消息到Pod主题
             self.kafka_producer.produce(
-                kafka_topic, key="HEARTBEAT", value=json.dumps({}).encode("utf-8")
+                pod_topic, key="HEARTBEAT", value=json.dumps({}).encode("utf-8")
             )
         except KafkaException as e:
-            if not e.args[0].code() == 36:  # 忽略“主题已存在”的错误
+            if not e.args[0].code() == 36:  # 忽略"主题已存在"的错误
                 raise
 
         # 创建成功，向etcd写入实际状态
         new_node_config.kafka_server = self.kafka_config.BOOTSTRAP_SERVER
-        new_node_config.topic = kafka_topic
+        new_node_config.topic = pod_topic
         new_node_config.status = NODE_STATUS.ONLINE
         new_node_config.heartbeat_time = time()
         self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=name), new_node_config)
 
         return {
             "kafka_server": self.kafka_config.BOOTSTRAP_SERVER,
-            "kafka_topic": kafka_topic,
+            "kafka_topic": pod_topic,
+            # "serviceproxy_topic": serviceproxy_topic,
         }
 
     # 获取集群中所有node
@@ -365,6 +390,46 @@ class ApiServer:
             json.dumps(
                 {"message": f"Pod {namespace}:{name} status change to {status}"}
             ),
+            200,
+        )
+    
+    def get_pod_subnet_ip(self, namespace: str, name: str):
+        # 获取容器的子网IP，读取etcd subnet_ip
+        pod = self.etcd.get(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if pod is None:
+            return (
+                json.dumps({"message": f"Pod {namespace}:{name} is already deleted."}),
+                404,
+            )
+        if pod.subnet_ip is None:
+            return json.dumps({"subnet_ip": "None"}), 200
+        print(f"[INFO]Pod {namespace}:{name} subnet_ip is {pod.subnet_ip}.")
+        return json.dumps({"subnet_ip": pod.subnet_ip}), 200
+        
+    def update_pod_subnet_ip(self, namespace: str, name: str):
+        subnet_ip = request.json["subnet_ip"]
+        if not subnet_ip:
+            return json.dumps({"error": "subnet_ip is required"}), 400
+        # 更新容器的子网IP，写etcd subnet_ip
+        pod = self.etcd.get(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if pod is None:
+            return (
+                json.dumps({"message": f"Pod {namespace}:{name} is already deleted."}),
+                404,
+            )
+        if pod.subnet_ip:
+            print(f"[INFO]updating pod {namespace}:{name} subnet_ip from {pod.subnet_ip} to {subnet_ip}")
+        pod.subnet_ip = subnet_ip
+        self.etcd.put(
+            self.etcd_config.POD_SPEC_KEY.format(namespace=namespace, name=name), pod
+        )
+        print(f"[INFO]Pod {namespace}:{name} subnet_ip change to {subnet_ip}.")
+        return (
+            json.dumps({"message": f"Pod {namespace}:{name} subnet_ip change to {subnet_ip}"}),
             200,
         )
 
@@ -717,28 +782,21 @@ class ApiServer:
 
         return json.dumps(result)
 
-    def get_hpas(self, namespace=None):
+    def get_hpas(self, namespace):
         """获取HPA列表"""
-        print(f'[INFO]Get HPAs in namespace {namespace if namespace else "all"}')
+        print(f'[INFO]Get HPAs in namespace {namespace}')
 
         # 如果提供了namespace参数，获取指定命名空间的HPA
-        if namespace:
-            key = self.etcd_config.HPA_KEY.format(namespace=namespace)
-            hpas = self.etcd.get(key)
-        else:
-            # 否则获取所有命名空间的HPA
-            hpas = []
-            for ns in self._get_namespaces():
-                key = self.etcd_config.HPA_KEY.format(namespace=ns)
-                ns_hpas = self.etcd.get(key)
-                hpas.extend(ns_hpas)
+        key = self.etcd_config.HPA_KEY.format(namespace=namespace)
+        hpas = self.etcd.get_prefix(key)
 
         # 格式化输出
         result = []
-        for hpa in hpas:
-            result.append(
-                {hpa.name: hpa.to_dict() if hasattr(hpa, "to_dict") else vars(hpa)}
-            )
+        if hpas:
+            for hpa in hpas:
+                result.append(
+                    {hpa.name: hpa.to_dict() if hasattr(hpa, "to_dict") else vars(hpa)}
+                )
 
         return json.dumps(result)
 
@@ -835,7 +893,7 @@ class ApiServer:
                 )
 
             # 获取现有HPA
-            key = self.etcd_config.HPA_SPCE_KEY.format(namespace=namespace, name=name)
+            key = self.etcd_config.HPA_SPEC_KEY.format(namespace=namespace, name=name)
             hpa = self.etcd.get(key)
 
             if not hpa:
@@ -845,8 +903,8 @@ class ApiServer:
             # updated_config = HorizontalPodAutoscalerConfig(hpa_json)
 
             # 更新运行时信息
-            hpa.current_replicas = hpa_json.get(
-                "current_replicas", hpa.current_replicas
+            hpa.current_replicas = hpa_json.get("spec",{}).get(
+                "currentReplicas", hpa.current_replicas
             )
             
             # 保存更新
@@ -891,6 +949,160 @@ class ApiServer:
         rs.hpa_controlled = False
 
         self.etcd.put(rs_key, rs)
+
+    # ===================== Service相关方法 =====================
+    
+    def get_global_services(self):
+        """获取全部Service"""
+        print("[INFO]Get global services")
+        try:
+            services = self.etcd.get_prefix(self.etcd_config.GLOBAL_SERVICES_KEY)
+            print(f"[INFO]Found {len(services)} global services")
+            print(f"[INFO]Services: {services}")
+            result = []
+            for service in services:
+                result.append({service.name: service.to_dict()})
+            return json.dumps(result)
+        except Exception as e:
+            print(f"[ERROR]Failed to get global services: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def get_services(self, namespace: str):
+        """获取指定namespace下的Service"""
+        print(f"[INFO]Get services in namespace {namespace}")
+        try:
+            services = self.etcd.get_prefix(
+                self.etcd_config.SERVICES_KEY.format(namespace=namespace)
+            )
+            result = []
+            for service in services:
+                result.append({service.name: service.to_dict()})
+            return json.dumps(result)
+        except Exception as e:
+            print(f"[ERROR]Failed to get services: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def get_service(self, namespace: str, name: str):
+        """获取指定Service"""
+        print(f"[INFO]Get service {name} in namespace {namespace}")
+        try:
+            key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
+            service = self.etcd.get(key)
+            if service is None:
+                return json.dumps({"error": "Service not found"}), 404
+            return json.dumps(service.to_dict())
+        except Exception as e:
+            print(f"[ERROR]Failed to get service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    # service 只在 apiserver里存进etcd，后续的 service 对pod的管理是在servicecontroller中实现的
+    def create_service(self, namespace: str, name: str):
+        """创建Service"""
+        print(f"[INFO]Create service {name} in namespace {namespace}")
+        try:
+            service_json = request.json
+            
+            # 验证namespace和name是否匹配
+            if service_json.get("metadata", {}).get("name") != name:
+                return json.dumps({
+                    "error": "Name in URL does not match name in request body"
+                }), 400
+            
+            if service_json.get("metadata", {}).get("namespace", "default") != namespace:
+                return json.dumps({
+                    "error": "Namespace in URL does not match namespace in request body"
+                }), 400
+
+            # 检查Service是否已存在
+            key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
+            existing_service = self.etcd.get(key)
+            if existing_service is not None:
+                return json.dumps({"error": "Service already exists"}), 409
+
+            # 创建Service配置
+            service_config = ServiceConfig(service_json)
+            # service_config.namespace = namespace
+            # service_config.name = name
+            # service_config.status = "Pending"
+
+            # 保存到etcd
+            self.etcd.put(key, service_config)
+
+            print(f"[INFO]Service {name} created successfully")
+            return json.dumps({"message": f"Service {name} created successfully"}), 200
+
+        except Exception as e:
+            print(f"[ERROR]Failed to create service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def update_service(self, namespace: str, name: str):
+        """更新Service"""
+        # 只有clusterIP可以更新，其他的都不允许更新
+        print(f"[INFO]Update service {name} in namespace {namespace}")
+        try:
+            cluster_ip_json = request.json
+            
+            if not cluster_ip_json.get("cluster_ip", {}): # 如果没有cluster_ip字段
+                return json.dumps({
+                    "error": "No cluster_ip provided for update"
+            }), 400
+
+            # 获取现有Service
+            key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
+            existing_service = self.etcd.get(key)
+            if existing_service is None:
+                return json.dumps({"error": "Service not found"}), 404
+
+            # 创建新的Service配置
+            if existing_service.cluster_ip:
+                print(f"[ERROR]Service {name} already has cluster_ip, cannot update.")
+                print(f"[ERROR]Existing service: {existing_service.to_dict()}")
+                print(f"[ERROR]trying to update Cluster IP to: {cluster_ip_json.get('cluster_ip')}")
+                return json.dumps({"error": "Service already has a cluster IP"}), 400
+                
+            existing_service.cluster_ip = cluster_ip_json.get("cluster_ip", existing_service.cluster_ip)
+
+            # 保存更新
+            self.etcd.put(key, existing_service)
+
+            return json.dumps({"message": f"Service {name} updated successfully"})
+
+        except Exception as e:
+            print(f"[ERROR]Failed to update service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def delete_service(self, namespace: str, name: str):
+        """删除Service"""
+        print(f"[INFO]Delete service {name} in namespace {namespace}")
+        try:
+            key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
+            service = self.etcd.get(key)
+            if service is None:
+                return json.dumps({"error": "Service not found"}), 404
+
+            # 删除Service
+            self.etcd.delete(key)
+
+            return json.dumps({"message": f"Service {name} deleted successfully"})
+
+        except Exception as e:
+            print(f"[ERROR]Failed to delete service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def get_service_status(self, namespace: str, name: str):
+        """获取Service状态和统计信息"""
+        print(f"[INFO]Get service status {name} in namespace {namespace}")
+        try:
+            key = self.etcd_config.SERVICE_SPEC_KEY.format(namespace=namespace, name=name)
+            service = self.etcd.get(key)
+            if service is None:
+                return json.dumps({"error": "Service not found"}), 404
+
+            return json.dumps(service.to_dict()), 200
+
+        except Exception as e:
+            print(f"[ERROR]Failed to get service status: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

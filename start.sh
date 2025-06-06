@@ -38,6 +38,7 @@ stop_all() {
         pkill -f "python3 -m pkg.apiObject.node" || true
         pkill -f "python3 -m pkg.controller.rsStarter" || true
         pkill -f "python3 -m pkg.controller.hpaStarter" || true
+        pkill -f "python3 -m pkg.controller.serviceStarter" || true
         
         echo "${GREEN}进程已停止${NC}"
     fi
@@ -117,11 +118,16 @@ pids+=($rs_controller_pid)
 hpa_controller_pid=$(start_component "HPAController" "python3 -m pkg.controller.hpaStarter" "${PROJECT_ROOT}/logs/hpa_controller.log")
 pids+=($hpa_controller_pid)
 
+# 6. 启动 ServiceController
+service_controller_pid=$(start_component "ServiceController" "python3 -m pkg.controller.serviceStarter" "${PROJECT_ROOT}/logs/service_controller.log")
+pids+=($service_controller_pid)
+
 echo "${YELLOW}===== 所有 K8S 组件已启动 =====${NC}"
 echo "${GREEN}ApiServer PID: $api_server_pid${NC}"
 echo "${GREEN}Node/Kubelet PID: $node_pid${NC}"
 echo "${GREEN}ReplicaSetController PID: $rs_controller_pid${NC}"
 echo "${GREEN}HPAController PID: $hpa_controller_pid${NC}"
+echo "${GREEN}ServiceController PID: $service_controller_pid${NC}"
 echo "${BLUE}查看组件日志: tail -f ${PROJECT_ROOT}/logs/*.log${NC}"
 echo "${YELLOW}运行 '$0 --stop' 停止所有组件${NC}"
 

@@ -1,6 +1,17 @@
-**/__pycache__
-.idea
-logs
+# Python 缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+**/__pycache__/
+**/*.pyc
+
+# IDE 文件
+.idea/
+.vscode/
+
+# 日志文件
+logs/
+
 # Zookeeper 数据和日志文件
 yamls/zookeeper-data/
 yamls/zookeeper-logs/
