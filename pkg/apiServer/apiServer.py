@@ -198,31 +198,41 @@ class ApiServer:
                 return json.dumps({'error': 'Node name duplicated'}), 403
 
         try:
-            # 创建kafka主题
-            kafka_topic = self.kafka_config.POD_TOPIC.format(name=name)
-            fs = self.kafka.create_topics(
-                [NewTopic(kafka_topic, num_partitions=1, replication_factor=1)]
-            )
+            # 创建Pod主题（用于kubelet）
+            pod_topic = self.kafka_config.POD_TOPIC.format(name=name)
+            # 创建ServiceProxy主题（用于ServiceProxy）
+            serviceproxy_topic = f"serviceproxy.{name}"
+            
+            # 批量创建主题
+            topics_to_create = [
+                NewTopic(pod_topic, num_partitions=1, replication_factor=1),
+                NewTopic(serviceproxy_topic, num_partitions=1, replication_factor=1)
+            ]
+            
+            fs = self.kafka.create_topics(topics_to_create)
             for topic, f in fs.items():
                 f.result()
                 print(f"[INFO]Topic '{topic}' created successfully.")
+            
+            # 发送心跳消息到Pod主题
             self.kafka_producer.produce(
-                kafka_topic, key="HEARTBEAT", value=json.dumps({}).encode("utf-8")
+                pod_topic, key="HEARTBEAT", value=json.dumps({}).encode("utf-8")
             )
         except KafkaException as e:
-            if not e.args[0].code() == 36:  # 忽略“主题已存在”的错误
+            if not e.args[0].code() == 36:  # 忽略"主题已存在"的错误
                 raise
 
         # 创建成功，向etcd写入实际状态
         new_node_config.kafka_server = self.kafka_config.BOOTSTRAP_SERVER
-        new_node_config.topic = kafka_topic
+        new_node_config.topic = pod_topic
         new_node_config.status = NODE_STATUS.ONLINE
         new_node_config.heartbeat_time = time()
         self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=name), new_node_config)
 
         return {
             "kafka_server": self.kafka_config.BOOTSTRAP_SERVER,
-            "kafka_topic": kafka_topic,
+            "kafka_topic": pod_topic,
+            # "serviceproxy_topic": serviceproxy_topic,
         }
 
     # 获取集群中所有node
