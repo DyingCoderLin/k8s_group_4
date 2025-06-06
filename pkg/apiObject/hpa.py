@@ -323,6 +323,8 @@ class HorizontalPodAutoscaler:
             if cpu_percent is None:
                 print("[ERROR]未找到有效的 CPU 使用率数据")
                 return None
+            
+            cpu_percent = float(cpu_percent) / 100.0
 
             print(f"[DEBUG]CPU使用率: {cpu_percent:.2f}%")
             return float(cpu_percent)
