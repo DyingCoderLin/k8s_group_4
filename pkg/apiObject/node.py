@@ -24,10 +24,6 @@ class Node:
         self.config = node_config
         self.uri_config = uri_config
         self.service_proxy = None
-        
-        # 设置标准输出无缓冲，确保日志实时写入
-        sys.stdout.reconfigure(write_through=True)
-        sys.stderr.reconfigure(write_through=True)
 
     def run(self):
         uri = self.uri_config.PREFIX + self.uri_config.NODE_SPEC_URL.format(

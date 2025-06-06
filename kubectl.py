@@ -210,7 +210,7 @@ class KubectlClient:
             if not os.path.exists(filename):
                 print(f"Error: File {filename} not found")
                 return
-           # 直接读取文件，不使用 StringIO
+            # 直接读取文件，不使用 StringIO
             with open(filename, 'r', encoding='utf-8') as file:
                 try:
                     # 使用 safe_load 而不是 load
