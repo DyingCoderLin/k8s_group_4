@@ -205,6 +205,8 @@ class KubectlClient:
         try:
             import yaml
             import os
+            import subprocess
+            import sys
         
             # 检查文件是否存在
             if not os.path.exists(filename):
@@ -231,17 +233,38 @@ class KubectlClient:
                 print("Error: Node name is required")
                 return
             
-            # 使用 NodeConfig 和 Node 对象
-            from pkg.apiObject.node import Node
+            # 创建日志目录
+            log_dir = "./logs"
+            os.makedirs(log_dir, exist_ok=True)
+            log_file = os.path.join(log_dir, "node.log")
             
-            node_config = NodeConfig(node_data)
-            node = Node(node_config, self.uri_config)
+            # 使用subprocess在后台启动node进程，将日志重定向到文件
+            cmd = [
+                sys.executable, "-m", "pkg.apiObject.node",
+                "--node-config", filename,
+                "--node-name", name
+            ]
             
-            print(f"Starting node '{name}', note that this will block the current process...")
+            print(f"Starting node '{name}' in background...")
+            print(f"Node logs will be written to: {log_file}")
             
-            # 启动节点（这会阻塞当前进程）
-            node.run()
+            with open(log_file, 'a') as f:
+                # 在日志文件中记录启动信息
+                f.write(f"\n=== Node {name} started at {__import__('datetime').datetime.now()} ===\n")
+                f.flush()
                 
+                # 启动后台进程
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=os.getcwd(),
+                    env=dict(os.environ, NODE_LOG_FILE=log_file)
+                )
+            
+            print(f"Node '{name}' started successfully with PID: {process.pid}")
+            print(f"Monitor logs with: tail -f {log_file}")
+            
         except FileNotFoundError:
             print(f"Error: File '{filename}' not found")
         except Exception as e:
