@@ -203,11 +203,14 @@ class KubectlClient:
     def add_node_from_file(self, filename: str) -> None:
         """专门用于节点加入的命令"""
         try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                if filename.endswith('.yaml') or filename.endswith('.yml'):
-                    node_data = yaml.safe_load(f)
-                else:
-                    node_data = json.load(f)
+           # 直接读取文件，不使用 StringIO
+            with open(file_path, 'r', encoding='utf-8') as file:
+                try:
+                    # 使用 safe_load 而不是 load
+                    node_data = yaml.safe_load(file)
+                except yaml.YAMLError as e:
+                    print(f"Error parsing YAML file: {e}")
+                    return
             
             # 验证 Node 数据
             if node_data.get("kind") != "Node":
