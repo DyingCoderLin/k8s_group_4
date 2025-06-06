@@ -11,9 +11,9 @@ spec:
   - name: test-server-container
     image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
     command: ["sh", "-c"]
-    args: ["echo 'Starting server 2 on port 8080...' && while true; do echo -e 'HTTP/1.1 200 OK\\r\\nContent-Type: text/plain\\r\\nContent-Length: 31\\r\\n\\r\\nResponse from SERVER-2 (Pod 2)' | nc -l -p 8080; done"]
+    args: ["echo 'Starting server 2 on port 9090...' && while true; do echo -e 'HTTP/1.1 200 OK\\r\\nContent-Type: text/plain\\r\\nContent-Length: 31\\r\\n\\r\\nResponse from SERVER-2 (Pod 2)' | nc -l -p 9090; done"]
     ports:
-    - containerPort: 8080
+    - containerPort: 9090
       protocol: TCP
     resources:
       requests:

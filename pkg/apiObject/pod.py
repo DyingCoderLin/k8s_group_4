@@ -271,7 +271,8 @@ if __name__ == "__main__":
         from pkg.config.globalConfig import GlobalConfig
 
         config = GlobalConfig()
-        test_file = "pod-1 copy.yaml"
+        # test_file = "pod-1 copy.yaml"
+        test_file = "test-pod-server-1.yaml"
         test_yaml = os.path.join(config.TEST_FILE_PATH, test_file)
         print(
             f"[INFO]使用{test_file}作为测试配置，测试Pod的创建和删除。目前没有使用volume绑定"
