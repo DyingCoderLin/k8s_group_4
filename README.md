@@ -179,6 +179,37 @@ FLANNEL_MTU=1400
 FLANNEL_IPMASQ=false
 ```
 
+需要flannel一直在后台运行，所以需要让它作为服务启动，首先移动到服务的二进制目录下
+```
+sudo mv flanneld-amd64 /usr/local/bin/flanneld
+```
+创建一个`/etc/systemd/system/flanneld.service`文件，写入服务配置信息
+```
+[Unit]
+Description=Flannel Network Fabric
+After=network.target etcd.service  # 依赖 etcd 或 kube-apiserver
+Wants=etcd.service
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/flanneld \
+  --etcd-endpoints=http://10.119.15.182:2379
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target                                               
+```
+确保etcd中写入了配置内容，启动服务
+```
+sudo systemctl daemon-reload
+sudo systemctl enable --now flanneld
+
+# 检查状态和日志
+sudo systemctl status flanneld
+journalctl -u flanneld -f
+```
+
 #### 方法一：将默认bridge网络设置为子网
 docker守护进程启动时应该读取这个配置。修改`/etc/docker/daemon.json`增加bip和mtu字段。其中bip是上面配置文件中的FLANNEL_SUBNET（字符串），mtu是FLANNEL_MTU（整型，如果是字符串则报错）。比如
 ```
