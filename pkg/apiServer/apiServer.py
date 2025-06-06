@@ -903,8 +903,8 @@ class ApiServer:
             # updated_config = HorizontalPodAutoscalerConfig(hpa_json)
 
             # 更新运行时信息
-            hpa.current_replicas = hpa_json.get(
-                "current_replicas", hpa.current_replicas
+            hpa.current_replicas = hpa_json.get("spec",{}).get(
+                "currentReplicas", hpa.current_replicas
             )
             
             # 保存更新

@@ -76,6 +76,7 @@ class HorizontalPodAutoscalerConfig:
                 },
                 "minReplicas": self.min_replicas,
                 "maxReplicas": self.max_replicas,
+                "currentReplicas": self.current_replicas,
                 "metrics": self.metrics,
             },
         }
