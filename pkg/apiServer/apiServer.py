@@ -782,21 +782,13 @@ class ApiServer:
 
         return json.dumps(result)
 
-    def get_hpas(self, namespace=None):
+    def get_hpas(self, namespace):
         """获取HPA列表"""
-        print(f'[INFO]Get HPAs in namespace {namespace if namespace else "all"}')
+        print(f'[INFO]Get HPAs in namespace {namespace}')
 
         # 如果提供了namespace参数，获取指定命名空间的HPA
-        if namespace:
-            key = self.etcd_config.HPA_KEY.format(namespace=namespace)
-            hpas = self.etcd.get(key)
-        else:
-            # 否则获取所有命名空间的HPA
-            hpas = []
-            for ns in self._get_namespaces():
-                key = self.etcd_config.HPA_KEY.format(namespace=ns)
-                ns_hpas = self.etcd.get(key)
-                hpas.extend(ns_hpas)
+        key = self.etcd_config.HPA_KEY.format(namespace=namespace)
+        hpas = self.etcd.get_prefix(key)
 
         # 格式化输出
         result = []
