@@ -1,18 +1,20 @@
 import etcd3
 import pickle
 
+from pkg.config.etcdConfig import EtcdConfig
+
 class Etcd():
-    def __init__(self, host, port):
+    def __init__(self, host, port, config = EtcdConfig):
+        self.config = config
         self.etcd = etcd3.client(host=host, port=port)
 
     def reset(self):
         """
         开发阶段调用，清空所有键值
         """
-        keys = self.etcd.get_all()
-        for value, metadata in keys:
-            key = metadata.key.decode('utf-8')
-            self.etcd.delete(key)
+        keys = self.config.RESET_PREFIX
+        for key in keys:
+            self.etcd.delete_prefix(key)
 
     def get_prefix(self, prefix):
         """

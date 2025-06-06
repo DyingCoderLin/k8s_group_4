@@ -32,3 +32,5 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
+
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY]
