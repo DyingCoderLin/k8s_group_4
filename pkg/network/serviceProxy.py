@@ -619,6 +619,156 @@ class ServiceProxy:
             self.logger.error(f"获取Kubernetes链列表失败: {e}")
         
         return chains
+    
+    def get_service_stats(self, service_name: str) -> dict:
+        """获取Service的iptables统计信息"""
+        if self.is_macos or not self.iptables_available:
+            # 在不支持iptables的环境中返回模拟数据
+            return {
+                "service_name": service_name,
+                "service_chain": f"{self.service_chain_prefix}{service_name.upper().replace('-', '_')}",
+                "endpoint_chains": [],
+                "total_packets": 0,
+                "total_bytes": 0,
+                "note": "在不支持iptables的环境中运行，数据为模拟值"
+            }
+            
+        try:
+            stats = {
+                "service_name": service_name,
+                "service_chain": None,
+                "endpoint_chains": [],
+                "total_packets": 0,
+                "total_bytes": 0
+            }
+            
+            # 获取Service链统计
+            if service_name in self.service_chains:
+                service_chain = self.service_chains[service_name]
+                stats["service_chain"] = service_chain
+                
+                try:
+                    result = subprocess.run(
+                        ["iptables", "-t", "nat", "-L", service_chain, "-n", "-v"],
+                        capture_output=True, text=True, check=True
+                    )
+                    
+                    for line in result.stdout.split('\n'):
+                        if line.strip() and not line.startswith('Chain') and not line.startswith('target'):
+                            parts = line.split()
+                            if len(parts) >= 2 and parts[0].isdigit():
+                                packets = int(parts[0])
+                                bytes_count = int(parts[1])
+                                stats["total_packets"] += packets
+                                stats["total_bytes"] += bytes_count
+                except:
+                    pass
+            
+            # 获取Endpoint链统计
+            if service_name in self.endpoint_chains:
+                for endpoint_chain in self.endpoint_chains[service_name]:
+                    endpoint_stat = {"chain": endpoint_chain, "packets": 0, "bytes": 0}
+                    
+                    try:
+                        result = subprocess.run(
+                            ["iptables", "-t", "nat", "-L", endpoint_chain, "-n", "-v"],
+                            capture_output=True, text=True, check=True
+                        )
+                        
+                        for line in result.stdout.split('\n'):
+                            if line.strip() and not line.startswith('Chain') and not line.startswith('target'):
+                                parts = line.split()
+                                if len(parts) >= 2 and parts[0].isdigit():
+                                    endpoint_stat["packets"] += int(parts[0])
+                                    endpoint_stat["bytes"] += int(parts[1])
+                    except:
+                        pass
+                    
+                    stats["endpoint_chains"].append(endpoint_stat)
+            
+            return stats
+            
+        except Exception as e:
+            return {"error": f"获取Service {service_name} 统计信息失败: {e}"}
+    
+    def cleanup_all_rules(self):
+        """清理所有Service相关的iptables规则"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info("模拟清理所有Service iptables规则")
+            return
+            
+        try:
+            # 1. 清空主要的Kubernetes链
+            self._run_iptables(["-t", "nat", "-F", self.nat_chain], ignore_errors=True)
+            self._run_iptables(["-t", "nat", "-F", self.mark_chain], ignore_errors=True)
+            self._run_iptables(["-t", "nat", "-F", self.postrouting_chain], ignore_errors=True)
+            
+            # 2. 清理所有Service和Endpoint链
+            try:
+                result = subprocess.run(
+                    ["iptables", "-t", "nat", "-L", "-n"], 
+                    capture_output=True, text=True
+                )
+                
+                # 查找并清理所有KUBE-SVC-*和KUBE-SEP-*链
+                for line in result.stdout.split('\n'):
+                    # 查找链定义行（Chain KUBE-xxx）
+                    if line.startswith('Chain '):
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            chain_name = parts[1]
+                            if (chain_name.startswith(self.service_chain_prefix) or 
+                                chain_name.startswith(self.endpoint_chain_prefix)):
+                                self._run_iptables(["-t", "nat", "-F", chain_name], ignore_errors=True)
+                                self._run_iptables(["-t", "nat", "-X", chain_name], ignore_errors=True)
+                                self.logger.debug(f"清理链: {chain_name}")
+                                
+            except Exception as e:
+                self.logger.warning(f"自动清理链时出现问题，继续手动清理: {e}")
+            
+            # 3. 清理映射
+            self.service_chains.clear()
+            self.endpoint_chains.clear()
+            
+            self.logger.info("清理所有Service iptables规则完成")
+            
+        except Exception as e:
+            self.logger.error(f"清理iptables规则失败: {e}")
+    
+    def _run_iptables(self, args: List[str], ignore_errors: bool = False):
+        """执行iptables命令"""
+        if self.is_macos or not self.iptables_available:
+            # 在不支持iptables的环境中记录命令但不执行
+            cmd_str = " ".join(["iptables"] + args)
+            self.logger.debug(f"模拟执行: {cmd_str}")
+            return True
+            
+        try:
+            result = subprocess.run(
+                ["iptables"] + args,
+                capture_output=True,
+                text=True,
+                check=not ignore_errors
+            )
+            
+            if result.returncode != 0 and not ignore_errors:
+                self.logger.error(f"iptables命令失败: {' '.join(['iptables'] + args)}")
+                self.logger.error(f"错误输出: {result.stderr}")
+                raise subprocess.CalledProcessError(result.returncode, args)
+                
+            return result.returncode == 0
+            
+        except subprocess.CalledProcessError as e:
+            if not ignore_errors:
+                self.logger.error(f"iptables命令执行失败: {e}")
+                raise
+            return False
+        except Exception as e:
+            self.logger.error(f"执行iptables命令时出现异常: {e}")
+            if not ignore_errors:
+                raise
+            return False
+
 def main():
     """ServiceProxy主函数，在每个节点上启动"""
     import argparse
