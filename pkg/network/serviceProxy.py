@@ -120,10 +120,17 @@ class ServiceProxy:
             endpoints = data.get('endpoints', [])
             node_port = data.get('node_port')
             
+            print(f"endpoints:{endpoints}")
+            
             self.logger.info(f"收到Service {action}消息: {service_name}")
             
-            if action == "CREATE" or action == "UPDATE":
+            if action == "CREATE":
                 self.create_service_rules(
+                    service_name, cluster_ip, port, protocol, endpoints, node_port
+                )
+            elif action == "UPDATE":
+                # 使用智能增量更新
+                self.update_service_endpoints(
                     service_name, cluster_ip, port, protocol, endpoints, node_port
                 )
             elif action == "DELETE":
@@ -143,44 +150,58 @@ class ServiceProxy:
             return
             
         try:
-            # 1. 创建基础链
+            # 1. 创建基础链（如果不存在）
             self._run_iptables(["-t", "nat", "-N", self.mark_chain], ignore_errors=True)
             self._run_iptables(["-t", "nat", "-N", self.postrouting_chain], ignore_errors=True)
             self._run_iptables(["-t", "nat", "-N", self.nat_chain], ignore_errors=True)
             
-            # 2. 添加基础链规则
+            # 2. 检查并设置基础链规则（避免重复）
             # KUBE-MARK-MASQ：用于标记需要SNAT的流量
-            self._run_iptables([
-                "-t", "nat", "-A", self.mark_chain, 
-                "-j", "MARK", "--or-mark", "0x4000"
-            ], ignore_errors=True)
+            if not self._chain_has_mark_rule(self.mark_chain):
+                # 清空链并添加正确的规则
+                self._run_iptables(["-t", "nat", "-F", self.mark_chain])
+                self._run_iptables([
+                    "-t", "nat", "-A", self.mark_chain, 
+                    "-j", "MARK", "--set-xmark", "0x4000/0x4000"
+                ])
+                self.logger.info(f"设置了 {self.mark_chain} 链的标记规则")
             
             # KUBE-POSTROUTING：处理被标记的流量
-            self._run_iptables([
-                "-t", "nat", "-A", self.postrouting_chain,
-                "-m", "mark", "--mark", "0x4000/0x4000",
-                "-j", "MASQUERADE",
-                "-m", "comment", "--comment", "kubernetes service traffic requiring SNAT"
-            ], ignore_errors=True)
+            if not self._chain_has_masquerade_rule(self.postrouting_chain):
+                # 清空链并添加正确的规则
+                self._run_iptables(["-t", "nat", "-F", self.postrouting_chain])
+                self._run_iptables([
+                    "-t", "nat", "-A", self.postrouting_chain,
+                    "-m", "mark", "--mark", "0x4000/0x4000",
+                    "-j", "MASQUERADE",
+                    "-m", "comment", "--comment", "kubernetes service traffic requiring SNAT"
+                ])
+                self.logger.info(f"设置了 {self.postrouting_chain} 链的MASQUERADE规则")
             
-            # 3. 设置主链跳转（在链开头插入）
-            self._run_iptables([
-                "-t", "nat", "-I", "PREROUTING", "1", 
-                "-j", self.nat_chain,
-                "-m", "comment", "--comment", "kubernetes service portals"
-            ], ignore_errors=True)
+            # 3. 设置主链跳转（检查是否已存在）
+            if not self._rule_exists("PREROUTING", self.nat_chain):
+                self._run_iptables([
+                    "-t", "nat", "-I", "PREROUTING", "1", 
+                    "-j", self.nat_chain,
+                    "-m", "comment", "--comment", "kubernetes service portals"
+                ])
+                self.logger.info(f"添加了PREROUTING -> {self.nat_chain} 跳转规则")
             
-            self._run_iptables([
-                "-t", "nat", "-I", "OUTPUT", "1", 
-                "-j", self.nat_chain,
-                "-m", "comment", "--comment", "kubernetes service portals" 
-            ], ignore_errors=True)
+            if not self._rule_exists("OUTPUT", self.nat_chain):
+                self._run_iptables([
+                    "-t", "nat", "-I", "OUTPUT", "1", 
+                    "-j", self.nat_chain,
+                    "-m", "comment", "--comment", "kubernetes service portals" 
+                ])
+                self.logger.info(f"添加了OUTPUT -> {self.nat_chain} 跳转规则")
             
-            self._run_iptables([
-                "-t", "nat", "-I", "POSTROUTING", "1", 
-                "-j", self.postrouting_chain,
-                "-m", "comment", "--comment", "kubernetes postrouting rules"
-            ], ignore_errors=True)
+            if not self._rule_exists("POSTROUTING", self.postrouting_chain):
+                self._run_iptables([
+                    "-t", "nat", "-I", "POSTROUTING", "1", 
+                    "-j", self.postrouting_chain,
+                    "-m", "comment", "--comment", "kubernetes postrouting rules"
+                ])
+                self.logger.info(f"添加了POSTROUTING -> {self.postrouting_chain} 跳转规则")
             
             self.logger.info("基础iptables链设置完成")
         except Exception as e:
@@ -201,8 +222,9 @@ class ServiceProxy:
             if not endpoints:
                 self.logger.warning(f"Service {service_name} 没有可用的端点")
                 return
+            print(f"创建Service {service_name} 的iptables规则，端点: {endpoints}")
             
-            # 2. 生成Service链名（使用Service名的哈希或简化名）
+            # 2. 生成Service链名（使用一致的命名规则）
             service_chain = f"{self.service_chain_prefix}{service_name.upper().replace('-', '_')}"
             
             # 3. 创建Service专用链
@@ -210,6 +232,7 @@ class ServiceProxy:
             
             # 4. 为Service创建Endpoint链
             endpoint_chains = []
+            
             for i, endpoint in enumerate(endpoints):
                 # 生成随机的Endpoint链名
                 sep_hash = self._generate_chain_hash()
@@ -301,21 +324,26 @@ class ServiceProxy:
             return
             
         try:
-            # 1. 删除KUBE-SERVICES链中的入口规则
+            # 生成Service链名（确保与创建时一致）
+            service_chain = f"{self.service_chain_prefix}{service_name.upper().replace('-', '_')}"
+            
+            # 1. 删除KUBE-SERVICES链中的入口规则（可能有多条重复规则）
             # 删除ClusterIP标记规则
-            self._run_iptables([
-                "-t", "nat", "-D", self.nat_chain,
-                "-d", f"{cluster_ip}/32",
-                "-p", protocol.lower(),
-                "-m", protocol.lower(), "--dport", str(port),
-                "-j", self.mark_chain,
-                "-m", "comment", "--comment", f"{service_name}: cluster IP"
-            ], ignore_errors=True)
+            while True:
+                result = self._run_iptables([
+                    "-t", "nat", "-D", self.nat_chain,
+                    "-d", f"{cluster_ip}/32",
+                    "-p", protocol.lower(),
+                    "-m", protocol.lower(), "--dport", str(port),
+                    "-j", self.mark_chain,
+                    "-m", "comment", "--comment", f"{service_name}: cluster IP"
+                ], ignore_errors=True)
+                if not result:
+                    break
             
             # 删除ClusterIP跳转规则
-            if service_name in self.service_chains:
-                service_chain = self.service_chains[service_name]
-                self._run_iptables([
+            while True:
+                result = self._run_iptables([
                     "-t", "nat", "-D", self.nat_chain,
                     "-d", f"{cluster_ip}/32",
                     "-p", protocol.lower(),
@@ -323,28 +351,34 @@ class ServiceProxy:
                     "-j", service_chain,
                     "-m", "comment", "--comment", f"{service_name}: cluster IP"
                 ], ignore_errors=True)
+                if not result:
+                    break
             
             # 2. 如果是NodePort，删除NodePort规则
             if node_port:
                 # 删除NodePort标记规则
-                self._run_iptables([
-                    "-t", "nat", "-D", self.nat_chain,
-                    "-p", protocol.lower(),
-                    "-m", protocol.lower(), "--dport", str(node_port),
-                    "-j", self.mark_chain,
-                    "-m", "comment", "--comment", f"{service_name}: nodePort"
-                ], ignore_errors=True)
+                while True:
+                    result = self._run_iptables([
+                        "-t", "nat", "-D", self.nat_chain,
+                        "-p", protocol.lower(),
+                        "-m", protocol.lower(), "--dport", str(node_port),
+                        "-j", self.mark_chain,
+                        "-m", "comment", "--comment", f"{service_name}: nodePort"
+                    ], ignore_errors=True)
+                    if not result:
+                        break
                 
                 # 删除NodePort跳转规则
-                if service_name in self.service_chains:
-                    service_chain = self.service_chains[service_name]
-                    self._run_iptables([
+                while True:
+                    result = self._run_iptables([
                         "-t", "nat", "-D", self.nat_chain,
                         "-p", protocol.lower(),
                         "-m", protocol.lower(), "--dport", str(node_port),
                         "-j", service_chain,
                         "-m", "comment", "--comment", f"{service_name}: nodePort"
                     ], ignore_errors=True)
+                    if not result:
+                        break
                 
                 self.logger.info(f"删除了Service {service_name} 的NodePort规则")
             
@@ -399,6 +433,8 @@ class ServiceProxy:
             
             self.logger.info(f"Service {service_name} 端点更新: "
                            f"添加 {len(endpoints_to_add)} 个, 删除 {len(endpoints_to_remove)} 个")
+            print(f"添加的端点: {endpoints_to_add}")
+            print(f"删除的端点: {endpoints_to_remove}")
             
             # 如果变化较大，直接重建（超过一半的端点变化）
             if (len(endpoints_to_add) + len(endpoints_to_remove)) > len(current_endpoints) / 2:
@@ -692,49 +728,63 @@ class ServiceProxy:
             return {"error": f"获取Service {service_name} 统计信息失败: {e}"}
     
     def cleanup_all_rules(self):
-        """清理所有Service相关的iptables规则"""
+        """清理所有Kubernetes相关的iptables规则"""
         if self.is_macos or not self.iptables_available:
-            self.logger.info("模拟清理所有Service iptables规则")
+            self.logger.info("模拟清理所有iptables规则")
             return
-            
+        
         try:
-            # 1. 清空主要的Kubernetes链
-            self._run_iptables(["-t", "nat", "-F", self.nat_chain], ignore_errors=True)
-            self._run_iptables(["-t", "nat", "-F", self.mark_chain], ignore_errors=True)
-            self._run_iptables(["-t", "nat", "-F", self.postrouting_chain], ignore_errors=True)
+            # 1. 获取所有Kubernetes链
+            kube_chains = self.get_all_kubernetes_chains()
             
-            # 2. 清理所有Service和Endpoint链
-            try:
-                result = subprocess.run(
-                    ["iptables", "-t", "nat", "-L", "-n"], 
-                    capture_output=True, text=True
-                )
-                
-                # 查找并清理所有KUBE-SVC-*和KUBE-SEP-*链
-                for line in result.stdout.split('\n'):
-                    # 查找链定义行（Chain KUBE-xxx）
-                    if line.startswith('Chain '):
-                        parts = line.split()
-                        if len(parts) >= 2:
-                            chain_name = parts[1]
-                            if (chain_name.startswith(self.service_chain_prefix) or 
-                                chain_name.startswith(self.endpoint_chain_prefix)):
-                                self._run_iptables(["-t", "nat", "-F", chain_name], ignore_errors=True)
-                                self._run_iptables(["-t", "nat", "-X", chain_name], ignore_errors=True)
-                                self.logger.debug(f"清理链: {chain_name}")
-                                
-            except Exception as e:
-                self.logger.warning(f"自动清理链时出现问题，继续手动清理: {e}")
+            # 2. 清理主链中的跳转规则
+            self._cleanup_base_chains()
             
-            # 3. 清理映射
+            # 3. 清理所有Service相关的链
+            for service_name in list(self.service_chains.keys()):
+                self._cleanup_service_chains(service_name)
+            
+            # 4. 清理基础链
+            for chain in [self.mark_chain, self.postrouting_chain, self.nat_chain]:
+                self._run_iptables(["-t", "nat", "-F", chain], ignore_errors=True)
+                self._run_iptables(["-t", "nat", "-X", chain], ignore_errors=True)
+            
+            # 5. 清理任何残留的Kubernetes链
+            for chain in kube_chains:
+                if chain.startswith(('KUBE-SVC-', 'KUBE-SEP-')):
+                    self._run_iptables(["-t", "nat", "-F", chain], ignore_errors=True)
+                    self._run_iptables(["-t", "nat", "-X", chain], ignore_errors=True)
+            
+            # 6. 清空映射
             self.service_chains.clear()
             self.endpoint_chains.clear()
             
-            self.logger.info("清理所有Service iptables规则完成")
+            self.logger.info("所有Kubernetes iptables规则已清理")
             
         except Exception as e:
-            self.logger.error(f"清理iptables规则失败: {e}")
-    
+            self.logger.error(f"清理所有规则失败: {e}")
+
+    def reset_and_reinit_base_chains(self):
+        """重置并重新初始化基础链（用于故障恢复）"""
+        if self.is_macos or not self.iptables_available:
+            self.logger.info("跳过在非Linux系统上重置iptables链")
+            return
+        
+        try:
+            self.logger.info("开始重置Kubernetes基础链...")
+            
+            # 1. 完全清理现有基础链
+            self._cleanup_base_chains()
+            
+            # 2. 重新设置基础链
+            self.setup_base_chains()
+            
+            self.logger.info("基础链重置完成")
+            
+        except Exception as e:
+            self.logger.error(f"重置基础链失败: {e}")
+            raise
+
     def _run_iptables(self, args: List[str], ignore_errors: bool = False):
         """执行iptables命令"""
         if self.is_macos or not self.iptables_available:
@@ -813,6 +863,83 @@ class ServiceProxy:
                     "--probability", f"{probability:.6f}",
                     "-j", endpoint_chain
                 ])
+
+    def _cleanup_base_chains(self):
+        """完全清理基础链规则（仅在需要重置时使用）"""
+        try:
+            self.logger.info("开始完全清理Kubernetes基础链规则...")
+            
+            # 1. 删除主链中的跳转规则
+            while self._rule_exists("PREROUTING", self.nat_chain):
+                self._run_iptables([
+                    "-t", "nat", "-D", "PREROUTING", 
+                    "-j", self.nat_chain,
+                    "-m", "comment", "--comment", "kubernetes service portals"
+                ], ignore_errors=True)
+            
+            while self._rule_exists("OUTPUT", self.nat_chain):
+                self._run_iptables([
+                    "-t", "nat", "-D", "OUTPUT", 
+                    "-j", self.nat_chain,
+                    "-m", "comment", "--comment", "kubernetes service portals" 
+                ], ignore_errors=True)
+            
+            while self._rule_exists("POSTROUTING", self.postrouting_chain):
+                self._run_iptables([
+                    "-t", "nat", "-D", "POSTROUTING", 
+                    "-j", self.postrouting_chain,
+                    "-m", "comment", "--comment", "kubernetes postrouting rules"
+                ], ignore_errors=True)
+            
+            # 2. 清空并删除基础链
+            for chain in [self.mark_chain, self.postrouting_chain, self.nat_chain]:
+                self._run_iptables(["-t", "nat", "-F", chain], ignore_errors=True)
+                self._run_iptables(["-t", "nat", "-X", chain], ignore_errors=True)
+            
+            self.logger.info("基础链规则清理完成")
+                
+        except Exception as e:
+            self.logger.warning(f"清理基础链时出现异常: {e}")
+
+    def _rule_exists(self, chain: str, target_chain: str) -> bool:
+        """检查指定链中是否存在跳转到目标链的规则"""
+        try:
+            result = subprocess.run(
+                ["iptables", "-t", "nat", "-L", chain, "-n", "--line-numbers"],
+                capture_output=True, text=True, check=True
+            )
+            # 更精确的匹配：查找 "-j target_chain" 或者 "target" 列包含目标链
+            lines = result.stdout.split('\n')
+            for line in lines:
+                if f" {target_chain} " in line or line.strip().endswith(f" {target_chain}"):
+                    return True
+            return False
+        except:
+            return False
+        
+    def _chain_has_mark_rule(self, chain_name: str) -> bool:
+        """检查链中是否已有正确的MARK规则"""
+        try:
+            result = subprocess.run(
+                ["iptables", "-t", "nat", "-L", chain_name, "-n"],
+                capture_output=True, text=True, check=True
+            )
+            # 检查是否有 MARK 规则和正确的标记值
+            return "MARK" in result.stdout and "0x4000/0x4000" in result.stdout
+        except:
+            return False
+    
+    def _chain_has_masquerade_rule(self, chain_name: str) -> bool:
+        """检查链中是否已有正确的MASQUERADE规则"""
+        try:
+            result = subprocess.run(
+                ["iptables", "-t", "nat", "-L", chain_name, "-n"],
+                capture_output=True, text=True, check=True
+            )
+            # 检查是否有 MASQUERADE 规则和正确的标记匹配
+            return "MASQUERADE" in result.stdout and "0x4000/0x4000" in result.stdout
+        except:
+            return False
 
 def main():
     """ServiceProxy主函数，在每个节点上启动"""
