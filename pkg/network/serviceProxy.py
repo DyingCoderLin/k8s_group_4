@@ -768,6 +768,51 @@ class ServiceProxy:
             if not ignore_errors:
                 raise
             return False
+    
+    def _generate_chain_hash(self) -> str:
+        """生成随机链哈希"""
+        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+    
+    def _cleanup_service_chains(self, service_name: str):
+        """清理Service相关的所有链"""
+        # 清理Service链
+        if service_name in self.service_chains:
+            service_chain = self.service_chains[service_name]
+            self._run_iptables(["-t", "nat", "-F", service_chain], ignore_errors=True)
+            self._run_iptables(["-t", "nat", "-X", service_chain], ignore_errors=True)
+            del self.service_chains[service_name]
+        
+        # 清理Endpoint链
+        if service_name in self.endpoint_chains:
+            for endpoint_chain in self.endpoint_chains[service_name]:
+                self._run_iptables(["-t", "nat", "-F", endpoint_chain], ignore_errors=True)
+                self._run_iptables(["-t", "nat", "-X", endpoint_chain], ignore_errors=True)
+            del self.endpoint_chains[service_name]
+    
+    def _setup_load_balancing(self, service_chain: str, endpoint_chains: List[str], protocol: str):
+        """在Service链中设置负载均衡规则（倒序添加）"""
+        endpoint_count = len(endpoint_chains)
+        
+        # 倒序添加规则，确保最后一个Endpoint作为默认选择
+        for i in range(endpoint_count - 1, -1, -1):
+            endpoint_chain = endpoint_chains[i]
+            
+            if i == endpoint_count - 1:
+                # 最后一个端点直接跳转（默认选择）
+                self._run_iptables([
+                    "-t", "nat", "-A", service_chain,
+                    "-j", endpoint_chain
+                ])
+            else:
+                # 前面的端点使用概率跳转
+                probability = 1.0 / (endpoint_count - i)
+                self._run_iptables([
+                    "-t", "nat", "-A", service_chain,
+                    "-m", "statistic",
+                    "--mode", "random",
+                    "--probability", f"{probability:.6f}",
+                    "-j", endpoint_chain
+                ])
 
 def main():
     """ServiceProxy主函数，在每个节点上启动"""
