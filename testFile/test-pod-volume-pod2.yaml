@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-volume-pod2
+  namespace: default
+  labels:
+    app: volume-test
+    role: pod2
+    test: volume-mount
+spec:
+  volumes:
+  - name: test-volume
+    hostPath:
+      path: /tmp/minik8s-volume-test
+      type: DirectoryOrCreate
+  containers:
+  - name: ubuntu-container2
+    image: ubuntu:latest
+    command: ["bash", "-c"]
+    args: [
+      "apt-get update && apt-get install -y vim curl procps tree &&
+       echo 'Pod2 started at $(date)' > /volume/pod2-startup.log &&
+       echo 'Pod2 hostname: $(hostname)' >> /volume/pod2-info.txt &&
+       echo 'Pod2 process info:' >> /volume/pod2-info.txt &&
+       ps aux >> /volume/pod2-info.txt &&
+       while true; do
+         echo '[$(date)] Pod2 heartbeat - Reading from shared volume' >> /volume/pod2-heartbeat.log;
+         echo 'Files created by Pod1:' >> /volume/pod2-heartbeat.log;
+         if [ -f /volume/pod1-heartbeat.log ]; then
+           echo 'Found Pod1 heartbeat file, showing last 3 lines:' >> /volume/pod2-heartbeat.log;
+           tail -3 /volume/pod1-heartbeat.log >> /volume/pod2-heartbeat.log;
+         else
+           echo 'Pod1 heartbeat file not found yet' >> /volume/pod2-heartbeat.log;
+         fi;
+         echo 'Current volume directory structure:' >> /volume/pod2-heartbeat.log;
+         if command -v tree >/dev/null 2>&1; then
+           tree /volume/ >> /volume/pod2-heartbeat.log 2>/dev/null || ls -la /volume/ >> /volume/pod2-heartbeat.log;
+         else
+           ls -la /volume/ >> /volume/pod2-heartbeat.log;
+         fi;
+         echo '--- End of Pod2 heartbeat ---' >> /volume/pod2-heartbeat.log;
+         sleep 45;
+       done"
+    ]
+    volumeMounts:
+    - name: test-volume
+      mountPath: /volume
+      readOnly: false
+    resources:
+      requests:
+        cpu: 0.1
+        memory: 128Mi
+      limits:
+        cpu: 0.5
+        memory: 256Mi

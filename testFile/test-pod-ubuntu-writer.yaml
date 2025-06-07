@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-pod-writer
+  namespace: default
+  labels:
+    app: ubuntu-test
+    role: writer
+spec:
+  volumes:
+  - name: shared-storage
+    hostPath:
+      path: /tmp/k8s-shared-volume
+      type: Directory
+  containers:
+  - name: ubuntu-writer
+    image: ubuntu:latest
+    command: ["bash", "-c"]
+    args: [
+      "apt-get update && apt-get install -y vim curl && 
+       echo 'Writer pod started at $(date)' >> /shared/writer.log && 
+       echo 'This is written by writer pod' > /shared/writer-data.txt && 
+       while true; do 
+         echo '$(date): Writer is still running...' >> /shared/writer.log; 
+         sleep 30; 
+       done"
+    ]
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /shared
+      readOnly: false
+    resources:
+      requests:
+        cpu: 0.5
+        memory: 134217728  # 128MB
+      limits:
+        cpu: 1
+        memory: 268435456  # 256MB
+    ports:
+    - containerPort: 8080
+      protocol: TCP

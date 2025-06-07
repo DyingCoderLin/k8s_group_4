@@ -51,6 +51,10 @@ class ServiceProxy:
                 'group.id': f'serviceproxy-{self.node_name}',
                 'auto.offset.reset': 'latest',
                 'enable.auto.commit': False,
+                'max.poll.interval.ms': 600000,  # 10分钟
+                'session.timeout.ms': 30000,     # 30秒
+                'heartbeat.interval.ms': 10000,  # 10秒
+                'request.timeout.ms': 60000,     # 60秒
             }
             
             self.consumer = Consumer(consumer_config)
