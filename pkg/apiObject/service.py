@@ -192,7 +192,7 @@ class Service:
             # 将self.endpoints和new_endpoints比较，如果没有变化，直接返回
             if self._are_endpoints_equal(self.endpoints, new_endpoints):
                 self.logger.info(f"Service {self.config.name} 端点未变化，跳过更新")
-                return
+                return False
             
             self.endpoint_pods.clear()
             
@@ -216,23 +216,29 @@ class Service:
             
             # 更新iptables规则
             port_config = self.config.get_port_config()
-            self.service_proxy.update_service_endpoints(
-                service_name=self.config.name,
-                cluster_ip=self.config.cluster_ip,
-                port=port_config["port"],
-                protocol=port_config["protocol"],
-                endpoints=endpoint_strings,
-                node_port=port_config["nodePort"]
-            )
+            try:
+                self.service_proxy.update_service_endpoints(
+                    service_name=self.config.name,
+                    cluster_ip=self.config.cluster_ip,
+                    port=port_config["port"],
+                    protocol=port_config["protocol"],
+                    endpoints=endpoint_strings,
+                    node_port=port_config["nodePort"]
+                )
+                self.endpoints = new_endpoints
+                self.config.status = "Running" if new_endpoints else "Pending"
+            except Exception as e:
+                self.logger.error(f"更新iptables规则失败: {e}")
+                self.config.status = "Failed"
+                return False
             
-            self.endpoints = new_endpoints
-            self.config.status = "Running" if new_endpoints else "Pending"
-            
-            self.logger.info(f"Service {self.config.name} 端点已更新: {new_endpoints}")
+            self.logger.info(f"Service {self.config.name} 端点尝试过更新: {new_endpoints}")
             
         except Exception as e:
             self.logger.error(f"更新Service端点失败: {e}")
             self.config.status = "Failed"
+            return False
+        return True
     
     def get_endpoint(self) -> Optional[str]:
         """获取下一个可用端点（用于客户端负载均衡）"""

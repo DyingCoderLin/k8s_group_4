@@ -9,28 +9,29 @@ class URIString(str):
         return self.__class__(
             super().replace("<", "{").replace(">", "}").format(**kwargs)
         )
-
+import os
 
 class URIConfig:
+    HOST = os.getenv('API_SERVER_HOST')
+    PORT = int(os.getenv('API_SERVER_PORT', '5050'))
     # URI 协议方案
-    HOST = "localhost"
-    # HOST = "10.119.15.182"
 
-    import sys
-
-    if sys.platform == "darwin":
-        import socket
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            # 连接到一个外部地址，不需要真正发送数据
-            s.connect(("8.8.8.8", 80))
-            local_ip = s.getsockname()[0]
-            HOST = local_ip
-        finally:
-            s.close()
-
-    PORT = 5050
+    if HOST is None:
+        import sys
+        # HOST = "localhost"
+        HOST = "10.119.15.182"
+        if sys.platform == "darwin":
+            
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                # 连接到一个外部地址，不需要真正发送数据
+                s.connect(("8.8.8.8", 80))
+                local_ip = s.getsockname()[0]
+                HOST = local_ip
+            finally:
+                s.close()
+                
     PREFIX = f"http://{HOST}:{PORT}"
 
     # -------------------- 资源路径定义 --------------------
