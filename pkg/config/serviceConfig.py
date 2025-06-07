@@ -32,6 +32,7 @@ class ServiceConfig:
         self.node_port = port_config.get("nodePort") if self.type == "NodePort" else None
         if self.node_port:
             self.node_port = int(self.node_port)
+            self._validate_nodeport()
                 
     def to_dict(self):
         """转换为字典格式"""
@@ -75,3 +76,34 @@ class ServiceConfig:
             if key not in pod_labels or pod_labels[key] != value:
                 return False
         return True
+    
+    def _validate_nodeport(self):
+        """验证NodePort端口配置"""
+        if self.node_port is None:
+            return
+            
+        # NodePort端口范围验证
+        NODEPORT_RANGE_START = 30000
+        NODEPORT_RANGE_END = 32767
+        
+        if not (NODEPORT_RANGE_START <= self.node_port <= NODEPORT_RANGE_END):
+            raise ValueError(
+                f"NodePort端口 {self.node_port} 必须在范围 "
+                f"{NODEPORT_RANGE_START}-{NODEPORT_RANGE_END} 内"
+            )
+    
+    def get_nodeport_config(self):
+        """获取NodePort配置信息"""
+        if self.type != "NodePort":
+            return None
+            
+        return {
+            "nodePort": self.node_port,
+            "port": self.port,
+            "targetPort": self.target_port,
+            "protocol": self.protocol
+        }
+    
+    def is_nodeport_service(self):
+        """检查是否为NodePort类型的服务"""
+        return self.type == "NodePort"

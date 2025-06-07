@@ -179,12 +179,23 @@ class ServiceProxy:
             
             # 如果是NodePort类型，添加NodePort规则
             if node_port:
+                # 添加从所有接口的NodePort流量导向service链
                 self._run_iptables([
                     "-t", "nat", "-A", self.nat_chain,
                     "-p", protocol.lower(),
                     "--dport", str(node_port),
                     "-j", chain_name
                 ])
+                
+                # 添加MASQUERADE规则确保返回流量正确路由
+                self._run_iptables([
+                    "-t", "nat", "-A", "POSTROUTING",
+                    "-p", protocol.lower(),
+                    "--dport", str(node_port),
+                    "-j", "MASQUERADE"
+                ], ignore_errors=True)
+                
+                self.logger.info(f"为Service {service_name} 添加NodePort规则，端口: {node_port}")
             
             # 为每个端点创建DNAT规则（负载均衡）
             endpoint_count = len(endpoints)
@@ -238,11 +249,20 @@ class ServiceProxy:
             ], ignore_errors=True)
             
             if node_port:
+                # 删除NodePort规则
                 self._run_iptables([
                     "-t", "nat", "-D", self.nat_chain,
                     "-p", protocol.lower(),
                     "--dport", str(node_port),
                     "-j", chain_name
+                ], ignore_errors=True)
+                
+                # 删除MASQUERADE规则
+                self._run_iptables([
+                    "-t", "nat", "-D", "POSTROUTING",
+                    "-p", protocol.lower(),
+                    "--dport", str(node_port),
+                    "-j", "MASQUERADE"
                 ], ignore_errors=True)
             
             # 清空并删除service专用链
