@@ -18,10 +18,9 @@ class URIConfig:
 
     if HOST is None:
         import sys
-        HOST = "localhost"
-        # HOST = "10.119.15.182"
+        # HOST = "localhost"
+        HOST = "10.119.15.182"
         if sys.platform == "darwin":
-            
             import socket
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
@@ -33,6 +32,7 @@ class URIConfig:
                 s.close()
                 
     PREFIX = f"http://{HOST}:{PORT}"
+    COREDNS_IP = '10.5.53.5'
 
     # -------------------- 资源路径定义 --------------------
     # Node 相关 (集群级别)

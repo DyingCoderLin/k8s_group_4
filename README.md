@@ -277,6 +277,42 @@ docker run --rm --net=bridge alpine sh -c "apk add --no-cache curl && curl --max
 2. 在flannel.1网卡抓包`sudo tcpdump -i flannel.1 -vv`
 3. 在容器内eth0抓包
 
+## 配置coredns
+创建一个`Corefile`，注意etcd的ip不能使用etcd容器名，因为默认bridge网络不会提供服务发现功能，而我们的flannel建立在bridge网络之上
+```
+.:53 {
+    etcd {
+        path /skydns
+        endpoint http://<etcd内网ip>:2379
+    }
+    log
+    errors
+}
+```
+一键启动coredns，注意确保与etcd处于同一个网络。主机dns服务在53端口，我们映射到主机54端口
+```
+docker run -d \
+  --name coredns \
+  -p 54:53/udp \
+  -p 54:53/tcp \
+  -v $(pwd)/Corefile:/Corefile \
+  --network bridge \ 
+  coredns/coredns:latest
+```
+
+### 验证安装配置
+主机验证，往etcd插入记录看是否能够通过`dig`访问
+```
+dig @127.0.0.1 -p 54 www.example.com #查询，应该无回复
+
+docker exec -it etcd sh
+etcdctl put /skydns/com/example/www '{"host":"1.1.1.1","ttl":60}'
+exit
+
+dig @127.0.0.1 -p 54 www.example.com #查询，应该有回复
+```
+Pod验证
+
 ## 运行环境创建
 - 创建虚拟环境（也可以选择在本机上直接运行）并配置python包
   ```
