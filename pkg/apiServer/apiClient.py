@@ -70,8 +70,10 @@ class ApiClient:
                 if not response.ok:
                     if response.content:
                         try:
-                            response.text = response.json()['error']
-                            #如果有apiserver提供的报错信息，则替换掉默认报错信息
+                            error_msg = response.json()['error']
+                            #如果有apiserver提供的报错信息，则不会retry
+                            print(f"[INFO]{error_msg}")
+                            return None
                         except:
                             pass
                     response.raise_for_status()
