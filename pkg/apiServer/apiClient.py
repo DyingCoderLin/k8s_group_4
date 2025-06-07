@@ -72,6 +72,8 @@ class ApiClient:
                         try:
                             response.text = response.json()['error']
                             #如果有apiserver提供的报错信息，则替换掉默认报错信息
+                        except:
+                            pass
                     response.raise_for_status()
 
                 # 尝试解析JSON响应
