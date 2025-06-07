@@ -201,7 +201,7 @@ class ApiServer:
             # 创建Pod主题（用于kubelet）
             pod_topic = self.kafka_config.POD_TOPIC.format(name=name)
             # 创建ServiceProxy主题（用于ServiceProxy）
-            serviceproxy_topic = f"serviceproxy.{name}"
+            serviceproxy_topic = self.kafka_config.SERVICE_PROXY_TOPIC.format(name=name)
             
             # 批量创建主题
             topics_to_create = [
