@@ -419,6 +419,7 @@ class ServiceController:
             response = self.api_client.get(nodes_url)
             
             if response:
+                return response
                 # 解析节点数据
                 nodes = []
                 for node_item in response:
@@ -471,7 +472,7 @@ class ServiceController:
             # 向每个节点发送规则更新
             for node in nodes:
                 try:
-                    node_name = node.name if hasattr(node, 'name') else str(node)
+                    node_name = node.name
                     topic = f"serviceproxy.{node_name}"
                     
                     self.kafka_producer.produce(

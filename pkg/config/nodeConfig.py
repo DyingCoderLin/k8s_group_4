@@ -25,3 +25,5 @@ class NodeConfig:
             "apiserver": self.apiserver,
             "node_id": self.id,
         }
+        
+    
