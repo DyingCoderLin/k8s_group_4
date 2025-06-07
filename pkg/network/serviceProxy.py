@@ -840,29 +840,87 @@ class ServiceProxy:
             del self.endpoint_chains[service_name]
     
     def _setup_load_balancing(self, service_chain: str, endpoint_chains: List[str], protocol: str):
-        """在Service链中设置负载均衡规则（倒序添加）"""
+        """在Service链中设置负载均衡规则（正确的Kubernetes Round-Robin算法）"""
         endpoint_count = len(endpoint_chains)
         
-        # 倒序添加规则，确保最后一个Endpoint作为默认选择
-        for i in range(endpoint_count - 1, -1, -1):
+        if endpoint_count == 0:
+            self.logger.warning(f"Service链 {service_chain} 没有可用的端点")
+            return
+        
+        if endpoint_count == 1:
+            # 只有一个端点，直接跳转
+            self._run_iptables([
+                "-t", "nat", "-A", service_chain,
+                "-j", endpoint_chains[0],
+                "-m", "comment", "--comment", "single endpoint"
+            ])
+            self.logger.info(f"单端点Service，直接跳转到 {endpoint_chains[0]}")
+            return
+        
+        # 多端点场景：实现正确的均匀负载均衡
+        # Kubernetes标准算法：每个端点获得相等的流量分配
+        
+        self.logger.info(f"开始为Service链 {service_chain} 设置 {endpoint_count} 个端点的负载均衡规则")
+        
+        for i in range(endpoint_count):
             endpoint_chain = endpoint_chains[i]
             
             if i == endpoint_count - 1:
-                # 最后一个端点直接跳转（默认选择）
+                # 最后一个端点：无条件跳转（处理所有剩余流量）
                 self._run_iptables([
                     "-t", "nat", "-A", service_chain,
-                    "-j", endpoint_chain
+                    "-j", endpoint_chain,
+                    "-m", "comment", "--comment", f"fallback to endpoint {i+1}/{endpoint_count}"
                 ])
+                self.logger.debug(f"端点 {i+1}/{endpoint_count}: 默认处理剩余流量 -> {endpoint_chain}")
             else:
-                # 前面的端点使用概率跳转
-                probability = 1.0 / (endpoint_count - i)
+                # 前面的端点：使用正确的概率跳转
+                # 关键修复：每个端点在剩余流量中的概率
+                remaining_endpoints = endpoint_count - i
+                probability = 1.0 / remaining_endpoints
+                
                 self._run_iptables([
                     "-t", "nat", "-A", service_chain,
                     "-m", "statistic",
-                    "--mode", "random",
+                    "--mode", "random", 
                     "--probability", f"{probability:.6f}",
-                    "-j", endpoint_chain
+                    "-j", endpoint_chain,
+                    "-m", "comment", "--comment", f"endpoint {i+1}/{endpoint_count} ({probability:.1%})"
                 ])
+                
+                # 详细的负载均衡分析日志
+                actual_share = probability
+                for j in range(i):
+                    prev_remaining = endpoint_count - j
+                    prev_prob = 1.0 / prev_remaining
+                    actual_share *= (1 - prev_prob)
+                
+                self.logger.debug(f"端点 {i+1}/{endpoint_count}: 规则概率={probability:.2%}, 实际分配≈{actual_share:.2%} -> {endpoint_chain}")
+        
+        # 验证负载均衡配置
+        self._log_load_balancing_summary(endpoint_count)
+        self.logger.info(f"✅ Service链 {service_chain} 负载均衡规则设置完成")
+
+    def _log_load_balancing_summary(self, endpoint_count: int):
+        """输出负载均衡配置摘要"""
+        self.logger.info("📊 负载均衡分配摘要:")
+        
+        cumulative_prob = 1.0
+        for i in range(endpoint_count):
+            if i == endpoint_count - 1:
+                # 最后一个端点获得所有剩余流量
+                actual_share = cumulative_prob
+                self.logger.info(f"   端点 {i+1}: {actual_share:.1%} (默认)")
+            else:
+                remaining = endpoint_count - i
+                rule_prob = 1.0 / remaining
+                actual_share = cumulative_prob * rule_prob
+                cumulative_prob *= (1 - rule_prob)
+                self.logger.info(f"   端点 {i+1}: {actual_share:.1%} (规则概率: {rule_prob:.1%})")
+        
+        # 理论验证：每个端点应该得到大约 1/endpoint_count 的流量
+        expected_share = 1.0 / endpoint_count
+        self.logger.info(f"   📋 理论均分: 每个端点应获得 {expected_share:.1%} 流量")
 
     def _cleanup_base_chains(self):
         """完全清理基础链规则（仅在需要重置时使用）"""
