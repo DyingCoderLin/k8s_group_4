@@ -7,20 +7,6 @@ https://docker-py.readthedocs.io/en/stable/networks.html
 ## etcd python api
 https://python-etcd3.readthedocs.io/en/latest/usage.html
 
-## 消息通信，序列化与反序列化
-
-### 序列化，发送消息
-```
-json.dumps() -> str
-pickle.dumps() -> bytes
-```
-
-推送kafka
-```
-self.kafka_producer.produce(topic, key='ADD', value=json.dumps(pod.to_dict()).encode('utf-8'))
-# value: bytes
-```
-
 ## 首先需要启动etcd, kafka, cadviser两个docker
 ### etcd一键安装
 ```docker
