@@ -44,9 +44,17 @@ class ContainerConfig:
             volumes = dict()
             for volume in arg_json.get("volumeMounts"):
                 mode = "ro" if volume.get("readOnly", False) else "rw"
-                host_path = volumes_map[volume.get("name")]
+                volume_name = volume.get("name")
+                
+                # 安全获取主机路径，处理缺失卷的情况
+                if volume_name in volumes_map:
+                    host_path = volumes_map[volume_name]
+                else:
+                    print(f"[WARNING] ContainerConfig: volume '{volume_name}' not found in volumes_map. Available volumes: {list(volumes_map.keys())}")
+                    # 使用默认路径作为后备
+                    host_path = "/tmp"
+                
                 bind_path = volume.get("mountPath")
-
                 volumes[host_path] = {"bind": bind_path, "mode": mode}
             self.volumes["volumes"] = volumes
 
