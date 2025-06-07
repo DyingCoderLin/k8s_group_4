@@ -24,6 +24,10 @@ class GlobalConfig:
     @classmethod
     def get_test_file_path(cls):
         return os.path.join(cls.get_project_root(), "testFile")
+    
+    @classmethod
+    def get_config_file_path(cls):
+        return os.path.join(cls.get_project_root(), "config")
 
     @classmethod
     def get_config_path(cls):
@@ -41,6 +45,10 @@ class GlobalConfig:
     @property
     def TEST_FILE_PATH(self):
         return self.get_test_file_path()
+    
+    @property
+    def CONFIG_FILE_PATH(self):
+        return self.get_config_file_path()
 
     @property
     def CONFIG_PATH(self):

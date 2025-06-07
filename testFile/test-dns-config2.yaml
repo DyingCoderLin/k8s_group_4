@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: DNS
 metadata:
-  name: dns-test1
+  name: test-dns-2
   namespace: default
 spec:
   host: minik8s.com # 这是定义的域名
   paths:
-    - pathName: path1
-      service: service1
+    - path: path1
+      serviceName: service1
       servicePort: 22222
-    - pathName: path2
-      service: service2
+    - path: path2
+      serviceName: service2
       servicePort: 23456
 
 # 通过 minik8s.com:80/path 访问对应的 Service，等效于直接访问 ServiceIP:Port

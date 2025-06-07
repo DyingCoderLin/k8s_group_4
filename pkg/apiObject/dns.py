@@ -1,142 +1,211 @@
-import requests
-import sys
-import os
-import pickle
-import yaml
-from threading import Thread
-from time import sleep
-from flask import Flask, request, redirect
-
+import logging
+from typing import List, Dict, Optional, Tuple
 from pkg.config.dnsConfig import DNSConfig
+from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
-from pkg.config.globalConfig import GlobalConfig
-from pkg.config.etcdConfig import EtcdConfig
-from pkg.apiServer.etcd import Etcd
-
-
-class STATUS:
-    PENDING = "PENDING"
-    ACTIVE = "ACTIVE"
-    FAILED = "FAILED"
-
+import json
 
 class DNS:
-    def __init__(self, dns_config: DNSConfig, uri_config: URIConfig = None, etcd_config: EtcdConfig = None):
-        """初始化 DNS 对象，设置配置、API 和 etcd 参数"""
-        self.config = dns_config
-        self.uri_config = uri_config if uri_config else URIConfig()
-        self.etcd_config = etcd_config if etcd_config else EtcdConfig()
-        self.etcd = Etcd(host=self.etcd_config.HOST, port=self.etcd_config.PORT)
-        self.config.etcd = self.etcd  # 将 etcd 客户端注入 DNSConfig
+    """DNS核心类，负责域名解析和路径路由到服务端点"""
+    def __init__(self, config: DNSConfig):
+        self.logger = logging.getLogger(__name__)
 
-        # 初始化 Flask 应用用于处理 DNS 请求转发
-        self.app = Flask(__name__)
-        self.bind_routes()
+        # 保存配置
+        self.config = config
 
-        # 设置标准输出和错误输出的无缓冲模式
-        sys.stdout.reconfigure(write_through=True)
-        sys.stderr.reconfigure(write_through=True)
+        self.api_client = None  # API客户端
+        self.uri_config = None
+        self.set_api_client()  # 初始化API客户端和URI配置
 
-    def bind_routes(self):
-        """绑定 Flask 路由用于处理 DNS 请求"""
-        @self.app.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE"])
-        def forward_request(path):
-            """将请求转发到对应的 Service"""
-            service_mapping = self.config.get_service_mapping()
-            target = service_mapping.get(f"/{path}")
-            if not target:
-                return {"error": f"路径 /{path} 未找到对应的 Service"}, 404
+        self.dns_records = {}  # 存储 DNS 记录: { "host/path": (service_name, cluster_ip, port) }
 
-            # 转发请求到 Service IP:Port
-            method = request.method.lower()
-            target_url = f"http://{target}{request.full_path}"
-            try:
-                response = getattr(requests, method)(
-                    target_url,
-                    json=request.get_json(silent=True),
-                    params=request.args,
-                    headers=request.headers
-                )
-                return response.content, response.status_code, response.headers.items()
-            except requests.RequestException as e:
-                return {"error": f"转发请求失败: {str(e)}"}, 500
+        # 初始化 DNS 记录
+        self._initialize_dns_records()
+        print(f"DNS {self.config.name} 初始化完成，域名: {self.config.host}")
 
-    def run(self):
-        """注册 DNS 配置并启动代理服务"""
-        # 验证 DNS 配置
+    def set_api_client(self, api_client = None, uri_config=None):
+        """设置API客户端，用于与API Server通信"""
+        self.api_client = api_client or ApiClient()
+        self.uri_config = uri_config or URIConfig()
+        return self
+
+    def _ensure_api_client(self):
+        """确保 API 客户端已初始化"""
+        if not self.api_client:
+            self.api_client = ApiClient()
+            self.uri_config = URIConfig()
+
+    def _initialize_dns_records(self):
+        """根据 DNSConfig 初始化 DNS 记录"""
         try:
-            self.config.validate()
-        except ValueError as e:
-            print(f"[ERROR] DNS 配置验证失败: {str(e)}")
-            self.config.status = STATUS.FAILED
-            return
+            namespace = self.config.namespace
+            if not namespace:
+                namespace = "default"
 
-        # 注册 DNS 到 API 服务器
-        uri = self.uri_config.PREFIX + self.uri_config.DNS_SPEC_URL.format(
-            namespace=self.config.namespace, name=self.config.name
-        )
-        register_response = requests.post(uri, json=self.config.to_dict())
-        if register_response.status_code != 200:
-            print(f"[ERROR] 无法注册 DNS 到 ApiServer，状态码：{register_response.status_code}")
-            self.config.status = STATUS.FAILED
-            return
-        self.config.status = STATUS.ACTIVE
-        print(f"[INFO] 成功注册 DNS {self.config.name} 到 ApiServer。")
+            for path in self.config.paths:
+                service_name = path.get("serviceName")
+                service_port = path.get("servicePort")
 
-        # 存储 DNS 配置到 etcd
-        dns_key = self.etcd_config.DNS_SPEC_KEY.format(namespace=self.config.namespace, name=self.config.name)
-        self.etcd.put(dns_key, pickle.dumps(self.config.to_dict()))
+                key = self.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=service_name)
+                response = self.api_client.get(key)
 
-        # 启动心跳线程
-        Thread(target=self._heartbeat).start()
+                if not response:
+                    print(f"Service '{service_name}' not found in namespace '{namespace}'")
+                    return
 
-        # 启动 Flask 代理服务，监听 80 端口
-        Thread(target=lambda: self.app.run(host="0.0.0.0", port=80)).start()
+                print(f"获取服务 {response}")
 
-    def _heartbeat(self):
-        """定期更新 DNS 状态"""
-        while self.config.status == STATUS.ACTIVE:
-            sleep(5)
-            uri = self.uri_config.PREFIX + self.uri_config.DNS_SPEC_URL.format(
+                spec = response.get("spec")
+                # TODO
+                cluster_ip = "0.0.0.0"  # 默认值，实际获取时需要从 spec 中提取
+                # cluster_ip = spec.get("cluster_ip")
+
+                if not cluster_ip:
+                    self.logger.warning(f"服务 {service_name} 未分配 ClusterIP")
+                    continue
+                ports =spec.get('ports')
+
+                # 构造 DNS 记录的键（host + path）
+                dns_key = f"{self.config.host}{path.get("path")}"
+                self.dns_records[dns_key] = (service_name, cluster_ip, ports)
+                print(f"添加 DNS 记录: {dns_key} -> ({service_name}, {cluster_ip}, {ports})")
+                
+            # # 更新 API Server 的 DNS 配置
+            # self._update_dns_config()
+
+        except Exception as e:
+            self.logger.error(f"初始化 DNS 记录失败: {e}")
+
+    # def _get_service_info(self, namespace: str, service_name: str) -> Optional[Dict]:
+    #     """从 API Server 获取服务信息"""
+    #     try:
+    #         self._ensure_api_client()
+    #         response = self.api_client.get(
+    #             self.uri_config.SERVICE_SPEC_URL.format(
+    #                 namespace=namespace, name=service_name
+    #             )
+    #         )
+    #         if response:
+    #             try:
+    #                 return json.loads(response)
+    #             except json.JSONDecodeError:
+    #                 self.logger.error(f"服务 {namespace}/{service_name} 响应格式错误")
+    #                 return None
+                
+    #         self.logger.error(f"获取服务 {namespace}/{service_name} 信息失败")
+    #         return None
+    #     except Exception as e:
+    #         self.logger.error(f"获取服务信息失败: {e}")
+    #         return None
+
+    def resolve(self, host: str, path: str) -> Optional[Tuple[str, int]]:
+        """解析域名和路径，返回对应的服务端点 (ClusterIP, port)"""
+        try:
+            dns_key = f"{host}{path}"
+            if dns_key in self.dns_records:
+                service_name, cluster_ip, port = self.dns_records[dns_key]
+                print(f"DNS 解析成功: {dns_key} -> ({service_name}, {cluster_ip}, {port})")
+                return (cluster_ip, port)
+            
+            self.logger.warning(f"DNS 解析失败: 未找到记录 {dns_key}")
+            return None
+        
+        except Exception as e:
+            self.logger.error(f"DNS 解析错误: {e}")
+            return None
+
+    # def update_dns_records(self):
+    #     """当服务信息变化时，更新 DNS 记录"""
+    #     try:
+    #         self.dns_records.clear()
+    #         self._initialize_dns_records()
+    #         print(f"DNS {self.config.name} 记录已更新")
+    #         return True
+    #     except Exception as e:
+    #         self.logger.error(f"更新 DNS 记录失败: {e}")
+    #         return False
+
+    # def add_path(self, path: Dict):
+    #     """动态添加新的路径映射"""
+    #     try:
+    #         service_name = path.get("serviceName")
+    #         service_port = path.get("servicePort")
+    #         path_str = path.get("path")
+    #         namespace = self.config.namespace
+
+    #         # 验证服务是否存在
+    #         service_info = self._get_service_info(namespace, service_name)
+    #         if not service_info:
+    #             self.logger.error(f"无法添加路径: 服务 {service_name} 不存在")
+    #             return False
+
+    #         cluster_ip = service_info.get("spec", {}).get("cluster_ip")
+    #         if not cluster_ip or cluster_ip == "None":
+    #             self.logger.error(f"无法添加路径: 服务 {service_name} 未分配 ClusterIP")
+    #             return False
+
+    #         # 更新 DNS 记录
+    #         dns_key = f"{self.config.host}{path_str}"
+    #         self.dns_records[dns_key] = (service_name, cluster_ip, service_port)
+    #         self.config.paths.append(path)
+    #         print(f"添加路径成功: {dns_key} -> ({service_name}, {cluster_ip}, {service_port})")
+
+    #         # 更新 API Server 的 DNS 配置
+    #         self._update_dns_config()
+    #         return True
+    #     except Exception as e:
+    #         self.logger.error(f"添加路径失败: {e}")
+    #         return False
+
+    def remove_path(self, path_str: str):
+        """删除指定的路径映射"""
+        try:
+            dns_key = f"{self.config.host}{path_str}"
+            if dns_key in self.dns_records:
+                del self.dns_records[dns_key]
+                self.config.paths = [p for p in self.config.paths if p["path"] != path_str]
+                print(f"删除路径成功: {dns_key}")
+
+                # 更新 API Server 的 DNS 配置
+                self._update_dns_config()
+                return True
+            self.logger.warning(f"删除路径失败: 未找到 {dns_key}")
+            return False
+        except Exception as e:
+            self.logger.error(f"删除路径失败: {e}")
+            return False
+
+    def _update_dns_config(self):
+        """更新 API Server 中的 DNS 配置"""
+        try:
+            url = self.uri_config.DNS_SPEC_URL.format(
                 namespace=self.config.namespace, name=self.config.name
             )
-            # 检查 Service 是否仍然有效
-            try:
-                self.config.validate()
-                update_response = requests.put(uri, json=self.config.to_dict())
-                if update_response.status_code != 200:
-                    print(f"[ERROR] DNS {self.config.name} 心跳发送失败")
-                    self.config.status = STATUS.FAILED
-                    break
-                # 更新 etcd 中的 DNS 配置
-                dns_key = self.etcd_config.DNS_SPEC_KEY.format(namespace=self.config.namespace, name=self.config.name)
-                self.etcd.put(dns_key, pickle.dumps(self.config.to_dict()))
-                print(f"[INFO] DNS {self.config.name} 心跳发送成功")
-            except ValueError as e:
-                print(f"[ERROR] DNS 验证失败: {str(e)}")
-                self.config.status = STATUS.FAILED
-                break
-        if self.config.status != STATUS.ACTIVE:
-            print(f"[INFO] DNS {self.config.name} 因状态为 {self.config.status} 停止心跳")
+            response = self.api_client.put(url, data=self.config.to_dict())
+            
+            if response:
+                print(f"更新 DNS 配置成功: {self.config.name}")
+                return True
+            self.logger.error(f"更新 DNS 配置失败: {self.config.name}")
+            return False
+        except Exception as e:
+            self.logger.error(f"更新 DNS 配置错误: {e}")
+            return False
 
+    def get_stats(self) -> Dict:
+        """获取 DNS 统计信息"""
+        return {
+            "name": self.config.name,
+            "namespace": self.config.namespace,
+            "host": self.config.host,
+            "paths_count": len(self.config.paths),
+            "records": [
+                {"path": path, "service": info[0], "cluster_ip": info[1], "port": info[2]}
+                for path, info in self.dns_records.items()
+            ]
+        }
 
-if __name__ == "__main__":
-    print("[INFO] 测试 DNS 功能")
-    sys.stdout.reconfigure(write_through=True)
-    sys.stderr.reconfigure(write_through=True)
-
-    log_file = os.environ.get('DNS_LOG_FILE')
-    if log_file:
-        print(f"[INFO] DNS 日志将写入：{log_file}")
-
-    global_config = GlobalConfig()
-    file_yaml = "dns-test.yaml"
-    test_yaml = os.path.join(global_config.TEST_FILE_PATH, file_yaml)
-    print(f"[INFO] 使用 {file_yaml} 作为 DNS 测试配置文件")
-    print(f"[INFO] 请求路径：{test_yaml}")
-
-    with open(test_yaml, "r", encoding="utf-8") as file:
-        data = yaml.safe_load(file)
-    dns_config = DNSConfig(data)
-    dns = DNS(dns_config, URIConfig(), EtcdConfig())
-    dns.run()
+    def to_dict(self):
+        """转换为字典格式"""
+        return self.config.to_dict()
+    
