@@ -18,8 +18,8 @@ class URIConfig:
 
     if HOST is None:
         import sys
-        # HOST = "localhost"
-        HOST = "10.119.15.182"
+        HOST = "localhost"
+        # HOST = "10.119.15.182"
         if sys.platform == "darwin":
             
             import socket

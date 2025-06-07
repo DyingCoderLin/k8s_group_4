@@ -1,6 +1,5 @@
 class KafkaConfig:
     # Kafka 地址
-    # BOOTSTRAP_SERVER = "47.103.11.77:9092" #阿里云，可删
     # BOOTSTRAP_SERVER="10.181.22.193:9092" #mac
     # BOOTSTRAP_SERVER = "localhost:9092"
     BOOTSTRAP_SERVER = "10.119.15.182:9092"  # server
@@ -10,3 +9,5 @@ class KafkaConfig:
     POD_TOPIC = "api.v1.nodes.{name}"
     # 与scheduler交互
     SCHEDULER_TOPIC = "api.v1.scheduler"
+    # service controller与kubeproxy交互
+    SERVICE_PROXY_TOPIC = "serviceproxy.{name}"
