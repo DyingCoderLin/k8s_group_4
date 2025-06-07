@@ -161,10 +161,6 @@ class Scheduler:
                     "group.id": "1",
                     "auto.offset.reset": "latest",
                     "enable.auto.commit": True,
-                    "max.poll.interval.ms": 600000,  # 10分钟
-                    "session.timeout.ms": 30000,     # 30秒
-                    "heartbeat.interval.ms": 10000,  # 10秒
-                    "request.timeout.ms": 60000,     # 60秒
                     "debug": "consumer",
                 }
             )

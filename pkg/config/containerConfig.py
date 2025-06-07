@@ -39,30 +39,8 @@ class ContainerConfig:
             volumes = dict()
             for volume in arg_json.get("volumeMounts"):
                 mode = "ro" if volume.get("readOnly", False) else "rw"
-                volume_name = volume.get("name")
+                host_path = volumes_map[volume.get("name")]
                 bind_path = volume.get("mountPath")
-                
-                # 尝试匹配volume name
-                host_path = None
-                if volume_name in volumes_map:
-                    # 直接匹配
-                    host_path = volumes_map[volume_name]
-                else:
-                    # 尝试模糊匹配（如果name包含部分匹配）
-                    for key, path in volumes_map.items():
-                        if key in volume_name or volume_name in key:
-                            host_path = path
-                            print(f"[DEBUG]Volume name模糊匹配: {volume_name} -> {key} ({path})")
-                            break
-                    
-                    if host_path is None:
-                        # 如果还是找不到，使用第一个可用的volume
-                        if volumes_map:
-                            host_path = list(volumes_map.values())[0]
-                            print(f"[WARNING]Volume name不匹配，使用第一个可用volume: {volume_name} -> {host_path}")
-                        else:
-                            print(f"[ERROR]找不到对应的volume: {volume_name}")
-                            continue
 
                 volumes[host_path] = {"bind": bind_path, "mode": mode}
             self.volumes["volumes"] = volumes

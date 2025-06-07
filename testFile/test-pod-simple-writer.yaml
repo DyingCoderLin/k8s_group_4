@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: ubuntu-simple-writer-1
+  name: ubuntu-simple-writer
   namespace: default
   labels:
     app: ubuntu-simple
@@ -12,10 +12,10 @@ spec:
     hostPath:
       path: /tmp/k8s-shared-volume
   containers:
-  - name: ubuntu-container-1
+  - name: ubuntu-container
     image: ubuntu:latest
     command: ["sh", "-c"]
-    args: ["echo 'Hello from writer pod 1' >> /data/writer.txt && sleep 3600"]
+    args: ["echo 'Hello from writer pod' > /data/writer.txt && sleep 3600"]
     volumeMounts:
     - name: shared-volume
       mountPath: /data

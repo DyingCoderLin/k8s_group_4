@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod-dual-containers
+  namespace: default
+  labels:
+    app: hello-world
+    server: "1"
+spec:
+  containers:
+  - name: test-pod-dual-containers-1
+    image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
+    command: ["sh", "-c"]
+    args: ["echo 'Starting server 1 on port 9090...' && while true; do echo -e 'HTTP/1.1 200 OK\\r\\nContent-Type: text/plain\\r\\nContent-Length: 31\\r\\n\\r\\nResponse from SERVER-1 (container 1)' | nc -l -p 9090; done"]
+    ports:
+    - containerPort: 9090
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 1
+        memory: 134217728
+      limits:
+        cpu: 2
+        memory: 268435456
+  - name: test-pod-dual-containers-2
+    image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
+    command: ["sh", "-c"]
+    args: ["echo 'Starting server 2 on port 9091...' && while true; do echo -e 'HTTP/1.1 200 OK\\r\\nContent-Type: text/plain\\r\\nContent-Length: 31\\r\\n\\r\\nResponse from SERVER-2 (container 2)' | nc -l -p 9091; done"]
+    ports:
+    - containerPort: 9091
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 1
+        memory: 134217728
+      limits:
+        cpu: 2
+        memory: 268435456

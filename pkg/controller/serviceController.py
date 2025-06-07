@@ -1,7 +1,6 @@
 import json
 import time
 import threading
-import logging
 from typing import Dict, List, Set
 from confluent_kafka import Producer, KafkaException
 from pkg.apiObject.service import Service
@@ -199,6 +198,21 @@ class ServiceController:
             if service_config.is_nodeport_service():
                 try:
                     # 验证并分配NodePort端口
+                    port_config = service_config.get_port_config()
+                    if 'nodePort' in port_config and port_config['nodePort']:
+                        # 验证端口是否可用
+                        if not self.nodeport_manager.is_port_available(port_config['nodePort']):
+                            raise ValueError(f"NodePort {port_config['nodePort']} 已被占用")
+                        # 分配端口
+                        self.nodeport_manager.allocate_port(service_name, port_config['nodePort'])
+                    else:
+                        # 自动分配端口
+                        allocated_port = self.nodeport_manager.allocate_port(service_name)
+                        service_config.set_nodeport(allocated_port)
+                        print(f"为Service {service_name} 自动分配NodePort: {allocated_port}")
+                except Exception as e:
+                    print(f"分配NodePort失败: {e}")
+                    raise
                     allocated_port = self.nodeport_manager.validate_service_nodeport(
                         service_name, service_config.node_port
                     )
@@ -239,11 +253,7 @@ class ServiceController:
                 try:
                     self.nodeport_manager.deallocate_port(service_name)
                 except Exception as cleanup_e:
-                    print(f"清理NodePort端口失败: {cleanup_e}")
-            raise
-            
-        except Exception as e:
-            print(f"创建Service {service_name} 失败: {e}")
+                    print(f"清理NodePort分配失败: {cleanup_e}")
             raise
     
     def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
@@ -264,9 +274,10 @@ class ServiceController:
             
             if is_updated:
                 # 向所有节点广播Service更新规则
-                endpoints = [f"{pod.get("subnet_ip","")}:{new_config.get_port_config()['targetPort']}" 
+                endpoints = [f"{pod.get('subnet_ip','')}:{new_config.get_port_config()['targetPort']}" 
                             for pod in matching_pods if pod.get('subnet_ip')]
                 self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
+                print(f"Service {service_name} 端点已更新")
 
         except Exception as e:
             print(f"更新Service {service_name} 失败: {e}")
@@ -406,6 +417,23 @@ class ServiceController:
         try:
             nodes_url = self.uri_config.NODES_URL
             response = self.api_client.get(nodes_url)
+            
+            if response:
+                # 解析节点数据
+                nodes = []
+                for node_item in response:
+                    if isinstance(node_item, dict):
+                        node_name = list(node_item.keys())[0]
+                        node_data = node_item[node_name]
+                        # 创建简单的节点对象或使用字典
+                        node = type('Node', (), {'name': node_name, 'data': node_data})()
+                        nodes.append(node)
+                return nodes
+            return []
+            
+        except Exception as e:
+            print(f"获取节点列表失败: {e}")
+            return []
             
             if response:
                 # API客户端已经自动解析了pickled数据，直接返回即可

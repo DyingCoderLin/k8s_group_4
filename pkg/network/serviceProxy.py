@@ -4,7 +4,9 @@ import platform
 import shutil
 import json
 import sys
-from typing import List, Optional
+import random
+import string
+from typing import List, Optional, Dict, Set
 from confluent_kafka import Consumer, KafkaError
 from threading import Thread
 from time import sleep
@@ -15,11 +17,20 @@ class ServiceProxy:
     
     def __init__(self, node_name: str = None, kafka_config: dict = None):
         self.logger = logging.getLogger(__name__)
+        
+        # Kubernetes iptables链名称
         self.nat_chain = "KUBE-SERVICES"
-        self.endpoint_chain_prefix = "KUBE-SVC-"
+        self.mark_chain = "KUBE-MARK-MASQ"
+        self.postrouting_chain = "KUBE-POSTROUTING"
+        self.service_chain_prefix = "KUBE-SVC-"
+        self.endpoint_chain_prefix = "KUBE-SEP-"
         
         # 节点信息
         self.node_name = node_name
+        
+        # Service 和 Endpoint 链映射
+        self.service_chains: Dict[str, str] = {}  # service_name -> chain_name
+        self.endpoint_chains: Dict[str, List[str]] = {}  # service_name -> [endpoint_chain_names]
         
         # Kafka配置（用于接收ServiceController的规则更新）
         self.kafka_config = kafka_config
@@ -51,10 +62,6 @@ class ServiceProxy:
                 'group.id': f'serviceproxy-{self.node_name}',
                 'auto.offset.reset': 'latest',
                 'enable.auto.commit': False,
-                'max.poll.interval.ms': 600000,  # 10分钟
-                'session.timeout.ms': 30000,     # 30秒
-                'heartbeat.interval.ms': 10000,  # 10秒
-                'request.timeout.ms': 60000,     # 60秒
             }
             
             self.consumer = Consumer(consumer_config)
@@ -130,104 +137,157 @@ class ServiceProxy:
             self.logger.error(f"处理Service更新消息失败: {e}")
     
     def setup_base_chains(self):
-        """设置基础iptables链"""
+        """设置基础iptables链（按照Kubernetes标准）"""
         if self.is_macos or not self.iptables_available:
             self.logger.info("跳过在非Linux系统上设置iptables链")
             return
             
         try:
-            # 创建KUBE-SERVICES链
+            # 1. 创建基础链
+            self._run_iptables(["-t", "nat", "-N", self.mark_chain], ignore_errors=True)
+            self._run_iptables(["-t", "nat", "-N", self.postrouting_chain], ignore_errors=True)
             self._run_iptables(["-t", "nat", "-N", self.nat_chain], ignore_errors=True)
             
-            # 将PREROUTING和OUTPUT流量导向KUBE-SERVICES链
+            # 2. 添加基础链规则
+            # KUBE-MARK-MASQ：用于标记需要SNAT的流量
             self._run_iptables([
-                "-t", "nat", "-I", "PREROUTING", "-j", self.nat_chain
+                "-t", "nat", "-A", self.mark_chain, 
+                "-j", "MARK", "--or-mark", "0x4000"
+            ], ignore_errors=True)
+            
+            # KUBE-POSTROUTING：处理被标记的流量
+            self._run_iptables([
+                "-t", "nat", "-A", self.postrouting_chain,
+                "-m", "mark", "--mark", "0x4000/0x4000",
+                "-j", "MASQUERADE",
+                "-m", "comment", "--comment", "kubernetes service traffic requiring SNAT"
+            ], ignore_errors=True)
+            
+            # 3. 设置主链跳转（在链开头插入）
+            self._run_iptables([
+                "-t", "nat", "-I", "PREROUTING", "1", 
+                "-j", self.nat_chain,
+                "-m", "comment", "--comment", "kubernetes service portals"
             ], ignore_errors=True)
             
             self._run_iptables([
-                "-t", "nat", "-I", "OUTPUT", "-j", self.nat_chain
+                "-t", "nat", "-I", "OUTPUT", "1", 
+                "-j", self.nat_chain,
+                "-m", "comment", "--comment", "kubernetes service portals" 
+            ], ignore_errors=True)
+            
+            self._run_iptables([
+                "-t", "nat", "-I", "POSTROUTING", "1", 
+                "-j", self.postrouting_chain,
+                "-m", "comment", "--comment", "kubernetes postrouting rules"
             ], ignore_errors=True)
             
             self.logger.info("基础iptables链设置完成")
         except Exception as e:
             self.logger.error(f"设置基础iptables链失败: {e}")
+            raise
     
     def create_service_rules(self, service_name: str, cluster_ip: str, port: int, 
                            protocol: str, endpoints: List[str], node_port: Optional[int] = None):
-        """为Service创建iptables规则"""
+        """为Service创建iptables规则（按照Kubernetes标准）"""
         if self.is_macos or not self.iptables_available:
             self.logger.info(f"模拟创建Service {service_name}的iptables规则 (ClusterIP: {cluster_ip}:{port})")
             return
             
         try:
-            chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
-            
-            # 清理可能存在的旧规则
+            # 1. 清理可能存在的旧规则
             self.delete_service_rules(service_name, cluster_ip, port, protocol, node_port)
             
             if not endpoints:
                 self.logger.warning(f"Service {service_name} 没有可用的端点")
                 return
             
-            # 创建service专用链
-            self._run_iptables(["-t", "nat", "-N", chain_name], ignore_errors=True)
+            # 2. 生成Service链名（使用Service名的哈希或简化名）
+            service_chain = f"{self.service_chain_prefix}{service_name.upper().replace('-', '_')}"
             
-            # 添加ClusterIP规则：将发往ClusterIP的流量导向service链
-            self._run_iptables([
-                "-t", "nat", "-A", self.nat_chain,
-                "-d", cluster_ip,
-                "-p", protocol.lower(),
-                "--dport", str(port),
-                "-j", chain_name
-            ])
+            # 3. 创建Service专用链
+            self._run_iptables(["-t", "nat", "-N", service_chain], ignore_errors=True)
             
-            # 如果是NodePort类型，添加NodePort规则
-            if node_port:
-                # 添加从所有接口的NodePort流量导向service链
+            # 4. 为Service创建Endpoint链
+            endpoint_chains = []
+            for i, endpoint in enumerate(endpoints):
+                # 生成随机的Endpoint链名
+                sep_hash = self._generate_chain_hash()
+                endpoint_chain = f"{self.endpoint_chain_prefix}{sep_hash}"
+                endpoint_chains.append(endpoint_chain)
+                
+                # 创建Endpoint链
+                self._run_iptables(["-t", "nat", "-N", endpoint_chain], ignore_errors=True)
+                
+                # 解析endpoint
+                endpoint_ip, endpoint_port = endpoint.split(":")
+                
+                # 添加DNAT规则到Endpoint链
                 self._run_iptables([
-                    "-t", "nat", "-A", self.nat_chain,
+                    "-t", "nat", "-A", endpoint_chain,
                     "-p", protocol.lower(),
-                    "--dport", str(node_port),
-                    "-j", chain_name
+                    "-j", "DNAT",
+                    "--to-destination", endpoint
                 ])
                 
-                # 添加MASQUERADE规则确保返回流量正确路由
+                # 添加源地址标记规则（防止Pod访问自身Service）
                 self._run_iptables([
-                    "-t", "nat", "-A", "POSTROUTING",
+                    "-t", "nat", "-A", endpoint_chain,
+                    "-s", f"{endpoint_ip}/32",
+                    "-j", self.mark_chain
+                ])
+            
+            # 5. 在Service链中添加负载均衡规则（倒序添加）
+            self._setup_load_balancing(service_chain, endpoint_chains, protocol)
+            
+            # 6. 添加ClusterIP入口规则（在KUBE-SERVICES链开头插入）
+            # 先添加标记规则
+            self._run_iptables([
+                "-t", "nat", "-I", self.nat_chain, "1",
+                "-d", f"{cluster_ip}/32",
+                "-p", protocol.lower(),
+                "-m", protocol.lower(), "--dport", str(port),
+                "-j", self.mark_chain,
+                "-m", "comment", "--comment", f"{service_name}: cluster IP"
+            ])
+            
+            # 再添加跳转规则
+            self._run_iptables([
+                "-t", "nat", "-I", self.nat_chain, "2", 
+                "-d", f"{cluster_ip}/32",
+                "-p", protocol.lower(),
+                "-m", protocol.lower(), "--dport", str(port),
+                "-j", service_chain,
+                "-m", "comment", "--comment", f"{service_name}: cluster IP"
+            ])
+            
+            # 7. 如果是NodePort类型，添加NodePort规则
+            if node_port:
+                # NodePort标记规则
+                self._run_iptables([
+                    "-t", "nat", "-I", self.nat_chain, "1",
                     "-p", protocol.lower(),
-                    "--dport", str(node_port),
-                    "-j", "MASQUERADE"
-                ], ignore_errors=True)
+                    "-m", protocol.lower(), "--dport", str(node_port),
+                    "-j", self.mark_chain,
+                    "-m", "comment", "--comment", f"{service_name}: nodePort"
+                ])
+                
+                # NodePort跳转规则
+                self._run_iptables([
+                    "-t", "nat", "-I", self.nat_chain, "2",
+                    "-p", protocol.lower(),
+                    "-m", protocol.lower(), "--dport", str(node_port),
+                    "-j", service_chain,
+                    "-m", "comment", "--comment", f"{service_name}: nodePort"
+                ])
                 
                 self.logger.info(f"为Service {service_name} 添加NodePort规则，端口: {node_port}")
             
-            # 为每个端点创建DNAT规则（负载均衡）
-            endpoint_count = len(endpoints)
-            for i, endpoint in enumerate(endpoints):
-                endpoint_ip, endpoint_port = endpoint.split(":")
-                
-                if i == endpoint_count - 1:
-                    # 最后一个端点不需要概率判断
-                    self._run_iptables([
-                        "-t", "nat", "-A", chain_name,
-                        "-p", protocol.lower(),
-                        "-j", "DNAT",
-                        "--to-destination", endpoint
-                    ])
-                else:
-                    # 使用statistic模块实现负载均衡
-                    probability = 1.0 / (endpoint_count - i)
-                    self._run_iptables([
-                        "-t", "nat", "-A", chain_name,
-                        "-p", protocol.lower(),
-                        "-m", "statistic",
-                        "--mode", "random",
-                        "--probability", f"{probability:.6f}",
-                        "-j", "DNAT",
-                        "--to-destination", endpoint
-                    ])
+            # 8. 更新映射
+            self.service_chains[service_name] = service_chain
+            self.endpoint_chains[service_name] = endpoint_chains
             
-            self.logger.info(f"为Service {service_name} 创建了iptables规则")
+            self.logger.info(f"为Service {service_name} 创建了iptables规则，端点数: {len(endpoints)}")
             
         except Exception as e:
             self.logger.error(f"为Service {service_name} 创建iptables规则失败: {e}")
@@ -235,148 +295,330 @@ class ServiceProxy:
     
     def delete_service_rules(self, service_name: str, cluster_ip: str, port: int, 
                            protocol: str, node_port: Optional[int] = None):
-        """删除Service的iptables规则"""
+        """删除Service的iptables规则（按照Kubernetes标准）"""
         if self.is_macos or not self.iptables_available:
             self.logger.info(f"模拟删除Service {service_name}的iptables规则")
             return
             
         try:
-            chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
-            
-            # 删除主链中指向service链的规则
+            # 1. 删除KUBE-SERVICES链中的入口规则
+            # 删除ClusterIP标记规则
             self._run_iptables([
                 "-t", "nat", "-D", self.nat_chain,
-                "-d", cluster_ip,
+                "-d", f"{cluster_ip}/32",
                 "-p", protocol.lower(),
-                "--dport", str(port),
-                "-j", chain_name
+                "-m", protocol.lower(), "--dport", str(port),
+                "-j", self.mark_chain,
+                "-m", "comment", "--comment", f"{service_name}: cluster IP"
             ], ignore_errors=True)
             
+            # 删除ClusterIP跳转规则
+            if service_name in self.service_chains:
+                service_chain = self.service_chains[service_name]
+                self._run_iptables([
+                    "-t", "nat", "-D", self.nat_chain,
+                    "-d", f"{cluster_ip}/32",
+                    "-p", protocol.lower(),
+                    "-m", protocol.lower(), "--dport", str(port),
+                    "-j", service_chain,
+                    "-m", "comment", "--comment", f"{service_name}: cluster IP"
+                ], ignore_errors=True)
+            
+            # 2. 如果是NodePort，删除NodePort规则
             if node_port:
-                # 删除NodePort规则
+                # 删除NodePort标记规则
                 self._run_iptables([
                     "-t", "nat", "-D", self.nat_chain,
                     "-p", protocol.lower(),
-                    "--dport", str(node_port),
-                    "-j", chain_name
+                    "-m", protocol.lower(), "--dport", str(node_port),
+                    "-j", self.mark_chain,
+                    "-m", "comment", "--comment", f"{service_name}: nodePort"
                 ], ignore_errors=True)
                 
-                # 删除MASQUERADE规则
-                self._run_iptables([
-                    "-t", "nat", "-D", "POSTROUTING",
-                    "-p", protocol.lower(),
-                    "--dport", str(node_port),
-                    "-j", "MASQUERADE"
-                ], ignore_errors=True)
+                # 删除NodePort跳转规则
+                if service_name in self.service_chains:
+                    service_chain = self.service_chains[service_name]
+                    self._run_iptables([
+                        "-t", "nat", "-D", self.nat_chain,
+                        "-p", protocol.lower(),
+                        "-m", protocol.lower(), "--dport", str(node_port),
+                        "-j", service_chain,
+                        "-m", "comment", "--comment", f"{service_name}: nodePort"
+                    ], ignore_errors=True)
+                
+                self.logger.info(f"删除了Service {service_name} 的NodePort规则")
             
-            # 清空并删除service专用链
-            self._run_iptables(["-t", "nat", "-F", chain_name], ignore_errors=True)
-            self._run_iptables(["-t", "nat", "-X", chain_name], ignore_errors=True)
+            # 3. 清理Service和Endpoint链
+            self._cleanup_service_chains(service_name)
             
-            self.logger.info(f"删除了Service {service_name} 的iptables规则")
+            self.logger.info(f"删除了Service {service_name} 的所有iptables规则")
             
         except Exception as e:
             self.logger.error(f"删除Service {service_name} iptables规则失败: {e}")
     
     def update_service_endpoints(self, service_name: str, cluster_ip: str, port: int,
                                protocol: str, endpoints: List[str], node_port: Optional[int] = None):
-        """更新Service的端点"""
+        """智能更新Service的端点（支持增量更新）"""
         if self.is_macos or not self.iptables_available:
             self.logger.info(f"模拟更新Service {service_name}的端点: {endpoints}")
             return
         
-        self.logger.info(f"更新Service {service_name} 的端点: {endpoints}")    
-        self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
-    
-    def _run_iptables(self, args: List[str], ignore_errors: bool = False):
-        """执行iptables命令"""
-        if self.is_macos or not self.iptables_available:
-            # 在不支持iptables的环境中模拟成功
-            self.logger.debug(f"模拟iptables命令: iptables {' '.join(args)}")
-            return None
-            
-        cmd = ["iptables"] + args
         try:
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            self.logger.debug(f"iptables命令执行成功: {' '.join(cmd)}")
-            return result
-        except subprocess.CalledProcessError as e:
-            if not ignore_errors:
-                self.logger.error(f"iptables命令执行失败: {' '.join(cmd)}, 错误: {e.stderr}")
-                raise
-            else:
-                self.logger.debug(f"iptables命令执行失败(忽略): {' '.join(cmd)}, 错误: {e.stderr}")
-    
-    def cleanup_all_rules(self):
-        """清理所有Service相关的iptables规则"""
-        if self.is_macos or not self.iptables_available:
-            self.logger.info("模拟清理所有Service iptables规则")
-            return
+            # 如果Service不存在，直接创建
+            if service_name not in self.service_chains:
+                self.logger.info(f"Service {service_name} 不存在，创建新的Service规则")
+                self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
+                return
             
-        try:
-            # 清空KUBE-SERVICES链
-            self._run_iptables(["-t", "nat", "-F", self.nat_chain], ignore_errors=True)
+            # 获取当前的端点信息
+            current_endpoints = set()
+            if service_name in self.endpoint_chains:
+                # 通过iptables规则反推当前端点
+                for endpoint_chain in self.endpoint_chains[service_name]:
+                    try:
+                        result = subprocess.run(
+                            ["iptables", "-t", "nat", "-L", endpoint_chain, "-n"],
+                            capture_output=True, text=True, check=True
+                        )
+                        
+                        for line in result.stdout.split('\n'):
+                            if 'DNAT' in line and 'to:' in line:
+                                # 提取目标地址
+                                parts = line.split()
+                                for i, part in enumerate(parts):
+                                    if part == 'to:' and i + 1 < len(parts):
+                                        current_endpoints.add(parts[i + 1])
+                                        break
+                    except:
+                        continue
             
-            # 清理所有KUBE-SVC-*链
-            result = subprocess.run(
-                ["iptables", "-t", "nat", "-L", "-n"], 
-                capture_output=True, text=True
-            )
+            # 计算需要添加和删除的端点
+            new_endpoints = set(endpoints)
+            endpoints_to_add = new_endpoints - current_endpoints
+            endpoints_to_remove = current_endpoints - new_endpoints
             
-            for line in result.stdout.split('\n'):
-                if self.endpoint_chain_prefix in line:
-                    chain_name = line.split()[1] if len(line.split()) > 1 else None
-                    if chain_name and chain_name.startswith(self.endpoint_chain_prefix):
-                        self._run_iptables(["-t", "nat", "-F", chain_name], ignore_errors=True)
-                        self._run_iptables(["-t", "nat", "-X", chain_name], ignore_errors=True)
+            self.logger.info(f"Service {service_name} 端点更新: "
+                           f"添加 {len(endpoints_to_add)} 个, 删除 {len(endpoints_to_remove)} 个")
             
-            self.logger.info("清理所有Service iptables规则完成")
+            # 如果变化较大，直接重建（超过一半的端点变化）
+            if (len(endpoints_to_add) + len(endpoints_to_remove)) > len(current_endpoints) / 2:
+                self.logger.info(f"Service {service_name} 端点变化较大，重建所有规则")
+                self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
+                return
+            
+            # 增量更新
+            service_chain = self.service_chains[service_name]
+            
+            # 删除不需要的端点
+            for endpoint_to_remove in endpoints_to_remove:
+                self._remove_endpoint_from_service(service_name, endpoint_to_remove, protocol)
+            
+            # 添加新的端点
+            for endpoint_to_add in endpoints_to_add:
+                self._add_endpoint_to_service(service_name, service_chain, endpoint_to_add, protocol)
+            
+            # 如果有变化，重新设置负载均衡
+            if endpoints_to_add or endpoints_to_remove:
+                self._rebuild_load_balancing(service_name, service_chain, endpoints, protocol)
+            
+            self.logger.info(f"Service {service_name} 端点更新完成")
             
         except Exception as e:
-            self.logger.error(f"清理iptables规则失败: {e}")
+            self.logger.error(f"更新Service {service_name} 端点失败: {e}")
+            # 失败时回退到完全重建
+            self.logger.info(f"回退到完全重建Service {service_name}")
+            self.create_service_rules(service_name, cluster_ip, port, protocol, endpoints, node_port)
     
-    def get_service_stats(self, service_name: str) -> dict:
-        """获取Service的iptables统计信息"""
-        if self.is_macos or not self.iptables_available:
-            # 在不支持iptables的环境中返回模拟数据
-            return {
-                "name": service_name,
-                "connections": 0,
-                "packets": 0,
-                "bytes": 0,
-                "note": "在不支持iptables的环境中运行，数据为模拟值"
+    def _add_endpoint_to_service(self, service_name: str, service_chain: str, endpoint: str, protocol: str):
+        """向Service添加新的端点"""
+        try:
+            # 创建新的Endpoint链
+            sep_hash = self._generate_chain_hash()
+            endpoint_chain = f"{self.endpoint_chain_prefix}{sep_hash}"
+            
+            self._run_iptables(["-t", "nat", "-N", endpoint_chain], ignore_errors=True)
+            
+            # 解析endpoint
+            endpoint_ip, endpoint_port = endpoint.split(":")
+            
+            # 添加DNAT规则
+            self._run_iptables([
+                "-t", "nat", "-A", endpoint_chain,
+                "-p", protocol.lower(),
+                "-j", "DNAT",
+                "--to-destination", endpoint
+            ])
+            
+            # 添加源地址标记规则
+            self._run_iptables([
+                "-t", "nat", "-A", endpoint_chain,
+                "-s", f"{endpoint_ip}/32",
+                "-j", self.mark_chain
+            ])
+            
+            # 更新映射
+            if service_name not in self.endpoint_chains:
+                self.endpoint_chains[service_name] = []
+            self.endpoint_chains[service_name].append(endpoint_chain)
+            
+            self.logger.debug(f"为Service {service_name} 添加端点 {endpoint}")
+            
+        except Exception as e:
+            self.logger.error(f"添加端点失败: {e}")
+            raise
+    
+    def _remove_endpoint_from_service(self, service_name: str, endpoint: str, protocol: str):
+        """从Service移除端点"""
+        try:
+            if service_name not in self.endpoint_chains:
+                return
+            
+            # 找到对应的端点链
+            endpoint_chain_to_remove = None
+            for endpoint_chain in self.endpoint_chains[service_name]:
+                try:
+                    result = subprocess.run(
+                        ["iptables", "-t", "nat", "-L", endpoint_chain, "-n"],
+                        capture_output=True, text=True, check=True
+                    )
+                    
+                    if f"to:{endpoint}" in result.stdout:
+                        endpoint_chain_to_remove = endpoint_chain
+                        break
+                except:
+                    continue
+            
+            if endpoint_chain_to_remove:
+                # 清理链
+                self._run_iptables(["-t", "nat", "-F", endpoint_chain_to_remove], ignore_errors=True)
+                self._run_iptables(["-t", "nat", "-X", endpoint_chain_to_remove], ignore_errors=True)
+                
+                # 更新映射
+                self.endpoint_chains[service_name].remove(endpoint_chain_to_remove)
+                
+                self.logger.debug(f"从Service {service_name} 移除端点 {endpoint}")
+            
+        except Exception as e:
+            self.logger.error(f"移除端点失败: {e}")
+    
+    def _rebuild_load_balancing(self, service_name: str, service_chain: str, endpoints: List[str], protocol: str):
+        """重建Service链的负载均衡规则"""
+        try:
+            # 清空Service链
+            self._run_iptables(["-t", "nat", "-F", service_chain], ignore_errors=True)
+            
+            # 获取当前的端点链
+            if service_name in self.endpoint_chains:
+                endpoint_chains = self.endpoint_chains[service_name]
+                self._setup_load_balancing(service_chain, endpoint_chains, protocol)
+                
+        except Exception as e:
+            self.logger.error(f"重建负载均衡失败: {e}")
+            raise
+    
+    def list_all_service_chains(self) -> Dict[str, Dict]:
+        """列出所有Service相关的链信息"""
+        result = {
+            "services": {},
+            "total_service_chains": len(self.service_chains),
+            "total_endpoint_chains": sum(len(chains) for chains in self.endpoint_chains.values())
+        }
+        
+        for service_name in self.service_chains:
+            service_info = {
+                "service_chain": self.service_chains[service_name],
+                "endpoint_chains": self.endpoint_chains.get(service_name, []),
+                "endpoint_count": len(self.endpoint_chains.get(service_name, []))
             }
             
+            # 如果可以访问iptables，获取规则统计
+            if not self.is_macos and self.iptables_available:
+                try:
+                    stats = self.get_service_stats(service_name)
+                    service_info["stats"] = stats
+                except:
+                    service_info["stats"] = {"error": "无法获取统计信息"}
+            
+            result["services"][service_name] = service_info
+        
+        return result
+    
+    def validate_service_rules(self, service_name: str) -> Dict[str, bool]:
+        """验证Service的iptables规则是否完整"""
+        if self.is_macos or not self.iptables_available:
+            return {"validated": False, "reason": "iptables不可用"}
+        
+        validation = {
+            "service_chain_exists": False,
+            "endpoint_chains_exist": True,
+            "main_chain_rules_exist": False,
+            "load_balancing_rules_exist": False
+        }
+        
         try:
-            chain_name = f"{self.endpoint_chain_prefix}{service_name.upper()}"
+            # 检查Service链是否存在
+            if service_name in self.service_chains:
+                service_chain = self.service_chains[service_name]
+                result = subprocess.run(
+                    ["iptables", "-t", "nat", "-L", service_chain, "-n"],
+                    capture_output=True, text=True
+                )
+                validation["service_chain_exists"] = result.returncode == 0
+                
+                # 检查负载均衡规则
+                if validation["service_chain_exists"]:
+                    validation["load_balancing_rules_exist"] = len(result.stdout.split('\n')) > 3
+            
+            # 检查Endpoint链
+            if service_name in self.endpoint_chains:
+                for endpoint_chain in self.endpoint_chains[service_name]:
+                    result = subprocess.run(
+                        ["iptables", "-t", "nat", "-L", endpoint_chain, "-n"],
+                        capture_output=True, text=True
+                    )
+                    if result.returncode != 0:
+                        validation["endpoint_chains_exist"] = False
+                        break
+            
+            # 检查主链规则
             result = subprocess.run(
-                ["iptables", "-t", "nat", "-L", chain_name, "-n", "-v"],
+                ["iptables", "-t", "nat", "-L", self.nat_chain, "-n"],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                validation["main_chain_rules_exist"] = service_name.upper() in result.stdout
+            
+        except Exception as e:
+            validation["error"] = str(e)
+        
+        return validation
+    
+    def get_all_kubernetes_chains(self) -> List[str]:
+        """获取所有Kubernetes相关的iptables链"""
+        chains = []
+        
+        if self.is_macos or not self.iptables_available:
+            return chains
+        
+        try:
+            result = subprocess.run(
+                ["iptables", "-t", "nat", "-L", "-n"],
                 capture_output=True, text=True, check=True
             )
             
-            stats = {"rules": [], "total_packets": 0, "total_bytes": 0}
-            
             for line in result.stdout.split('\n'):
-                if line.strip() and not line.startswith('Chain') and not line.startswith('target'):
+                if line.startswith('Chain '):
                     parts = line.split()
                     if len(parts) >= 2:
-                        packets = int(parts[0]) if parts[0].isdigit() else 0
-                        bytes_count = int(parts[1]) if parts[1].isdigit() else 0
-                        stats["rules"].append({
-                            "packets": packets,
-                            "bytes": bytes_count,
-                            "rule": " ".join(parts[2:])
-                        })
-                        stats["total_packets"] += packets
-                        stats["total_bytes"] += bytes_count
-            
-            return stats
-            
-        except subprocess.CalledProcessError:
-            return {"error": f"Service {service_name} 统计信息不存在"}
+                        chain_name = parts[1]
+                        if (chain_name.startswith('KUBE-') or 
+                            chain_name in [self.nat_chain, self.mark_chain, self.postrouting_chain]):
+                            chains.append(chain_name)
+        
         except Exception as e:
-            return {"error": f"获取统计信息失败: {e}"}
-    
+            self.logger.error(f"获取Kubernetes链列表失败: {e}")
+        
+        return chains
 def main():
     """ServiceProxy主函数，在每个节点上启动"""
     import argparse

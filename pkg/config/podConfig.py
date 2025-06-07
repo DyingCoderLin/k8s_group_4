@@ -19,34 +19,9 @@ class PodConfig:
         self.node_selector = spec.get("nodeSelector", {})
         self.volume, self.containers = dict(), []
 
-        # 处理volumes字段 - 支持两种格式
-        if isinstance(volumes, list):
-            # 原始格式：volumes是一个列表，每个元素包含name和hostPath
-            print(f"[DEBUG]处理列表格式的volumes: {volumes}")
-            for volume in volumes:
-                if isinstance(volume, dict):
-                    volume_name = volume.get("name")
-                    host_path_config = volume.get("hostPath")
-                    
-                    # 处理hostPath可能是字符串或字典的情况
-                    if isinstance(host_path_config, str):
-                        # 如果hostPath是字符串，直接使用
-                        self.volume[volume_name] = host_path_config
-                    elif isinstance(host_path_config, dict):
-                        # 如果hostPath是字典，提取path字段
-                        self.volume[volume_name] = host_path_config.get("path")
-                    else:
-                        print(f"[WARNING]Unsupported hostPath format in volume {volume_name}: {host_path_config}")
-                        self.volume[volume_name] = None
-                else:
-                    print(f"[WARNING]Invalid volume format: {volume}")
-        elif isinstance(volumes, dict):
-            # 传输格式：volumes已经是一个字典，key是volume名称，value是路径
-            print(f"[DEBUG]处理字典格式的volumes: {volumes}")
-            self.volume = volumes.copy()
-        else:
-            print(f"[WARNING]Unsupported volumes format: {type(volumes)} - {volumes}")
-            self.volume = {}
+        # 目前只支持hostPath，并且忽略type字段
+        for volume in volumes:
+            self.volume[volume.get("name")] = volume.get("hostPath").get("path")
 
         for container in containers:
             self.containers.append(ContainerConfig(self.volume, container))
