@@ -21,7 +21,22 @@ class PodConfig:
 
         # 目前只支持hostPath，并且忽略type字段
         for volume in volumes:
-            self.volume[volume.get("name")] = volume.get("hostPath").get("path")
+            volume_name = volume.get("name")
+            host_path = volume.get("hostPath")
+            
+            # 处理hostPath的不同格式
+            if isinstance(host_path, dict):
+                # 标准格式：hostPath是字典，包含path字段
+                path = host_path.get("path")
+            elif isinstance(host_path, str):
+                # 简化格式：hostPath直接是路径字符串
+                path = host_path
+            else:
+                # 异常情况：使用默认路径并记录警告
+                path = "/tmp"
+                print(f"[WARNING] PodConfig: volume '{volume_name}' hostPath格式异常，使用默认路径: {path}")
+            
+            self.volume[volume_name] = path
 
         for container in containers:
             self.containers.append(ContainerConfig(self.volume, container))
