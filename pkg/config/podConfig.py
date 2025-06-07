@@ -14,13 +14,13 @@ class PodConfig:
         self.env = self.labels.get("env", None)
 
         spec = arg_json.get("spec")
-        volumes = spec.get("volumes", [])
+        self.volumes = spec.get("volumes", [])
         containers = spec.get("containers", [])
         self.node_selector = spec.get("nodeSelector", {})
         self.volume, self.containers = dict(), []
 
         # 目前只支持hostPath，并且忽略type字段
-        for volume in volumes:
+        for volume in self.volumes:
             volume_name = volume.get("name")
             host_path = volume.get("hostPath")
             
@@ -55,7 +55,7 @@ class PodConfig:
                 "labels": self.labels,
             },
             "spec": {
-                "volumes": self.volume,
+                "volumes": self.volumes,
                 "containers": [container.to_dict() for container in self.containers],
             },
             "cni_name": self.cni_name,
