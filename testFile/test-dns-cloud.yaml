@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: DNS
+metadata:
+  name: hello-world-service
+  namespace: default
+spec:
+  host: example.com
+  paths:
+    - path: /app1
+      serviceName: app1-service
+      servicePort: 80
+    - path: /app2
+      serviceName: app2-service
+      servicePort: 80

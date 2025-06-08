@@ -57,8 +57,8 @@ class DNS:
 
                 spec = response.get("spec")
                 # TODO
-                cluster_ip = "0.0.0.0"  # 默认值，实际获取时需要从 spec 中提取
-                # cluster_ip = spec.get("cluster_ip")
+                # cluster_ip = "0.0.0.0"  # 默认值，实际获取时需要从 spec 中提取
+                cluster_ip = spec.get("cluster_ip")
 
                 if not cluster_ip:
                     self.logger.warning(f"服务 {service_name} 未分配 ClusterIP")

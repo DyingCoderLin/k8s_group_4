@@ -178,7 +178,7 @@ class DNSController:
                     print(f"DNS 解析成功: {dns_key} -> ({service_name}, {cluster_ip}, {ports})")
                     
                     config_lines.append(f"        location {path.get('path')} {{")
-                    config_lines.append(f"            proxy_pass http://{cluster_ip}:{ports[0]["targetPort"]};")
+                    config_lines.append(f"            proxy_pass http://{cluster_ip}:{ports[0]["port"]};")
                     config_lines.append(f"            proxy_set_header Host $host;")
                     config_lines.append(f"        }}")
             config_lines.append(f"    }}")
@@ -210,24 +210,24 @@ if __name__ == "__main__":
 
         config = GlobalConfig()
 
-        service_file = "test-dns-service.yaml"
-        service_yaml = os.path.join(config.TEST_FILE_PATH, service_file)
+        # service_file = "test-dns-service.yaml"
+        # service_yaml = os.path.join(config.TEST_FILE_PATH, service_file)
         
-        print(f"[INFO]测试 SERVICE 配置文件路径: {service_yaml}")
+        # print(f"[INFO]测试 SERVICE 配置文件路径: {service_yaml}")
         
-        with open(service_yaml, "r", encoding="utf-8") as file:
-            service_data = yaml.safe_load(file)
+        # with open(service_yaml, "r", encoding="utf-8") as file:
+        #     service_data = yaml.safe_load(file)
 
-            namespace = service_data["metadata"]["namespace"]
-            name = service_data["metadata"]["name"]
+        #     namespace = service_data["metadata"]["namespace"]
+        #     name = service_data["metadata"]["name"]
 
-            # 通过 API 创建 Service
-            key = dns_controller.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=name)
-            response = dns_controller.api_client.post(key, service_data)
-            if response:
-                print(f"[INFO]测试 Service 配置: {namespace}/{name}\n")
-            else:
-                print(f"Error creating service/{name}\n")
+        #     # 通过 API 创建 Service
+        #     key = dns_controller.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=name)
+        #     response = dns_controller.api_client.post(key, service_data)
+        #     if response:
+        #         print(f"[INFO]测试 Service 配置: {namespace}/{name}\n")
+        #     else:
+        #         print(f"Error creating service/{name}\n")
         
         dns_file = "test-dns-config1.yaml"
         dns_yaml = os.path.join(config.TEST_FILE_PATH, dns_file)
