@@ -8,7 +8,7 @@ metadata:
     server: "3"
 spec:
   containers:
-  - name: test-server-container
+  - name: test-server-container-3
     image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
     command: ["sh", "-c"]
     args: ["echo 'Starting server 3 on port 9090...' && while true; do echo -e 'HTTP/1.1 200 OK\\r\\nContent-Type: text/plain\\r\\nContent-Length: 31\\r\\n\\r\\nResponse from SERVER-3 (Pod 3)' | nc -l -p 9090; done"]

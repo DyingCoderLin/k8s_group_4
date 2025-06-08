@@ -280,25 +280,38 @@ class KubectlClient:
                 print("No nodes found.")
                 return
             
-            headers = ["NAME", "STATUS", "ROLES", "VERSION"]
+            headers = ["NAME", "STATUS", "SUBNET_IP", "LAST_HEARTBEAT"]
             rows = []
             
+            # for node_entry in response:
+            #     if isinstance(node_entry, dict) and len(node_entry) == 1:
+            #         node_name = list(node_entry.keys())[0]
+            #         node_data = node_entry[node_name]
+                    
+            #         # 提取节点信息
+            #         status = node_data.get("status", "Unknown")
+            #         roles = node_data.get("roles", ["<none>"])
+            #         if isinstance(roles, list):
+            #             roles_str = ",".join(roles) if roles else "<none>"
+            #         else:
+            #             roles_str = str(roles)
+                    
+            #         version = node_data.get("version", "Unknown")
+                    
+            #         rows.append([node_name, status, roles_str, version])
+            
             for node_entry in response:
-                if isinstance(node_entry, dict) and len(node_entry) == 1:
-                    node_name = list(node_entry.keys())[0]
-                    node_data = node_entry[node_name]
+                if isinstance(node_entry, NodeConfig):
+                    node_name = node_entry.name
                     
                     # 提取节点信息
-                    status = node_data.get("status", "Unknown")
-                    roles = node_data.get("roles", ["<none>"])
-                    if isinstance(roles, list):
-                        roles_str = ",".join(roles) if roles else "<none>"
-                    else:
-                        roles_str = str(roles)
+                    status = node_entry.status or "Unknown"
                     
-                    version = node_data.get("version", "Unknown")
+                    subnet_ip = node_entry.subnet_ip or "<none>"
                     
-                    rows.append([node_name, status, roles_str, version])
+                    heart_beat = node_entry.heartbeat_time or "<none>"
+                    
+                    rows.append([node_name, status, subnet_ip,heart_beat])
             
             print(self.format_table_output(headers, rows))
             
@@ -315,38 +328,19 @@ class KubectlClient:
                 print(f"Node '{node_name}' not found")
                 return
             
-            print(f"Name:                 {response.get('name', 'Unknown')}")
-            print(f"Roles:                {','.join(response.get('roles', ['<none>']))}")
-            print(f"Labels:               {response.get('labels', {})}")
-            print(f"Annotations:          {response.get('annotations', {})}")
-            print(f"CreationTimestamp:    {response.get('creation_time', 'Unknown')}")
-            print(f"Taints:               {response.get('taints', '<none>')}")
+            if not isinstance(response, NodeConfig) or len(response) != 1:
+                print(f"Invalid node data for '{node_name}'")
+                return
+            
+            print(f"Name:                 {response.name or '[]'}")
+            print(f"Taints:               {response.taints or '[]'}")
             print("")
-            print("Conditions:")
-            conditions = response.get("conditions", [])
-            if conditions:
-                for condition in conditions:
-                    print(f"  Type:    {condition.get('type', 'Unknown')}")
-                    print(f"  Status:  {condition.get('status', 'Unknown')}")
-                    print(f"  Reason:  {condition.get('reason', 'Unknown')}")
-                    print(f"  Message: {condition.get('message', 'Unknown')}")
-                    print("")
+            
+            print("Subnet IP:")
+            if response.subnet_ip:
+                print(f"  {response.subnet_ip}")
             else:
                 print("  <none>")
-            
-            print("Addresses:")
-            addresses = response.get("addresses", [])
-            if addresses:
-                for addr in addresses:
-                    print(f"  {addr.get('type', 'Unknown')}: {addr.get('address', 'Unknown')}")
-            else:
-                print("  <none>")
-            
-            print("")
-            print("System Info:")
-            system_info = response.get("system_info", {})
-            for key, value in system_info.items():
-                print(f"  {key}: {value}")
             
         except Exception as e:
             print(f"Error describing node '{node_name}': {e}")
@@ -410,13 +404,10 @@ class KubectlClient:
             
             print(f"Name:         {response.get('metadata', {}).get('name', 'Unknown')}")
             print(f"Namespace:    {response.get('metadata', {}).get('namespace', 'Unknown')}")
-            print(f"Priority:     {response.get('spec', {}).get('priority', 0)}")
-            print(f"Node:         {response.get('spec', {}).get('node_name', '<none>')}")
-            print(f"Start Time:   {response.get('status', {}).get('start_time', '<unknown>')}")
+            print(f"Node:         {response.get('node_name', '<none>')}")
             print(f"Labels:       {response.get('metadata', {}).get('labels', {})}")
-            print(f"Annotations:  {response.get('metadata', {}).get('annotations', {})}")
-            print(f"Status:       {response.get('status', {}).get('phase', 'Unknown')}")
-            print(f"IP:           {response.get('status', {}).get('pod_ip', '<none>')}")
+            print(f"Status:       {response.get('status', "")}")
+            print(f"IP:           {response.get('subnet_ip', '<none>')}")
             print("")
             
             # 容器信息
@@ -432,17 +423,7 @@ class KubectlClient:
                 print(f"    Ready:         {container.get('ready', False)}")
                 print(f"    Restart Count: {container.get('restart_count', 0)}")
                 print("")
-            
-            # 条件信息
-            print("Conditions:")
-            conditions = response.get("status", {}).get("conditions", [])
-            if conditions:
-                for condition in conditions:
-                    print(f"  Type:               {condition.get('type', 'Unknown')}")
-                    print(f"  Status:             {condition.get('status', 'Unknown')}")
-                    print(f"  Last Probe Time:    {condition.get('last_probe_time', '<unknown>')}")
-                    print(f"  Last Transition Time: {condition.get('last_transition_time', '<unknown>')}")
-                    print("")
+
             else:
                 print("  <none>")
             
@@ -573,13 +554,9 @@ class KubectlClient:
             print(f"Name:              {metadata.get('name', 'Unknown')}")
             print(f"Namespace:         {metadata.get('namespace', 'Unknown')}")
             print(f"Labels:            {metadata.get('labels', {})}")
-            print(f"Annotations:       {metadata.get('annotations', {})}")
             print(f"Selector:          {spec.get('selector', {})}")
             print(f"Type:              {spec.get('type', 'ClusterIP')}")
-            print(f"IP Family Policy:  {spec.get('ip_family_policy', 'SingleStack')}")
-            print(f"IP Families:       {spec.get('ip_families', ['IPv4'])}")
-            print(f"IP:                {spec.get('cluster_ip', '<none>')}")
-            print(f"IPs:               {spec.get('cluster_ips', [])}")
+            print(f"IP:                {spec.get('clusterIP', '<none>')}")
             print(f"Port:              {spec.get('ports', [])}")
             print("")
             
