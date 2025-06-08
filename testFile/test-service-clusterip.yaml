@@ -12,6 +12,6 @@ spec:
   ports:
   - name: http
     port: 80 # service在集群内部暴露的端口
-    targetPort: 8080 # pod实际暴露的端口
+    targetPort: 9090 # pod实际暴露的端口
     protocol: TCP
 
