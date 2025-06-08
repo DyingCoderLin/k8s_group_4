@@ -1,6 +1,7 @@
 import json
 import pickle
 import docker
+import os
 from docker.errors import APIError
 from flask import Flask, request
 from confluent_kafka import Producer, KafkaException
@@ -22,16 +23,18 @@ from pkg.config.podConfig import PodConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
-
+from pkg.config.serverlessConfig import ServerlessConfig
+from pkg.config.functionConfig import FunctionConfig
 
 class ApiServer:
     def __init__(
-        self, uri_config: URIConfig, etcd_config: EtcdConfig, kafka_config: KafkaConfig
+        self, uri_config: URIConfig, etcd_config: EtcdConfig, kafka_config: KafkaConfig, serverless_config: ServerlessConfig
     ):
         print("[INFO]ApiServer starting...")
         self.uri_config = uri_config
         self.etcd_config = etcd_config
         self.kafka_config = kafka_config
+        self.serverless_config = serverless_config
         self.NODE_TIMEOUT = 10
 
         self.app = Flask(__name__)
@@ -1104,7 +1107,32 @@ class ApiServer:
             print(f"[ERROR]Failed to get service status: {str(e)}")
             return json.dumps({"error": str(e)}), 500
 
+    def add_function(self, namespace : str, name : str):
+        if 'file' not in request.files:
+            return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
+
+        if '/' in namespace or '/' in name:
+            return json.dumps({"error": f"Function name or namespace should not contain /."}), 409
+
+        if file:
+            # 检查并存入源代码
+            code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
+            if os.path.exists(code_dir):
+                return json.dumps({"error": f"Function {namespace}/{name} already exists."}), 409
+            os.makedirs(code_dir, exist_ok = False)
+            if zipfile.is_zipfile(file):
+                file.seek(0)
+                with zipfile.ZipFile(file, "r") as zip_ref:
+                    zip_ref.extractall(code_dir)
+            elif file.filename[-3:] == '.py':
+                file.save(os.path.join(code_dir, file.filename))
+            else:
+                return json.dumps({"error": f"File type {os.path.splitext(file.filename)[1]} is not supported. You should upload an *.zip or *.py."}), 409
+
+            function_config = FunctionConfig(namespace, name, code_dir)
+            # 检查并构建image
+
 
 if __name__ == "__main__":
-    api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig)
+    api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig, ServerlessConfig)
     api_server.run()
