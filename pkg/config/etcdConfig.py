@@ -3,15 +3,14 @@ from pkg.config.nodeConfig import NodeConfig
 from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
-
+from pkg.config.functionConfig import FunctionConfig
 
 class EtcdConfig:
     # Etcd 地址
 
-    # HOST = '10.119.11.171' # 这是哪个
-    HOST = "10.119.15.182"  # server
+    # HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
-    # HOST = 'localhost'
+    HOST = 'localhost'
     PORT = "2379"
 
     # -------------------- 资源键值定义 --------------------
@@ -41,4 +40,10 @@ class EtcdConfig:
     SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
     SERVICES_VALUE = ServiceConfig
 
-    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_SERVICES_KEY]
+    # Function相关
+    GLOBAL_FUNCTION_KEY = "/api/v1/namespaces/functions"
+    FUNCTION_KEY = "/api/v1/namespaces/functions/{namespace}"
+    FUNCTION_SPEC_KEY = "/api/v1/namespaces/functions/{namespace}/{name}"
+    FUNCTION_VALUE = FunctionConfig
+
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_SERVICES_KEY, GLOBAL_FUNCTION_KEY]

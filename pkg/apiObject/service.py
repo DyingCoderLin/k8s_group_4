@@ -4,7 +4,7 @@ import random
 from typing import List, Dict, Optional, Tuple
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.proxy.kubeproxy import KubeProxy
-from pkg.loadbalancer.loadBalancer import create_load_balancer
+from pkg.utils.loadBalancer import create_load_balancer
 from pkg.config.uriConfig import URIConfig
 from pkg.apiServer.apiClient import ApiClient
 import json

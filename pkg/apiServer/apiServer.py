@@ -1,7 +1,10 @@
 import json
 import pickle
 import docker
+import random
+import requests
 import os
+from readerwriterlock import rwlock
 from docker.errors import APIError
 from flask import Flask, request
 from confluent_kafka import Producer, KafkaException
@@ -10,8 +13,10 @@ import platform
 from time import time, sleep, ctime
 from threading import Thread
 
+from pkg.utils.atomicCounter import AtomicCounter
 from pkg.apiObject.pod import STATUS as POD_STATUS
 from pkg.apiObject.node import Node, STATUS as NODE_STATUS
+from pkg.apiObject.function import Function
 from pkg.apiServer.etcd import Etcd
 from pkg.controller.scheduler import Scheduler
 
@@ -59,6 +64,11 @@ class ApiServer:
             [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
         )
         self.kafka_producer.flush()
+        # --- end ---
+
+        os.makedirs(serverless_config.PERSIST_BASE, exist_ok = True)
+        self.SLlock = rwlock.RWLockFair()
+        self.func_cnt = AtomicCounter()
 
         self.bind(uri_config)
         print("[INFO]ApiServer init success.")
@@ -91,35 +101,23 @@ class ApiServer:
         self.app.route(config.POD_SPEC_URL, methods=["DELETE"])(self.delete_pod)
         # 指定Pod状态改和查
         self.app.route(config.POD_SPEC_STATUS_URL, methods=["GET"])(self.get_pod_status)
-        self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(
-            self.update_pod_status
-        )
+        self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(self.update_pod_status)
         self.app.route(config.POD_SPEC_IP_URL, methods=["PUT"])(self.update_pod_subnet_ip)
         self.app.route(config.POD_SPEC_IP_URL, methods=["GET"])(self.get_pod_subnet_ip)
 
         # replicaSet相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的rs，读取某个namespace下的rs，读取某个rs
-        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=["GET"])(
-            self.get_global_replica_sets
-        )
+        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=["GET"])(self.get_global_replica_sets)
         # 这个有确定的namespace
         self.app.route(config.REPLICA_SETS_URL, methods=["GET"])(self.get_replica_sets)
         # 这个有确定的namespace和name
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["GET"])(
-            self.get_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["GET"])(self.get_replica_set)
         # 创建rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["POST"])(
-            self.create_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["POST"])(self.create_replica_set)
         # 更新rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["PUT"])(
-            self.update_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["PUT"])(self.update_replica_set)
         # 删除rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["DELETE"])(
-            self.delete_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["DELETE"])(self.delete_replica_set)
 
         # hpa相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的hpa，读取某个namespace下的hpa，读取某个hpa
@@ -145,10 +143,17 @@ class ApiServer:
         # Service状态和统计信息
         self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
+        # function相关
+        # 创建function
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['POST'])(self.add_function)
+        # 调用function
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['PUT'])(self.exec_function)
+
     def run(self):
         print('[INFO]ApiServer running...')
         Thread(target = self.node_health).start()
-        self.app.run(host='0.0.0.0', port=self.uri_config.PORT, processes=True)
+        Thread(target = self.serverless_scale).start()
+        self.app.run(host='0.0.0.0', port=self.uri_config.PORT, threaded=True)
 
     def node_health(self):
         while True:
@@ -160,6 +165,39 @@ class ApiServer:
                     node.status = NODE_STATUS.OFFLINE
                     self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=node.name), node)
                     print(f'[INFO]Node {node.name} offline. Last heartbeat {ctime(node.heartbeat_time)}')
+
+    def serverless_scale(self):
+        while True:
+            sleep(self.serverless_config.CHECK_TIME)
+
+            with self.SLlock.gen_wlock():
+                functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
+                for function_config in functions:
+                    key = function_config.namespace + '/' + function_config.name
+                    pod_num = len(function_config.pod_list)
+                    # 如果存在函数实例，则看情况增加或者减少
+                    if pod_num != 0:
+                        function = Function(function_config, self.serverless_config, None)
+
+                        if self.func_cnt.get(key) / pod_num > self.serverless_config.MAX_REQUESTS_PER_POD:
+                            print(f'[INFO]Function {function_config.namespace}/{function_config.name} increse scale to {pod_num + 1}')
+                            pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num)
+                            url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                            response = requests.post(url, json=pod_yaml)
+                            function_config.pod_list.append(PodConfig(pod_yaml))
+                        elif self.func_cnt.get(key) / pod_num < self.serverless_config.MIN_REQUESTS_PER_POD:
+                            pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num - 1)
+                            url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                            print(f'[INFO]Function {function_config.namespace}/{function_config.name} decrease scale to {pod_num - 1}')
+                            response = requests.delete(url)
+                            del function_config.pod_list[-1]
+
+                        # 更新etcd中的function状态
+                        self.etcd.put(
+                            self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=function_config.namespace, name=function_config.name),
+                            function_config)
+                        # 清空计数器
+                        self.func_cnt.reset(key)
 
     def index(self):
         return "ApiServer Demo"
@@ -1108,30 +1146,87 @@ class ApiServer:
             return json.dumps({"error": str(e)}), 500
 
     def add_function(self, namespace : str, name : str):
-        if 'file' not in request.files:
+        if 'file' not in request.files or not request.files['file']:
             return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
 
         if '/' in namespace or '/' in name:
             return json.dumps({"error": f"Function name or namespace should not contain /."}), 409
 
-        if file:
+        if self.etcd.get(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)):
+            return json.dumps({"error": f"Function {namespace}/{name} already exists."}), 409
+
+        file = request.files['file']
+        code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
+        function_config = FunctionConfig(namespace, name, code_dir)
+        function = Function(function_config, self.serverless_config, file)
+
+        try:
             # 检查并存入源代码
-            code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
-            if os.path.exists(code_dir):
-                return json.dumps({"error": f"Function {namespace}/{name} already exists."}), 409
-            os.makedirs(code_dir, exist_ok = False)
-            if zipfile.is_zipfile(file):
-                file.seek(0)
-                with zipfile.ZipFile(file, "r") as zip_ref:
-                    zip_ref.extractall(code_dir)
-            elif file.filename[-3:] == '.py':
-                file.save(os.path.join(code_dir, file.filename))
-            else:
-                return json.dumps({"error": f"File type {os.path.splitext(file.filename)[1]} is not supported. You should upload an *.zip or *.py."}), 409
-
-            function_config = FunctionConfig(namespace, name, code_dir)
+            function.download_unzip_code()
             # 检查并构建image
+            function.build_image()
+            # 上传dockerhub
+            function_config.target_image = function.push_image()
+            # 写etcd
+            self.etcd.put(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name), function_config)
 
+        except Exception as e:
+            return json.dumps({"error": str(e)}), 409
+        return json.dumps({"message": "Successfully add function"}), 200
+
+    def exec_function(self, namespace : str, name : str):
+        # 对于function_config资源获取读锁
+        rlock = self.SLlock.gen_rlock()
+        rlock.acquire()
+        self.func_cnt.increment(namespace + '/' + name)
+        function_config = self.etcd.get(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+        if function_config is None:
+            rlock.release()
+            return json.dumps({"error": f"Function {namespace}/{name} does not exists."}), 404
+
+        if len(function_config.pod_list) == 0:
+            # 对于function_config资源释放读锁获取写锁
+            rlock.release()
+            with self.SLlock.gen_wlock():
+                # double check条件
+                function_config = self.etcd.get(
+                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+                if function_config is None:
+                    return json.dumps({"error": f"Function {namespace}/{name} does not exists."}), 404
+                function_config = self.etcd.get(
+                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+                if len(function_config.pod_list) == 0:
+                    function = Function(function_config, self.serverless_config, None)
+                    pod_namespace, pod_name, pod_yaml = function.pod_info(id=0)
+                    url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace,
+                                                                                       name=pod_name)
+                    response = requests.post(url, json=pod_yaml)
+                    function_config.pod_list.append(PodConfig(pod_yaml))
+                    self.etcd.put(
+                        self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name),
+                        function_config)
+            rlock.acquire()
+
+        # 获取读锁
+        try:
+            while True:
+                sleep(0.5)
+                function_config = self.etcd.get(
+                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+                pod = random.choice(function_config.pod_list)
+                pod = self.etcd.get(self.etcd_config.POD_SPEC_KEY.format(namespace=pod.namespace, name=pod.name))
+
+                if pod.status == POD_STATUS.RUNNING:
+                    break
+
+            print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
+            url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
+            response = requests.post(url, json=request.json)
+            return response
+        except Exception as e:
+            return json.dumps({"error": str(e)}), 409
+        finally:
+            rlock.release()
 
 if __name__ == "__main__":
     api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig, ServerlessConfig)
