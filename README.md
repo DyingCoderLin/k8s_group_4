@@ -7,6 +7,9 @@ https://docker-py.readthedocs.io/en/stable/networks.html
 ## etcd python api
 https://python-etcd3.readthedocs.io/en/latest/usage.html
 
+## knative functions
+https://knative.dev/docs/functions/creating-functions/
+
 ## 首先需要启动etcd, kafka, cadviser两个docker
 ### etcd一键安装
 ```docker
@@ -130,8 +133,11 @@ curl
 
 ### flannel的配置
 
-每台主机网络配置，**安全组**、**防火墙**，并且确保两个服务器的**docker版本**相近，然后
+每台主机网络配置，**安全组**、**防火墙**，并且确保两个服务器的**docker版本**，然后
 ```
+# docker就用这个版本
+sudo apt-get install -y docker-ce=5:20.10.24~3-0~ubuntu-focal docker-ce-cli=5:20.10.24~3-0~ubuntu-focal containerd.io --allow-downgrades
+
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 
