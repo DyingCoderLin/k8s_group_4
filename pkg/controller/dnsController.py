@@ -51,8 +51,8 @@ class DNSController:
     def stop(self):
         """停止 DNSController"""
         self.running = False
-        self.dns_objects.clear()
-        self._update_nginx_config()  # 清空 Nginx 配置
+        # self.dns_objects.clear()
+        # self._update_nginx_config()  # 清空 Nginx 配置
         print("DNSController 已停止")
 
     def _get_all_services(self):
