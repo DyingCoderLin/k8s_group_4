@@ -229,7 +229,7 @@ if __name__ == "__main__":
         #     else:
         #         print(f"Error creating service/{name}\n")
         
-        dns_file = "test-dns-config1.yaml"
+        dns_file = "test-dns-config3.yaml"
         dns_yaml = os.path.join(config.TEST_FILE_PATH, dns_file)
 
         print(f"[INFO]测试 DNS 配置文件路径: {dns_yaml}")
