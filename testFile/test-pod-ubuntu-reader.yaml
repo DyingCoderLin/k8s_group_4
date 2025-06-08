@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu-pod-reader
+  namespace: default
+  labels:
+    app: ubuntu-test
+    role: reader
+spec:
+  volumes:
+  - name: shared-storage
+    hostPath:
+      path: /tmp/k8s-shared-volume
+      type: Directory
+  containers:
+  - name: ubuntu-reader
+    image: ubuntu:latest
+    command: ["bash", "-c"]
+    args: [
+      "apt-get update && apt-get install -y vim curl && 
+       echo 'Reader pod started at $(date)' >> /shared/reader.log && 
+       while true; do 
+         echo '=== Files in shared directory ===' >> /shared/reader.log;
+         ls -la /shared/ >> /shared/reader.log;
+         echo '=== Content of shared-data.txt ===' >> /shared/reader.log;
+         cat /shared/shared-data.txt >> /shared/reader.log 2>/dev/null || echo 'shared-data.txt not found' >> /shared/reader.log;
+         echo '=== Content of writer-data.txt ===' >> /shared/reader.log;
+         cat /shared/writer-data.txt >> /shared/reader.log 2>/dev/null || echo 'writer-data.txt not found' >> /shared/reader.log;
+         echo '$(date): Reader checked shared directory' >> /shared/reader.log;
+         echo '---' >> /shared/reader.log;
+         sleep 45; 
+       done"
+    ]
+    volumeMounts:
+    - name: shared-storage
+      mountPath: /shared
+      readOnly: false
+    resources:
+      requests:
+        cpu: 0.3
+        memory: 134217728  # 128MB
+      limits:
+        cpu: 0.8
+        memory: 268435456  # 256MB
+    ports:
+    - containerPort: 8081
+      protocol: TCP

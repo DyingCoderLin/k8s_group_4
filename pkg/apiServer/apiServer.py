@@ -51,11 +51,11 @@ class ApiServer:
         )
 
         # --- 调试时使用 ---
-        self.etcd.reset()
-        self.kafka.delete_topics(
-            [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
-        )
-        self.kafka_producer.flush()
+        # self.etcd.reset()
+        # self.kafka.delete_topics(
+        #     [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
+        # )
+        # self.kafka_producer.flush()
 
         self.bind(uri_config)
         print("[INFO]ApiServer init success.")

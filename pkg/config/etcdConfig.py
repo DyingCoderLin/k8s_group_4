@@ -34,10 +34,11 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
-    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY]
     
     # Service相关
     GLOBAL_SERVICES_KEY = "/api/v1/namespaces/services"  # 修正为与 uriConfig.py 一致
     SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
     SERVICE_SPEC_KEY = "/api/v1/namespaces/services/{namespace}/{name}"  # 修正为与 uriConfig.py 一致
     SERVICES_VALUE = ServiceConfig
+    
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_SERVICES_KEY]

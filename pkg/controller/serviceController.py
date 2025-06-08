@@ -1,12 +1,12 @@
 import json
 import time
 import threading
-import logging
 from typing import Dict, List, Set
 from confluent_kafka import Producer, KafkaException
 from pkg.apiObject.service import Service
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.apiServer.apiClient import ApiClient
+from pkg.network.nodePortManager import NodePortManager
 
 class ServiceController:
     """Service控制器，负责Service的生命周期管理"""
@@ -19,6 +19,14 @@ class ServiceController:
         
         # API客户端
         self.api_client = ApiClient(uri_config.HOST, uri_config.PORT)
+        
+        # NodePort管理器
+        self.nodeport_manager = NodePortManager(
+            kafka_config={
+                'bootstrap_servers': kafka_config.BOOTSTRAP_SERVER
+            } if kafka_config else None,
+            namespace="default"
+        )
         
         # Kafka生产者（用于向ServiceProxy发送规则更新）
         self.kafka_producer = None
@@ -51,6 +59,11 @@ class ServiceController:
         self.running = True
         self.sync_thread = threading.Thread(target=self._sync_loop, daemon=True)
         self.sync_thread.start()
+        
+        # 启动NodePort管理器
+        if self.nodeport_manager:
+            self.nodeport_manager.start_daemon()
+        
         print("ServiceController已启动")
     
     def stop(self):
@@ -65,6 +78,10 @@ class ServiceController:
                 service.stop()
             except Exception as e:
                 print(f"停止Service失败: {e}")
+        
+        # 停止NodePort管理器
+        if self.nodeport_manager:
+            self.nodeport_manager.stop_daemon()
         
         self.services.clear()
         self.service_configs.clear()
@@ -177,6 +194,35 @@ class ServiceController:
         try:
             print(f"创建新Service: {service_name}")
             
+            # 处理NodePort端口分配
+            if service_config.is_nodeport_service():
+                try:
+                    # 验证并分配NodePort端口
+                    port_config = service_config.get_port_config()
+                    if 'nodePort' in port_config and port_config['nodePort']:
+                        # 验证端口是否可用
+                        if not self.nodeport_manager.is_port_available(port_config['nodePort']):
+                            raise ValueError(f"NodePort {port_config['nodePort']} 已被占用")
+                        # 分配端口
+                        self.nodeport_manager.allocate_port(service_name, port_config['nodePort'])
+                    else:
+                        # 自动分配端口
+                        allocated_port = self.nodeport_manager.allocate_port(service_name)
+                        service_config.set_nodeport(allocated_port)
+                        print(f"为Service {service_name} 自动分配NodePort: {allocated_port}")
+                except Exception as e:
+                    print(f"分配NodePort失败: {e}")
+                    raise
+                    allocated_port = self.nodeport_manager.validate_service_nodeport(
+                        service_name, service_config.node_port
+                    )
+                    # 更新service_config中的实际分配端口
+                    service_config.node_port = allocated_port
+                    print(f"为NodePort服务 {service_name} 分配端口: {allocated_port}")
+                except ValueError as e:
+                    print(f"NodePort端口分配失败: {e}")
+                    raise
+            
             # 创建Service实例
             service = Service(service_config)
             
@@ -196,12 +242,19 @@ class ServiceController:
             # 向所有节点广播Service创建规则
             endpoints = [f"{pod.get('subnet_ip', '')}:{service_config.get_port_config()['targetPort']}" 
                         for pod in matching_pods if pod.get('subnet_ip')]
+            
             self._broadcast_service_rules("CREATE", service_name, service_config, endpoints)
             
             print(f"Service {service_name} 创建成功")
             
         except Exception as e:
             print(f"创建Service {service_name} 失败: {e}")
+            # 如果是NodePort服务且分配了端口，需要释放端口
+            if service_config.is_nodeport_service() and hasattr(service_config, 'node_port') and service_config.node_port:
+                try:
+                    self.nodeport_manager.deallocate_port(service_name)
+                except Exception as cleanup_e:
+                    print(f"清理NodePort分配失败: {cleanup_e}")
             raise
     
     def _update_service(self, service_name: str, new_config: ServiceConfig, pods: List):
@@ -222,9 +275,10 @@ class ServiceController:
             
             if is_updated:
                 # 向所有节点广播Service更新规则
-                endpoints = [f"{pod.get("subnet_ip","")}:{new_config.get_port_config()['targetPort']}" 
+                endpoints = [f"{pod.get('subnet_ip','')}:{new_config.get_port_config()['targetPort']}" 
                             for pod in matching_pods if pod.get('subnet_ip')]
                 self._broadcast_service_rules("UPDATE", service_name, new_config, endpoints)
+                print(f"Service {service_name} 端点已更新")
 
         except Exception as e:
             print(f"更新Service {service_name} 失败: {e}")
@@ -238,6 +292,14 @@ class ServiceController:
                     print(f"清理不再存在的Service: {service_name}")
                     service = self.services[service_name]
                     service_config = self.service_configs[service_name]
+                    
+                    # 释放NodePort端口
+                    if service_config.is_nodeport_service():
+                        try:
+                            self.nodeport_manager.deallocate_port(service_name)
+                            print(f"释放Service {service_name} 的NodePort端口")
+                        except Exception as port_e:
+                            print(f"释放NodePort端口失败: {port_e}")
                     
                     # 向所有节点广播Service删除规则
                     self._broadcast_service_rules("DELETE", service_name, service_config, [])
@@ -253,6 +315,14 @@ class ServiceController:
                     print(f"清理不再存在的Service: {service_name}")
                     service = self.services[service_name]
                     service_config = self.service_configs[service_name]
+                    
+                    # 释放NodePort端口
+                    if service_config.is_nodeport_service():
+                        try:
+                            self.nodeport_manager.deallocate_port(service_name)
+                            print(f"释放Service {service_name} 的NodePort端口")
+                        except Exception as port_e:
+                            print(f"释放NodePort端口失败: {port_e}")
                     
                     # 向所有节点广播Service删除规则
                     self._broadcast_service_rules("DELETE", service_name, service_config, [])
@@ -283,7 +353,7 @@ class ServiceController:
             # 返回所有Service的统计信息
             stats = {
                 "total_services": len(self.services),
-                "namespace": self.namespace,
+                "namespace": "default",  # Fixed since self.namespace is not defined
                 "services": []
             }
             
@@ -291,6 +361,37 @@ class ServiceController:
                 stats["services"].append(service.get_stats())
             
             return stats
+    
+    def get_nodeport_stats(self) -> Dict:
+        """获取NodePort端口分配统计信息"""
+        if not self.nodeport_manager:
+            return {"error": "NodePort管理器未初始化"}
+        
+        return self.nodeport_manager.get_allocation_stats()
+    
+    def list_nodeport_services(self) -> List[Dict]:
+        """列出所有NodePort类型的服务"""
+        nodeport_services = []
+        
+        for service_name, service_config in self.service_configs.items():
+            if service_config.is_nodeport_service():
+                nodeport_services.append({
+                    "name": service_name,
+                    "nodePort": service_config.node_port,
+                    "port": service_config.port,
+                    "targetPort": service_config.target_port,
+                    "protocol": service_config.protocol,
+                    "config": service_config.get_nodeport_config()
+                })
+        
+        return nodeport_services
+    
+    def validate_nodeport_availability(self, port: int, exclude_service: str = None) -> bool:
+        """验证NodePort端口是否可用"""
+        if not self.nodeport_manager:
+            return False
+        
+        return self.nodeport_manager.is_port_available(port, exclude_service)
     
     def handle_pod_event(self, event_type: str, pod):
         """处理Pod事件（添加、删除、更新）"""
@@ -317,6 +418,24 @@ class ServiceController:
         try:
             nodes_url = self.uri_config.NODES_URL
             response = self.api_client.get(nodes_url)
+            
+            if response:
+                return response
+                # 解析节点数据
+                nodes = []
+                for node_item in response:
+                    if isinstance(node_item, dict):
+                        node_name = list(node_item.keys())[0]
+                        node_data = node_item[node_name]
+                        # 创建简单的节点对象或使用字典
+                        node = type('Node', (), {'name': node_name, 'data': node_data})()
+                        nodes.append(node)
+                return nodes
+            return []
+            
+        except Exception as e:
+            print(f"获取节点列表失败: {e}")
+            return []
             
             if response:
                 # API客户端已经自动解析了pickled数据，直接返回即可
@@ -354,7 +473,7 @@ class ServiceController:
             # 向每个节点发送规则更新
             for node in nodes:
                 try:
-                    node_name = node.name if hasattr(node, 'name') else str(node)
+                    node_name = node.name
                     topic = f"serviceproxy.{node_name}"
                     
                     self.kafka_producer.produce(

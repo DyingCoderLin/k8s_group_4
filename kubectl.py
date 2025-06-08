@@ -301,7 +301,7 @@ class KubectlClient:
             #         rows.append([node_name, status, roles_str, version])
             
             for node_entry in response:
-                if isinstance(node_entry, NodeConfig) and len(node_entry) == 1:
+                if isinstance(node_entry, NodeConfig):
                     node_name = node_entry.name
                     
                     # 提取节点信息
