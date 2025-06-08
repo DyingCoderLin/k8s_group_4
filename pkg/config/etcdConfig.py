@@ -8,9 +8,9 @@ from pkg.config.dnsConfig import DNSConfig
 class EtcdConfig:
     # Etcd 地址
 
-    # HOST = "10.119.15.182"  # server
+    HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
-    HOST = 'localhost'
+    # HOST = 'localhost'
     PORT = "2379"
 
     # -------------------- 资源键值定义 --------------------

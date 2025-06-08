@@ -1,6 +1,5 @@
 from uuid import uuid1
 
-
 class NodeConfig:
     def __init__(self, arg_json):
         # --- static information ---

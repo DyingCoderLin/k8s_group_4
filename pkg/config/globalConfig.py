@@ -1,6 +1,5 @@
 import os
 
-
 class GlobalConfig:
     """
     Global configuration class for the application.
