@@ -17,21 +17,22 @@ class ContainerConfig:
 
         # resource只支持cpu和内存的request和limit，不支持ephemeral-storage和nvidia.com/gpu
         self.resources = dict()
-        requests = arg_json.get("resources").get("requests")
-        if requests:
-            if requests.get("cpu"):
-                self.resources["cpu_shares"] = int(requests.get("cpu") * 1024)
-            if requests.get("memory"):
-                self.mem_request = requests.get("memory")
-        limits = arg_json.get("resources").get("limits")
-        if limits:
-            if limits.get("cpu"):
-                self.resources["cpu_period"] = 100000
-                self.resources["cpu_quota"] = (
-                    limits.get("cpu") * self.resources["cpu_period"]
-                )
-            if limits.get("memory"):
-                self.resources["mem_limit"] = limits.get("memory")
+        if arg_json.get("resources"):
+            requests = arg_json.get("resources").get("requests")
+            if requests:
+                if requests.get("cpu"):
+                    self.resources["cpu_shares"] = int(requests.get("cpu") * 1024)
+                if requests.get("memory"):
+                    self.mem_request = requests.get("memory")
+            limits = arg_json.get("resources").get("limits")
+            if limits:
+                if limits.get("cpu"):
+                    self.resources["cpu_period"] = 100000
+                    self.resources["cpu_quota"] = (
+                        limits.get("cpu") * self.resources["cpu_period"]
+                    )
+                if limits.get("memory"):
+                    self.resources["mem_limit"] = limits.get("memory")
 
         # volumeMounts部分忽略subPath字段
         self.volumes = dict()

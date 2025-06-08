@@ -104,6 +104,82 @@ docker run -d \
 - 此时kafka和zookeeper都正常启动
     - 可使用docker ps -a查看运行情况
 
+## registry一键启动
+serverless需要一个统一的镜像管理网站。然而dockerhub需要代理才能访问，并且他是一个公开网站不适合管理私有镜像。因此使用容器registry。
+
+### 设置用户名密码
+建立一个文件设置用户名和密码
+```
+mkdir -p auth
+docker run --rm --entrypoint htpasswd httpd:2 -Bbn <用户名> <密码> > auth/htpasswd
+```
+### 获取证书
+因为docker客户端必须用https传输，所以获取证书
+```
+mkdir -p certs
+openssl req -newkey rsa:4096 -nodes -sha256 \
+  -keyout certs/domain.key \
+  -x509 -days 365 \
+  -out certs/domain.crt \
+  -subj "/CN=10.119.15.182" \
+  -addext "subjectAltName = IP:10.119.15.182"
+```
+生成的证书在certs/domain.crt中
+
+### 信任证书
+
+#### 1. 让 Linux 系统信任证书
+1. **创建目标目录**  
+   ```bash
+   sudo mkdir -p /etc/docker/certs.d/10.119.15.182:7000
+   ```
+2. **将证书复制到 WSL2**  
+   ```bash
+   sudo cp certs/domain.crt /etc/docker/certs.d/10.119.15.182:7000/ca.crt
+   ```
+
+#### 2. 让 Windows 系统信任证书
+1. **双击证书文件**（`domain.crt`）→ 选择 **“安装证书”**。
+2. **存储位置** 选择 **“本地计算机”** → 点击 **下一步**。
+3. **选择证书存储** → **“将所有证书放入下列存储”** → 点击 **浏览** → 选择 **“受信任的根证书颁发机构”**。
+
+**验证是否导入成功：**
+- 按 `Win + R` → 输入 `certmgr.msc` → 进入 **证书管理器**。
+- 展开 **“受信任的根证书颁发机构”** → **“证书”**，检查你的证书是否存在。
+
+#### 3. 修改 Docker 配置
+如果 Docker 仍然不信任证书，可以临时添加 `insecure-registries`（仅限测试环境）：
+修改 `daemon.json`，添加：
+   ```json
+   {
+     "insecure-registries": ["10.119.15.182:7000"]
+   }
+   ```
+
+### 启动registry，在同一目录下执行
+```
+docker run -d \
+  --name registry \
+  -p 7000:5000 \
+  -v $(pwd)/certs:/certs \
+  -v $(pwd)/auth:/auth \
+  -v $(pwd)/data:/var/lib/registry \ # 不需要
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \ # 加载证书
+  -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \ # 加载证书
+  -e "REGISTRY_AUTH=htpasswd" \ # 设置密码
+  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \ # 设置密码
+  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \ #设置密码
+  registry:2.8.2
+```
+
+注意我们没有将它加入flannel内网，为了简单起见直接通过公网ip访问
+
+### 验证registry运行
+```
+docker login 10.119.15.182:7000
+```
+输入你的用户名和密码，应该可以正常登录
+
 ### cadvisor一键启动
 - 注：cadvisor仅能在amd64平台上启动（未知能否在windows上启动）
 ```

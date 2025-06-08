@@ -27,7 +27,7 @@ class Pod:
 
         if platform.system() == "Windows":
             self.client = docker.DockerClient(
-                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=5
+                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
             )
         else:
             self.client = docker.DockerClient(
@@ -54,8 +54,7 @@ class Pod:
                 self.containers.append(self.client.containers.run(
                     **args,
                     detach=True,
-                    network_mode=f'container:{pause_docker_name}',
-                    dns=[uri_config.COREDNS_IP]
+                    network_mode=f'container:{pause_docker_name}'
                 ))
 
             except Exception as e:
@@ -107,7 +106,7 @@ class Pod:
     def remove(self):
         self.status = STATUS.KILLED
         for container in self.containers:
-            self.client.api.stop(container.id)
+            self.client.api.kill(container.id)
             self.client.api.remove_container(container.id)
         print(f"[INFO]Pod {self.config.namespace}:{self.config.name} removed.")
 

@@ -7,6 +7,7 @@ class Etcd():
     def __init__(self, host, port, config = EtcdConfig):
         self.config = config
         self.etcd = etcd3.client(host=host, port=port)
+        print(f'[INFO]Etcd Init at {host}:{port}')
 
     def reset(self):
         """
