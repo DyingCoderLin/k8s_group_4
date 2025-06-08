@@ -45,9 +45,8 @@ class DNSController:
             return
         self.running = True
 
+        print("[INFO] 开始 DNS 同步循环")
         threading.Thread(target=self._sync_loop, daemon=True).start()
-        # print("DNSController 已启动")
-        print("DNSController 已启动")
 
     def stop(self):
         """停止 DNSController"""
@@ -77,7 +76,6 @@ class DNSController:
     def _sync_loop(self):
         """定期同步 DNS 记录"""
         while self.running:
-            print("[INFO] 开始 DNS 同步循环")
             try:
                 self.sync_dns_records()
                 time.sleep(self.sync_interval)
@@ -223,13 +221,13 @@ if __name__ == "__main__":
             namespace = service_data["metadata"]["namespace"]
             name = service_data["metadata"]["name"]
 
-            # # 通过 API 创建 Service
-            # key = dns_controller.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=name)
-            # response = dns_controller.api_client.post(key, service_data)
-            # if response:
-            #     print(f"[INFO]测试 Service 配置: {namespace}/{name}\n")
-            # else:
-            #     print(f"Error creating service/{name}\n")
+            # 通过 API 创建 Service
+            key = dns_controller.uri_config.SERVICE_SPEC_URL.format(namespace=namespace, name=name)
+            response = dns_controller.api_client.post(key, service_data)
+            if response:
+                print(f"[INFO]测试 Service 配置: {namespace}/{name}\n")
+            else:
+                print(f"Error creating service/{name}\n")
         
         dns_file = "test-dns-config1.yaml"
         dns_yaml = os.path.join(config.TEST_FILE_PATH, dns_file)
@@ -243,13 +241,22 @@ if __name__ == "__main__":
             name = data["metadata"]["name"]
 
 
-            # dns_url = dns_controller.uri_config.DNS_SPEC_URL.format(namespace = namespace, name = name)
-            # response = dns_controller.api_client.post(dns_url, data)
+            dns_url = dns_controller.uri_config.DNS_SPEC_URL.format(namespace = namespace, name = name)
+            response = dns_controller.api_client.post(dns_url, data)
 
             print(f"[INFO]测试 DNS 配置: {namespace}/{name}\n")
 
-        # dns_controller._sync_loop()
-        dns_controller.sync_dns_records()
+         # 启动 DNSController
+        dns_controller.start()
+
+        # 保持主线程运行
+        print("[INFO] DNSController 正在运行，按 Ctrl+C 退出")
+        try:
+            while True:
+                time.sleep(1)  # 主线程保持运行
+        except KeyboardInterrupt:
+            print("[INFO] 收到终止信号，停止 DNSController")
+            dns_controller.stop()
 
     except Exception as e:
         print(f"[ERROR]测试 DNS 失败: {e}")
