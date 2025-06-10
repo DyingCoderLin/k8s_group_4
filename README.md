@@ -352,7 +352,9 @@ docker run --rm --net=bridge alpine sh -c "apk add --no-cache curl && curl --max
     etcd {
         path /skydns
         endpoint http://<etcd内网ip>:2379
+        fallthrough
     }
+    forward . 8.8.8.8
     log
     errors
 }
@@ -364,7 +366,7 @@ docker run -d \
   -p 54:53/udp \
   -p 54:53/tcp \
   -v $(pwd)/Corefile:/Corefile \
-  --network bridge \ 
+  --network bridge \
   coredns/coredns:latest
 ```
 

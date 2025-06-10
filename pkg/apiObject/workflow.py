@@ -31,11 +31,18 @@ class Workflow():
         try:
             for i, node in enumerate(self.nodes):
                 if n_input[i] == node.num_input:
-                    f_output[i] = node_call(node, context)
                     q.put(i)
 
             while not q.empty():
                 i = q.get()
+
+                # 收集输入
+                f_in = dict()
+                for in_i in self.nodes[i].in_i:
+                    if f_output[in_i] is not None:
+                        f_in.update(f_output[in_i])
+                if
+                f_output[i] = self.node_call(self.nodes[i])
                 for out_i in self.nodes[i].out:
                     n_input[out_i] += 1
                     if n_input[out_i] == self.nodes[out_i].num_input:
