@@ -17,21 +17,26 @@ class ContainerConfig:
 
         # resource只支持cpu和内存的request和limit，不支持ephemeral-storage和nvidia.com/gpu
         self.resources = dict()
-        requests = arg_json.get("resources").get("requests")
-        if requests:
-            if requests.get("cpu"):
-                self.resources["cpu_shares"] = int(requests.get("cpu") * 1024)
-            if requests.get("memory"):
-                self.mem_request = requests.get("memory")
-        limits = arg_json.get("resources").get("limits")
-        if limits:
-            if limits.get("cpu"):
-                self.resources["cpu_period"] = 100000
-                self.resources["cpu_quota"] = (
-                    limits.get("cpu") * self.resources["cpu_period"]
-                )
-            if limits.get("memory"):
-                self.resources["mem_limit"] = limits.get("memory")
+        
+        # 安全获取resources字段，处理None的情况
+        resources_config = arg_json.get("resources")
+        if resources_config is not None:
+            requests = resources_config.get("requests")
+            if requests:
+                if requests.get("cpu"):
+                    self.resources["cpu_shares"] = int(requests.get("cpu") * 1024)
+                if requests.get("memory"):
+                    self.mem_request = requests.get("memory")
+
+            limits = resources_config.get("limits")
+            if limits:
+                if limits.get("cpu"):
+                    self.resources["cpu_period"] = 100000
+                    self.resources["cpu_quota"] = (
+                        limits.get("cpu") * self.resources["cpu_period"]
+                    )
+                if limits.get("memory"):
+                    self.resources["mem_limit"] = limits.get("memory")
 
         # volumeMounts部分忽略subPath字段
         self.volumes = dict()
@@ -39,7 +44,16 @@ class ContainerConfig:
             volumes = dict()
             for volume in arg_json.get("volumeMounts"):
                 mode = "ro" if volume.get("readOnly", False) else "rw"
-                host_path = volumes_map[volume.get("name")]
+                volume_name = volume.get("name")
+
+                # 安全获取主机路径，处理缺失卷的情况
+                if volume_name in volumes_map:
+                    host_path = volumes_map[volume_name]
+                else:
+                    print(f"[WARNING] ContainerConfig: volume '{volume_name}' not found in volumes_map. Available volumes: {list(volumes_map.keys())}")
+                    # 使用默认路径作为后备
+                    host_path = "/tmp"
+
                 bind_path = volume.get("mountPath")
 
                 volumes[host_path] = {"bind": bind_path, "mode": mode}
