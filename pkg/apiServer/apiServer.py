@@ -1201,7 +1201,7 @@ class ApiServer:
                     pod_namespace, pod_name, pod_yaml = function.pod_info(id=0)
                     url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace,
                                                                                        name=pod_name)
-                    printf(f'[INFO]Starting a new function Pod {pod_namespace}/{pod_name}.')
+                    print(f'[INFO]Starting a new function Pod {pod_namespace}/{pod_name}.')
                     response = requests.post(url, json=pod_yaml)
                     function_config.pod_list.append(PodConfig(pod_yaml))
                     self.etcd.put(
