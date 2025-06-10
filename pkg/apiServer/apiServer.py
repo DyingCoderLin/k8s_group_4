@@ -60,9 +60,6 @@ class ApiServer:
 
         # --- 调试时使用 ---
         self.etcd.reset()
-        for key in self.etcd_config.RESET_PREFIX:
-            print(f'{key}: {self.etcd.get(key)}')
-
         self.kafka.delete_topics(
             [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
         )
@@ -1209,26 +1206,23 @@ class ApiServer:
                     self.etcd.put(
                         self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name),
                         function_config)
+
+                    while True:
+                        sleep(0.5)
+                        pod = self.etcd.get(
+                            self.etcd_config.POD_SPEC_KEY.format(namespace=pod_namespace, name=pod_name))
+                        if pod.status == POD_STATUS.RUNNING:
+                            break
             rlock.acquire()
 
         # 获取读锁
         try:
-            while True:
-                sleep(0.5)
-                function_config = self.etcd.get(
-                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
-                pod = random.choice(function_config.pod_list)
-                pod = self.etcd.get(self.etcd_config.POD_SPEC_KEY.format(namespace=pod.namespace, name=pod.name))
-
-                if pod.status == POD_STATUS.RUNNING:
-                    break
-
             print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
             url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
             response = requests.post(url, json=request.json)
-            print(response)
+            print(response.json())
             rlock.release()
-            return response
+            return response.json(), 200
         except Exception as e:
             print(f'[INFO]Unable to call function "{name}" to Pod {pod.namespace}/{pod.name}: {str(e)}')
             rlock.release()
