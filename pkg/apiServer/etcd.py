@@ -15,7 +15,6 @@ class Etcd():
         """
         keys = self.config.RESET_PREFIX
         for key in keys:
-            print(key)
             self.etcd.delete_prefix(key)
 
     def get_prefix(self, prefix):
