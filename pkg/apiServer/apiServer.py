@@ -170,6 +170,7 @@ class ApiServer:
         while True:
             sleep(self.serverless_config.CHECK_TIME)
 
+            continue
             with self.SLlock.gen_wlock():
                 functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
                 for function_config in functions:
@@ -1226,6 +1227,7 @@ class ApiServer:
             rlock.release()
             return response
         except Exception as e:
+            print(f'[INFO]Unable to call function "{name}" to Pod {pod.namespace}/{pod.name}: {str(e)}')
             rlock.release()
             return json.dumps({"error": str(e)}), 409
 
