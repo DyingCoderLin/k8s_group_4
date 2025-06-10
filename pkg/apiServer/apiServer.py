@@ -151,68 +151,139 @@ class ApiServer:
         self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
         # DNS 相关路由
-        self.app.route(config.DNS_URL, methods=["GET"])(self.get_dns)
+        # 查找
+        self.app.route(config.DNS_URL, methods=["GET"])(self.get_dns_list)
         self.app.route(config.DNS_SPEC_URL, methods=["GET"])(self.get_dns_spec)
+        # 创建
         self.app.route(config.DNS_SPEC_URL, methods=["POST"])(self.create_dns)
+        # 更新
         self.app.route(config.DNS_SPEC_URL, methods=["PUT"])(self.update_dns)
+        # 删除
         self.app.route(config.DNS_SPEC_URL, methods=["DELETE"])(self.delete_dns)
 
-    def get_dns(self, namespace):
-        """获取指定 namespace 下的 DNS 配置"""
-        dns_list = self.etcd.get_prefix(self.etcd_config.DNS_KEY.format(namespace=namespace))
-        return pickle.dumps([DNSConfig(pickle.loads(data), self.etcd) for data in dns_list]), 200
+    def get_dns_list(self, namespace: str):
+       """获取指定命名空间的 DNS 列表"""
+       print(f"[INFO]Get DNS list in namespace {namespace}")
+       try:
+           key_prefix = self.etcd_config.DNS_KEY.format(namespace=namespace)
+           DNSs = self.etcd.get_prefix(key_prefix)
+           print(f"[DEBUG]Found DNS resources: {DNSs}")
+           dns_list = []
+           for value in DNSs:
+                print(f"[DEBUG]Processing DNS resource: {value}")
+                dns_list.append(value.to_dict())
+           if not dns_list:
+               return json.dumps({"message": f"No DNS resources found in namespace {namespace}"}), 200
+           return json.dumps(dns_list), 200
+       
+       except Exception as e:
+           print(f"[ERROR]Failed to get DNS list: {str(e)}")
+           return json.dumps({"error": str(e)}), 500
 
-    def get_dns_spec(self, namespace, name):
-        """获取特定 DNS 配置"""
-        data = self.etcd.get(self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name))
-        if data:
-            return pickle.dumps(DNSConfig(pickle.loads(data), self.etcd).to_dict), 200
-        return json.dumps({"error": "DNS not found"}), 404
+    def get_dns_spec(self, namespace: str, name: str):
+       """获取指定 DNS 配置"""
+       print(f"[INFO]Get DNS {name} in namespace {namespace}")
+       try:
+           key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+           dns = self.etcd.get(key)
+           if dns is None:
+               return json.dumps({"error": "DNS not found"}), 404
+           return json.dumps(dns.to_dict()), 200
+       except Exception as e:
+           print(f"[ERROR]Failed to get DNS: {str(e)}")
+           return json.dumps({"error": str(e)}), 500
 
-    def create_dns(self, namespace, name):
-        """创建 DNS 配置"""
-        try:
-            dns_data = request.get_json()
-            dns_config = DNSConfig(dns_data, self.etcd)
-            dns_config.validate()
-            key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
-            if self.etcd.get(key):
-                return json.dumps({"error": "DNS configuration already exists"}), 403
-            dns_config.status = "Active"
-            self.etcd.put(key, dns_config.to_etcd())
-            # 通知网络组件更新 DNS 映射
-            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps(dns_config.to_dict))
-            self.kafka_producer.flush()
-            return json.dumps({"message": "DNS created"}), 201
-        except ValueError as e:
-            return json.dumps({"error": str(e)}), 400
+    def create_dns(self, namespace: str, name: str):
+       """创建 DNS 配置"""
+       print(f"[INFO]Create DNS {name} in namespace {namespace}")
+       try:
+           dns_json = request.json
+           
+        #    # 验证 namespace 和 name 是否匹配
+        #    if dns_json.get("metadata", {}).get("name") != name:
+        #        return json.dumps({
+        #            "error": "Name in URL does not match name in request body"
+        #        }), 400
+           
+        #    if dns_json.get("metadata", {}).get("namespace", "default") != namespace:
+        #        return json.dumps({
+        #            "error": "Namespace in URL does not match namespace in request body"
+        #        }), 400
 
-    def update_dns(self, namespace, name):
-        """更新 DNS 配置"""
-        try:
-            dns_data = request.get_json()
-            dns_config = DNSConfig(dns_data, self.etcd)
-            dns_config.validate()
-            key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
-            if not self.etcd.get(key):
-                return json.dumps({"error": "DNS not found"}), 404
-            dns_config.status = "Active"
-            self.etcd.put(key, dns_config.to_etcd())
-            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps(dns_config.to_dict))
-            self.kafka_producer.flush()
-            return json.dumps({"message": "DNS updated"}), 200
-        except ValueError as e:
-            return json.dumps({"error": str(e)}), 400
+           key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+           
+           # 检查 DNS 是否已存在
+           existing_dns = self.etcd.get(key)
+           if existing_dns is not None:
+               return json.dumps({"error": "DNS already exists"}), 409
 
-    def delete_dns(self, namespace, name):
-        """删除 DNS 配置"""
-        key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
-        if self.etcd.delete(key):
-            self.kafka_producer.produce(self.dns_topic, value=pickle.dumps({"namespace": namespace, "name": name, "action": "delete"}))
-            self.kafka_producer.flush()
-            return json.dumps({"message": "DNS deleted"}), 200
-        return json.dumps({"error": "DNS not found"}), 404
-    
+           # 创建 DNS 配置
+           dns_config = DNSConfig(dns_json)
+
+           # 保存到 etcd
+           self.etcd.put(key, dns_config)
+
+           print(f"[INFO]DNS {name} created successfully")
+           return json.dumps({"message": f"DNS {name} created successfully"}), 200
+
+       except Exception as e:
+           print(f"[ERROR]Failed to create DNS: {str(e)}")
+           return json.dumps({"error": str(e)}), 500
+
+    def update_dns(self, namespace: str, name: str):
+       """更新 DNS 配置"""
+       print(f"[INFO]Update DNS {name} in namespace {namespace}")
+       try:
+           dns_json = request.json
+
+           # 获取现有 DNS 配置
+           key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+           existing_dns = self.etcd.get(key)
+           if existing_dns is None:
+               return json.dumps({"error": "DNS not found"}), 404
+
+           # 创建新的 DNS 配置
+           updated_dns = DNSConfig(dns_json)
+
+        #    # 验证 namespace 和 name 是否一致
+        #    if updated_dns.name != name:
+        #        return json.dumps({
+        #            "error": "Name in request body does not match existing DNS name"
+        #        }), 400
+        #    if updated_dns.namespace != namespace:
+        #        return json.dumps({
+        #            "error": "Namespace in request body does not match existing DNS namespace"
+        #        }), 400
+
+           # 保存更新
+           self.etcd.put(key, updated_dns)
+
+           print(f"[INFO]DNS {name} updated successfully")
+           return json.dumps({"message": f"DNS {name} updated successfully"}), 200
+
+       except Exception as e:
+           print(f"[ERROR]Failed to update DNS: {str(e)}")
+           return json.dumps({"error": str(e)}), 500
+
+    def delete_dns(self, namespace: str, name: str):
+       """删除 DNS 配置"""
+       print(f"[INFO]Delete DNS {name} in namespace {namespace}")
+       try:
+           key = self.etcd_config.DNS_SPEC_KEY.format(namespace=namespace, name=name)
+           dns = self.etcd.get(key)
+           if dns is None:
+               return json.dumps({"error": "DNS not found"}), 404
+
+           # 删除 DNS 配置
+           self.etcd.delete(key)
+
+           print(f"[INFO]DNS {name} deleted successfully")
+           return json.dumps({"message": f"DNS {name} deleted successfully"}), 200
+
+       except Exception as e:
+           print(f"[ERROR]Failed to delete DNS: {str(e)}")
+           return json.dumps({"error": str(e)}), 500
+       
     def run(self):
         print('[INFO]ApiServer running...')
         Thread(target = self.node_health).start()

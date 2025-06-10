@@ -8,9 +8,9 @@ from pkg.config.dnsConfig import DNSConfig
 class EtcdConfig:
     # Etcd 地址
 
-    # HOST = "10.119.15.182"  # server
+    HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
-    HOST = 'localhost'
+    # HOST = 'localhost'
     PORT = "2379"
 
     # -------------------- 资源键值定义 --------------------
@@ -33,8 +33,7 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
-    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY]
-    
+
     # Service相关
     GLOBAL_SERVICES_KEY = "/api/v1/namespaces/services"  # 修正为与 uriConfig.py 一致
     SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
@@ -42,6 +41,11 @@ class EtcdConfig:
     SERVICES_VALUE = ServiceConfig
 
     # DNS 相关
+    GLOBAL_DNS_KEY = "/api/v1/namespaces/dns"
     DNS_KEY = "/api/v1/namespaces/dns/{namespace}"
     DNS_SPEC_KEY = "/api/v1/namespaces/dns/{namespace}/{name}"
     DNS_VALUE = DNSConfig
+
+    # 清除列表
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_DNS_KEY, GLOBAL_SERVICES_KEY]
+    
