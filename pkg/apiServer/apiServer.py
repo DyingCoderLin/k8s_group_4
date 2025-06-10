@@ -61,7 +61,7 @@ class ApiServer:
         # --- 调试时使用 ---
         self.etcd.reset()
         for key in self.etcd_config.RESET_PREFIX:
-            print(key + ": " + self.etcd.get(key))
+            print(f'{key}: {self.etcd.get(key)}')
 
         self.kafka.delete_topics(
             [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
