@@ -1,17 +1,18 @@
 apiVersion: v1
 kind: DNS
 metadata:
-  name: test-dns-2
+  name: dns-test
   namespace: default
 spec:
-  host: minik8s.com # 这是定义的域名
+  host: example.com
   paths:
-    - path: path1
-      serviceName: service1
-      servicePort: 22222
-    - path: path2
-      serviceName: service2
-      servicePort: 23456
+    - path: /app1
+      serviceName: hello-world-service
+      servicePort: 80
+    - path: /app2
+      serviceName: app-service
+      servicePort: 80
+
 
 # 通过 minik8s.com:80/path 访问对应的 Service，等效于直接访问 ServiceIP:Port
 # 当client对指定域名和path发送网络请求时，coreDNS首先将域名解析到masterIP，再通过master节点上运行的nginx转发到对应的service的指定端口。
