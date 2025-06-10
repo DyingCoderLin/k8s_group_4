@@ -14,6 +14,7 @@ class ServerlessServer():
         module = importlib.import_module(function_name)
         event = {"method": "http"}
         context = request.form.to_dict()
+        return context, 200
         result = module.handler(event, context)
         return json.dumps(result), 200
 
