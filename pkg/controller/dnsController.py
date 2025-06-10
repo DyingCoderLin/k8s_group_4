@@ -139,6 +139,23 @@ class DNSController:
             with open(nginx_conf, "w") as f:
                 f.write(config_content)
 
+            # nginx-configmap.yaml
+            configmap_lines = []
+            configmap_lines.append(f"apiVersion: v1")
+            configmap_lines.append(f"kind: ConfigMap")
+            configmap_lines.append(f"metadata:")
+            configmap_lines.append(f"    name: nginx-config")
+            configmap_lines.append(f"    namespace: default")
+            configmap_lines.append(f"data:")
+            configmap_lines.append(f"    nginx.conf: |")
+            for line in config_content.splitlines():
+                configmap_lines.append(f"        {line}")
+            
+            configmap_content = "\n".join(configmap_lines)
+            configmap_file = os.path.join(config.CONFIG_FILE_PATH, "nginx-configmap.yaml")
+            with open(configmap_file, "w") as f:
+                f.write(configmap_content)
+
             # # 重载 Nginx
             # result = subprocess.run(["nginx", "-s", "reload"], capture_output=True, text=True)
             # if result.returncode == 0:
@@ -158,7 +175,7 @@ class DNSController:
         config_lines.append(f"events {{")
         config_lines.append(f"    worker_connections 1024;")
         config_lines.append(f"}}")
-
+        
         config_lines.append(f"http {{")
         config_lines.append(f"    include mime.types;")
         config_lines.append(f"    default_type application/octet-stream;")
@@ -185,6 +202,7 @@ class DNSController:
 
             # print(f"{config_lines}")
         config_lines.append(f"}}")
+
         return "\n".join(config_lines)
         # return config_lines
 
