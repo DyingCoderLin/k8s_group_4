@@ -140,21 +140,21 @@ class DNSController:
                 f.write(config_content)
 
             # nginx-configmap.yaml
-            configmap_lines = []
-            configmap_lines.append(f"apiVersion: v1")
-            configmap_lines.append(f"kind: ConfigMap")
-            configmap_lines.append(f"metadata:")
-            configmap_lines.append(f"    name: nginx-config")
-            configmap_lines.append(f"    namespace: default")
-            configmap_lines.append(f"data:")
-            configmap_lines.append(f"    nginx.conf: |")
-            for line in config_content.splitlines():
-                configmap_lines.append(f"        {line}")
+            # configmap_lines = []
+            # configmap_lines.append(f"apiVersion: v1")
+            # configmap_lines.append(f"kind: ConfigMap")
+            # configmap_lines.append(f"metadata:")
+            # configmap_lines.append(f"    name: nginx-config")
+            # configmap_lines.append(f"    namespace: default")
+            # configmap_lines.append(f"data:")
+            # configmap_lines.append(f"    nginx.conf: |")
+            # for line in config_content.splitlines():
+            #     configmap_lines.append(f"        {line}")
             
-            configmap_content = "\n".join(configmap_lines)
-            configmap_file = os.path.join(config.CONFIG_FILE_PATH, "nginx-configmap.yaml")
-            with open(configmap_file, "w") as f:
-                f.write(configmap_content)
+            # configmap_content = "\n".join(configmap_lines)
+            # configmap_file = os.path.join(config.CONFIG_FILE_PATH, "nginx-configmap.yaml")
+            # with open(configmap_file, "w") as f:
+            #     f.write(configmap_content)
 
             # # 重载 Nginx
             # result = subprocess.run(["nginx", "-s", "reload"], capture_output=True, text=True)
@@ -247,7 +247,7 @@ if __name__ == "__main__":
         #     else:
         #         print(f"Error creating service/{name}\n")
         
-        dns_file = "test-dns-cloud.yaml"
+        dns_file = "dns-1.yaml.yaml"
         dns_yaml = os.path.join(config.TEST_FILE_PATH, dns_file)
 
         print(f"[INFO]测试 DNS 配置文件路径: {dns_yaml}")
