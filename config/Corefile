@@ -1,0 +1,10 @@
+.:53 {
+    etcd {
+        path /skydns
+        endpoint http://10.5.53.2:2379
+        fallthrough
+    }
+    forward . 8.8.8.8
+    log
+    errors
+}
