@@ -7,19 +7,8 @@ https://docker-py.readthedocs.io/en/stable/networks.html
 ## etcd python api
 https://python-etcd3.readthedocs.io/en/latest/usage.html
 
-## 消息通信，序列化与反序列化
-
-### 序列化，发送消息
-```
-json.dumps() -> str
-pickle.dumps() -> bytes
-```
-
-推送kafka
-```
-self.kafka_producer.produce(topic, key='ADD', value=json.dumps(pod.to_dict()).encode('utf-8'))
-# value: bytes
-```
+## knative functions
+https://knative.dev/docs/functions/creating-functions/
 
 ## 首先需要启动etcd, kafka, cadviser两个docker
 ### etcd一键安装
@@ -32,9 +21,6 @@ docker run -d \
   /usr/local/bin/etcd \
   --listen-client-urls http://0.0.0.0:2379 \
   --advertise-client-urls http://localhost:2379
-
-  <!-- docker run -d --name etcd -p 2379:2379 -p 2380:2380 quay.io/coreos/etcd:v3.5.0 /usr/local/bin/etcd  --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls http://localhost:2379 -->
-
 ```
 直接使用host网络，因为bridge网络会被修改为flannel网络，然而flannel的修改依赖于etcd。可能会出问题？
 ```docker
@@ -118,6 +104,82 @@ docker run -d \
 - 此时kafka和zookeeper都正常启动
     - 可使用docker ps -a查看运行情况
 
+## registry一键启动
+serverless需要一个统一的镜像管理网站。然而dockerhub需要代理才能访问，并且他是一个公开网站不适合管理私有镜像。因此使用容器registry。
+
+### 设置用户名密码
+建立一个文件设置用户名和密码
+```
+mkdir -p auth
+docker run --rm --entrypoint htpasswd httpd:2 -Bbn <用户名> <密码> > auth/htpasswd
+```
+### 获取证书
+因为docker客户端必须用https传输，所以获取证书
+```
+mkdir -p certs
+openssl req -newkey rsa:4096 -nodes -sha256 \
+  -keyout certs/domain.key \
+  -x509 -days 365 \
+  -out certs/domain.crt \
+  -subj "/CN=10.119.15.182" \
+  -addext "subjectAltName = IP:10.119.15.182"
+```
+生成的证书在certs/domain.crt中
+
+### 信任证书
+
+#### 1. 让 Linux 系统信任证书
+1. **创建目标目录**  
+   ```bash
+   sudo mkdir -p /etc/docker/certs.d/10.119.15.182:7000
+   ```
+2. **将证书复制到 WSL2**  
+   ```bash
+   sudo cp certs/domain.crt /etc/docker/certs.d/10.119.15.182:7000/ca.crt
+   ```
+
+#### 2. 让 Windows 系统信任证书
+1. **双击证书文件**（`domain.crt`）→ 选择 **“安装证书”**。
+2. **存储位置** 选择 **“本地计算机”** → 点击 **下一步**。
+3. **选择证书存储** → **“将所有证书放入下列存储”** → 点击 **浏览** → 选择 **“受信任的根证书颁发机构”**。
+
+**验证是否导入成功：**
+- 按 `Win + R` → 输入 `certmgr.msc` → 进入 **证书管理器**。
+- 展开 **“受信任的根证书颁发机构”** → **“证书”**，检查你的证书是否存在。
+
+#### 3. 修改 Docker 配置
+如果 Docker 仍然不信任证书，可以临时添加 `insecure-registries`（仅限测试环境）：
+修改 `daemon.json`，添加：
+   ```json
+   {
+     "insecure-registries": ["10.119.15.182:7000"]
+   }
+   ```
+
+### 启动registry，在同一目录下执行
+```
+docker run -d \
+  --name registry \
+  -p 7000:5000 \
+  -v $(pwd)/certs:/certs \
+  -v $(pwd)/auth:/auth \
+  -v $(pwd)/data:/var/lib/registry \ # 不需要
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \ # 加载证书
+  -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \ # 加载证书
+  -e "REGISTRY_AUTH=htpasswd" \ # 设置密码
+  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \ # 设置密码
+  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \ #设置密码
+  registry:2.8.2
+```
+
+注意我们没有将它加入flannel内网，为了简单起见直接通过公网ip访问
+
+### 验证registry运行
+```
+docker login 10.119.15.182:7000
+```
+输入你的用户名和密码，应该可以正常登录
+
 ### cadvisor一键启动
 - 注：cadvisor仅能在amd64平台上启动（未知能否在windows上启动）
 ```
@@ -147,8 +209,11 @@ curl
 
 ### flannel的配置
 
-每台主机网络配置，**安全组**、**防火墙**，并且确保两个服务器的**docker版本**相近，然后
+每台主机网络配置，**安全组**、**防火墙**，并且确保两个服务器的**docker版本**，然后
 ```
+# docker就用这个版本
+sudo apt-get install -y docker-ce=5:20.10.24~3-0~ubuntu-focal docker-ce-cli=5:20.10.24~3-0~ubuntu-focal containerd.io --allow-downgrades
+
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 sysctl -p
 
@@ -279,6 +344,44 @@ docker run --rm --net=bridge alpine sh -c "apk add --no-cache curl && curl --max
 1. 在服务器B的物理网卡抓包`sudo tcpdump -i ens3 -nn 'udp and port 8472'`
 2. 在flannel.1网卡抓包`sudo tcpdump -i flannel.1 -vv`
 3. 在容器内eth0抓包
+
+## 配置coredns
+创建一个`Corefile`，注意etcd的ip不能使用etcd容器名，因为默认bridge网络不会提供服务发现功能，而我们的flannel建立在bridge网络之上
+```
+.:53 {
+    etcd {
+        path /skydns
+        endpoint http://<etcd内网ip>:2379
+        fallthrough
+    }
+    forward . 8.8.8.8
+    log
+    errors
+}
+```
+一键启动coredns，注意确保与etcd处于同一个网络。主机dns服务在53端口，我们映射到主机54端口
+```
+docker run -d \
+  --name coredns \
+  -p 54:53/udp \
+  -p 54:53/tcp \
+  -v $(pwd)/Corefile:/Corefile \
+  --network bridge \
+  coredns/coredns:latest
+```
+
+### 验证安装配置
+主机验证，往etcd插入记录看是否能够通过`dig`访问
+```
+dig @127.0.0.1 -p 54 www.example.com #查询，应该无回复
+
+docker exec -it etcd sh
+etcdctl put /skydns/com/example/www '{"host":"1.1.1.1","ttl":60}'
+exit
+
+dig @127.0.0.1 -p 54 www.example.com #查询，应该有回复
+```
+Pod验证
 
 ## 运行环境创建
 - 创建虚拟环境（也可以选择在本机上直接运行）并配置python包
