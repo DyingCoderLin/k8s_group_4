@@ -1212,6 +1212,7 @@ class ApiServer:
                         pod = self.etcd.get(
                             self.etcd_config.POD_SPEC_KEY.format(namespace=pod_namespace, name=pod_name))
                         if pod.status == POD_STATUS.RUNNING:
+                            sleep(1.0)
                             break
             rlock.acquire()
 
