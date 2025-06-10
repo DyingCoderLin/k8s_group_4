@@ -383,6 +383,20 @@ dig @127.0.0.1 -p 54 www.example.com #查询，应该有回复
 ```
 Pod验证
 
+## 配置nginx
+一键启动，之后因为映射可以不用重启
+```
+<!-- docker stop nginx-ingress
+docker rm nginx-ingress -->
+docker run -d --name nginx-ingress \
+  -p 80:80 \
+  -v  /root/workspace2/k8s_group_4/config/nginx.conf:/etc/nginx/nginx.conf:ro \
+  --network bridge \
+  nginx:latest
+```
+### DNS表的实现
+每当更新时，写入 ./config/nginx.conf，同时写入/etc/hosts （<node-ip> example.com）
+
 ## 运行环境创建
 - 创建虚拟环境（也可以选择在本机上直接运行）并配置python包
   ```
