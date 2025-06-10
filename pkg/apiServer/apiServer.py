@@ -1222,11 +1222,12 @@ class ApiServer:
             print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
             url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
             response = requests.post(url, json=request.json)
+            print(response)
+            rlock.release()
             return response
         except Exception as e:
-            return json.dumps({"error": str(e)}), 409
-        finally:
             rlock.release()
+            return json.dumps({"error": str(e)}), 409
 
 if __name__ == "__main__":
     api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig, ServerlessConfig)
