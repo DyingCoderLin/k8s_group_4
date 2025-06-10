@@ -190,7 +190,7 @@ if __name__ == '__main__':
     from pkg.config.uriConfig import URIConfig
 
     print('测试函数上传')
-    file_path = 'E:/PycharmProjects/k8s_group_4/testFile/serverless/zip-function/pkgs(文件在第一层).zip'
+    file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../testFile/serverless/zip-function/pkgs(文件在第一层).zip')
     with open(file_path, 'rb') as f:
         file_data = f.read()
 
