@@ -9,6 +9,9 @@ docker run -d --name nginx-ingress \
   --network bridge \
   nginx:latest
 
+
+<!-- 还有配置那个 -->
+
 或者
 docker cp /root/workspace2/k8s_group_4/config/nginx.conf nginx-ingress:/etc/nginx/nginx.conf
 docker exec nginx-ingress nginx -s reload

@@ -128,7 +128,40 @@ class DNSController:
             #     print(f"{dns.to_dict()}")
 
             self._update_nginx_config()
-            print("DNS 记录同步完成")
+            print("[DNS] nginx配置同步完成")
+            
+            commands = [
+                "docker stop nginx-ingress",
+                "docker rm nginx-ingress",
+                """docker run -d --name nginx-ingress \
+                -p 80:80 \
+                -v /root/workspace2/k8s_group_4/config/nginx.conf:/etc/nginx/nginx.conf:ro \
+                --network bridge \
+                nginx:latest"""
+            ]
+            try:
+                result = subprocess.run(commands, shell=True, check=True, text=True, capture_output=True)
+                print(f"命令执行成功: {commands}")
+                print(result.stdout)
+            except subprocess.CalledProcessError as e:
+                print(f"命令执行失败: {commands}")
+                print(f"错误信息: {e.stderr}")
+
+            # 执行 docker inspect 命令
+            container_name = "nginx-ingress"
+            result = subprocess.run(
+                ["docker", "inspect", container_name],
+                capture_output=True,
+                text=True
+            )
+
+            # 解析 JSON 输出
+            data = json.loads(result.stdout)
+
+            # 获取 IPAddress
+            ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
+            print(f"IPAddress: {ip_address}")
+
         except Exception as e:
             self.logger.error(f"DNS 记录同步失败: {e}")
 

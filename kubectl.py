@@ -99,9 +99,6 @@ class KubectlClient:
                 return
             
             print(f"Applying {kind} '{name}' in  '{namespace}'...")
-            print(f"Applying{kind}hahahhaa\n")
-            if kind == "DNS":
-                print("\nhahhaa\n")
 
             # 根据 kind 字段调用相应的创建方法
             if kind == "Pod":
