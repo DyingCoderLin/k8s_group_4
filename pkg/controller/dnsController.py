@@ -10,8 +10,6 @@ from pkg.apiObject.dns import DNS
 from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
 from pkg.config.globalConfig import GlobalConfig
-from pkg.config.etcdConfig import etcd_config
-from pkg.apiServer.etcd import Etcd
 
 import etcd3
 from pkg.config.etcdConfig import EtcdConfig
@@ -175,6 +173,7 @@ class DNSController:
 
             print(f"DNS 记录: {key} -> {value}")
 
+            etcd_config = EtcdConfig()
             etcd = etcd3.client(host=etcd_config.HOST, port=etcd_config.PORT)
             # etcd = Etcd(host=etcd_config.HOST, port=etcd_config.PORT)
 
