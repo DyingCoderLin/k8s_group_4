@@ -355,7 +355,7 @@ class ServiceController:
             for node in nodes:
                 try:
                     node_name = node.name if hasattr(node, 'name') else str(node)
-                    topic = f"serviceproxy.{node_name}"
+                    topic = self.kafka_config.SERVICE_PROXY_TOPIC.format(name=node_name)
                     
                     self.kafka_producer.produce(
                         topic,

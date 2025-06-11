@@ -17,18 +17,14 @@ class ContainerConfig:
 
         # resource只支持cpu和内存的request和limit，不支持ephemeral-storage和nvidia.com/gpu
         self.resources = dict()
-        
-        # 安全获取resources字段，处理None的情况
-        resources_config = arg_json.get("resources")
-        if resources_config is not None:
-            requests = resources_config.get("requests")
+        if arg_json.get("resources"):
+            requests = arg_json.get("resources").get("requests")
             if requests:
                 if requests.get("cpu"):
                     self.resources["cpu_shares"] = int(requests.get("cpu") * 1024)
                 if requests.get("memory"):
                     self.mem_request = requests.get("memory")
-
-            limits = resources_config.get("limits")
+            limits = arg_json.get("resources").get("limits")
             if limits:
                 if limits.get("cpu"):
                     self.resources["cpu_period"] = 100000

@@ -67,7 +67,16 @@ class ApiClient:
                 )
 
                 # 检查请求是否成功
-                response.raise_for_status()
+                if not response.ok:
+                    if response.content:
+                        try:
+                            error_msg = response.json()['error']
+                            #如果有apiserver提供的报错信息，则不会retry
+                            print(f"[INFO]{error_msg}")
+                            return None
+                        except:
+                            pass
+                    response.raise_for_status()
 
                 # 尝试解析JSON响应
                 if response.content:

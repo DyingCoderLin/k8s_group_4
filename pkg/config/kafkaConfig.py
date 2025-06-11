@@ -12,3 +12,5 @@ class KafkaConfig:
     SCHEDULER_TOPIC = "api.v1.scheduler"
     # 与dns服务器交互
     DNS_TOPIC = "api.v1.dns"
+    # service controller与kubeproxy交互
+    SERVICE_PROXY_TOPIC = "serviceproxy.{name}"

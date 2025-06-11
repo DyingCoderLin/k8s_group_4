@@ -3,8 +3,8 @@ import ipaddress
 import random
 from typing import List, Dict, Optional, Tuple
 from pkg.config.serviceConfig import ServiceConfig
-from pkg.network.serviceProxy import ServiceProxy
-from pkg.loadbalancer.loadBalancer import create_load_balancer
+from pkg.proxy.kubeproxy import KubeProxy
+from pkg.utils.loadBalancer import create_load_balancer
 from pkg.config.uriConfig import URIConfig
 from pkg.apiServer.apiClient import ApiClient
 import json
@@ -23,7 +23,7 @@ class Service:
         self.config = config
         
         # 网络组件
-        self.service_proxy = ServiceProxy()
+        self.service_proxy = KubeProxy()
         self.load_balancer = create_load_balancer("round_robin")  # 默认轮询
         
         # 端点管理

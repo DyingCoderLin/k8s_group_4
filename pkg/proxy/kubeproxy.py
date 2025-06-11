@@ -12,7 +12,7 @@ from threading import Thread
 from time import sleep
 
 
-class ServiceProxy:
+class KubeProxy:
     """Service代理类，负责管理iptables规则和NAT转换"""
     
     def __init__(self, node_name: str = None, kafka_config: dict = None):
@@ -56,38 +56,38 @@ class ServiceProxy:
     def _init_kafka_consumer(self):
         """初始化Kafka消费者"""
         try:
-            topic = f"serviceproxy.{self.node_name}"
+            topic = self.kafka_config.SERVICE_PROXY_TOPIC.format(name=self.node_name)
             consumer_config = {
-                'bootstrap.servers': self.kafka_config['bootstrap_servers'],
-                'group.id': f'serviceproxy-{self.node_name}',
+                'bootstrap.servers': self.kafka_config.BOOTSTRAP_SERVER,
+                'group.id': f'kubeproxy-{self.node_name}',
                 'auto.offset.reset': 'latest',
                 'enable.auto.commit': False,
             }
             
             self.consumer = Consumer(consumer_config)
             self.consumer.subscribe([topic])
-            self.logger.info(f"ServiceProxy已订阅Kafka主题: {topic}")
+            self.logger.info(f"KubeProxy已订阅Kafka主题: {topic}")
             
         except Exception as e:
             self.logger.error(f"初始化Kafka消费者失败: {e}")
     
     def start_daemon(self):
-        """启动ServiceProxy守护进程"""
+        """启动KubeProxy守护进程"""
         if not self.consumer:
-            self.logger.warning("未配置Kafka消费者，ServiceProxy将以静态模式运行")
+            self.logger.warning("未配置Kafka消费者，KubeProxy将以静态模式运行")
             return
             
         self.running = True
         daemon_thread = Thread(target=self._daemon_loop, daemon=True)
         daemon_thread.start()
-        self.logger.info(f"ServiceProxy守护进程已启动，节点: {self.node_name}")
+        self.logger.info(f"KubeProxy守护进程已启动，节点: {self.node_name}")
     
     def stop_daemon(self):
-        """停止ServiceProxy守护进程"""
+        """停止KubeProxy守护进程"""
         self.running = False
         if self.consumer:
             self.consumer.close()
-        self.logger.info("ServiceProxy守护进程已停止")
+        self.logger.info("KubeProxy守护进程已停止")
     
     def _daemon_loop(self):
         """守护进程主循环"""
@@ -104,7 +104,7 @@ class ServiceProxy:
                 sleep(0.1)  # 防止CPU占用过高
                 
             except Exception as e:
-                self.logger.error(f"ServiceProxy守护进程异常: {e}")
+                self.logger.error(f"KubeProxy守护进程异常: {e}")
                 sleep(1)
     
     def _handle_service_update(self, msg):
@@ -1000,7 +1000,7 @@ class ServiceProxy:
             return False
 
 def main():
-    """ServiceProxy主函数，在每个节点上启动"""
+    """KubeProxy主函数，在每个节点上启动"""
     import argparse
     import signal
     import os
@@ -1016,7 +1016,7 @@ def main():
     )
     
     # 解析命令行参数
-    parser = argparse.ArgumentParser(description='Kubernetes ServiceProxy - kube-proxy替代')
+    parser = argparse.ArgumentParser(description='Kubernetes kubeProxy')
     parser.add_argument('--node-name', required=True, help='节点名称')
     parser.add_argument('--kafka-server', help='Kafka服务器地址', 
                        default='10.119.15.182:9092')
@@ -1029,8 +1029,8 @@ def main():
         'bootstrap_servers': args.kafka_server
     }
     
-    # 创建ServiceProxy实例
-    service_proxy = ServiceProxy(
+    # 创建KubeProxy实例
+    service_proxy = KubeProxy(
         node_name=args.node_name,
         kafka_config=kafka_config
     )
@@ -1044,28 +1044,28 @@ def main():
     
     # 设置信号处理
     def signal_handler(signum, frame):
-        print(f"\n[INFO]收到退出信号 {signum}，正在关闭ServiceProxy...")
+        print(f"\n[INFO]收到退出信号 {signum}，正在关闭KubeProxy...")
         service_proxy.stop_daemon()
         sys.exit(0)
     
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
     
-    print(f"[INFO]在节点 {args.node_name} 上启动ServiceProxy...")
+    print(f"[INFO]在节点 {args.node_name} 上启动KubeProxy...")
     print(f"[INFO]Kafka服务器: {args.kafka_server}")
     print(f"[INFO]iptables支持: {'否 (模拟模式)' if service_proxy.is_macos or not service_proxy.iptables_available else '是'}")
     
     # 启动守护进程
     service_proxy.start_daemon()
     
-    print("[INFO]ServiceProxy已启动，按 Ctrl+C 退出")
+    print("[INFO]KubeProxy已启动，按 Ctrl+C 退出")
     
     # 保持主线程运行
     try:
         while True:
             sleep(1)
     except KeyboardInterrupt:
-        print("\n[INFO]用户中断，正在关闭ServiceProxy...")
+        print("\n[INFO]用户中断，正在关闭KubeProxy...")
         service_proxy.stop_daemon()
 
 

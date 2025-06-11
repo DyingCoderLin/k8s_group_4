@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Function
+metadata:
+  name: gen
+  namespace: default
+  labels:
+    app: slm_pipline
+trigger: http
+file_path: /root/workspace/k8s_group_4/testFile/serverless/zip-function/gen.zip

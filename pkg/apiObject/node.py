@@ -11,7 +11,7 @@ from pkg.config.kubeletConfig import KubeletConfig
 from pkg.config.uriConfig import URIConfig
 from pkg.config.nodeConfig import NodeConfig
 from pkg.config.kafkaConfig import KafkaConfig
-from pkg.network.serviceProxy import ServiceProxy
+from pkg.proxy.kubeproxy import KubeProxy
 
 
 class STATUS:
@@ -73,15 +73,10 @@ class Node:
     def _start_service_proxy(self):
         """启动ServiceProxy守护进程"""
         try:
-            # 配置Kafka连接信息
-            kafka_config = {
-                'bootstrap_servers': KafkaConfig.BOOTSTRAP_SERVER
-            }
-            
             # 创建ServiceProxy实例
-            self.service_proxy = ServiceProxy(
+            self.service_proxy = KubeProxy(
                 node_name=self.config.name,
-                kafka_config=kafka_config
+                kafka_config=KafkaConfig
             )
             
             # 启动ServiceProxy守护进程

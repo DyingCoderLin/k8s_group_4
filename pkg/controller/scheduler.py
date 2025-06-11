@@ -158,7 +158,7 @@ class Scheduler:
             self.consumer = Consumer(
                 {
                     "bootstrap.servers": self.kafka_server,
-                    "group.id": "1",
+                    "group.id": "group-1",
                     "auto.offset.reset": "latest",
                     "enable.auto.commit": True,
                     "debug": "consumer",
@@ -192,7 +192,6 @@ class Scheduler:
                     # 执行调度
                     self.strategy.update(node_response)
                     select_node = self.strategy.schedule(pod_config)
-                    self.consumer.commit(asynchronous=False)
                     if select_node is None:
                         print(
                             f"[ERROR]Schedule is impossible: no suitable nodes to choose from"

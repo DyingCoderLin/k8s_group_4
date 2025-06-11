@@ -16,6 +16,16 @@ logs/
 yamls/zookeeper-data/
 yamls/zookeeper-logs/
 yamls/zookeeper-log/
-
 # kafka数据和日志文件
 yamls/kafka
+
+# ApiServer持久化文件
+serverlessPersist/
+
+# testFile中的模型文件
+testFile/serverless/zip-function/chat/DialoGPT-small
+testFile/serverless/zip-function/gen/distilgpt2
+testFile/serverless/zip-function/chat.zip
+testFile/serverless/zip-function/gen.zip
+yamls/zookeeper-log/
+

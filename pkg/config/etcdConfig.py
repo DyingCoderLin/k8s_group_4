@@ -4,10 +4,13 @@ from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.config.dnsConfig import DNSConfig
+from pkg.config.functionConfig import FunctionConfig
+from pkg.config.workflowConfig import WorkflowConfig
 
 class EtcdConfig:
     # Etcd 地址
 
+    # HOST = '10.119.11.171' # 这是哪个
     HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
     # HOST = 'localhost'
@@ -33,7 +36,7 @@ class EtcdConfig:
     HPA_KEY = "/api/v1/namespaces/hpa/{namespace}"
     HPA_SPEC_KEY = "/api/v1/namespaces/hpa/{namespace}/{name}"
     HPA_VALUE = HorizontalPodAutoscalerConfig
-
+    
     # Service相关
     GLOBAL_SERVICES_KEY = "/api/v1/namespaces/services"  # 修正为与 uriConfig.py 一致
     SERVICES_KEY = "/api/v1/namespaces/services/{namespace}"  # 修正为与 uriConfig.py 一致
@@ -45,7 +48,18 @@ class EtcdConfig:
     DNS_KEY = "/api/v1/namespaces/dns/{namespace}"
     DNS_SPEC_KEY = "/api/v1/namespaces/dns/{namespace}/{name}"
     DNS_VALUE = DNSConfig
+    
+    # Function相关
+    GLOBAL_FUNCTION_KEY = "/api/v1/namespaces/functions"
+    FUNCTION_KEY = "/api/v1/namespaces/functions/{namespace}"
+    FUNCTION_SPEC_KEY = "/api/v1/namespaces/functions/{namespace}/{name}"
+    FUNCTION_VALUE = FunctionConfig
+
+    # Workflow相关
+    GLOBAL_WORKFLOW_KEY = "/api/v1/namespaces/workflows"
+    WORKFLOW_KEY = "/api/v1/namespaces/workflows/{namespace}"
+    WORKFLOW_SPEC_KEY = "/api/v1/namespaces/workflows/{namespace}/{name}"
+    WORKFLOW_VALUE = WorkflowConfig
 
     # 清除列表
-    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_DNS_KEY, GLOBAL_SERVICES_KEY]
-    
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_DNS_KEY, GLOBAL_SERVICES_KEY, GLOBAL_FUNCTION_KEY, GLOBAL_WORKFLOW_KEY]

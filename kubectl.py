@@ -6,6 +6,7 @@ kubectl - Kubernetes 命令行工具
 
 import argparse
 import json
+import os
 import sys
 import yaml
 
@@ -113,6 +114,8 @@ class KubectlClient:
                 self._apply_node(resource_data, name)
             elif kind == "DNS":
                 self._apply_dns(resource_data, name, namespace)
+            elif kind == "Function":
+                self._apply_function(resource_data, name)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
                 return
@@ -185,6 +188,28 @@ class KubectlClient:
             
         except Exception as e:
             print(f"Error creating horizontalpodautoscaler.autoscaling/{name}: {e}")
+
+    def _apply_function(self, function_data: dict, name: str, namespace: str):
+        """应用Function资源"""
+        try:
+            # 使用 FunctionConfig 创建配置对象
+            path = self.uri_config.FUNCTION_SPEC_URL.format(
+                namespace=namespace, name=name
+            )
+
+            file_path = function_data["file_path"]
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+            files = {'file': (os.path.basename(file_path), file_data)}
+
+            response = self.api_client.post(path, data=function_data, files=files)
+
+            # 调用创建方法
+            if response:
+                print(f"serverless.function/{name} created")
+
+        except Exception as e:
+            print(f"Error creating serverless.function/{name}: {e}")
     
     def _apply_node(self, node_data: dict, name: str) -> None:
         """应用Node资源（特殊处理）"""
@@ -992,6 +1017,163 @@ class KubectlClient:
         except Exception as e:
             print(f"Error deleting hpa '{hpa_name}': {e}")
 
+    # ============= Function 相关操作 =============
+
+    def get_function(self, namespace: str = None, all_namespaces: bool = False) -> None:
+        """获取 HPA 列表"""
+        try:
+            if all_namespaces:
+                response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
+            else:
+                ns = namespace or self.default_namespace
+                path = self.uri_config.FUNCTION_URL.format(namespace=ns)
+                response = self.api_client.get(path)
+
+            if not response:
+                ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
+                print(f"No function found in {ns_info}.")
+                return
+
+            headers = ["NAME", "TRIGGER", "FILE", "IMAGE", "RUNNING_PODS"]
+            if all_namespaces:
+                headers.insert(1, "NAMESPACE")
+
+            rows = []
+
+            for function_entry in response:
+                if isinstance(function_entry, dict) and len(function_entry) == 1:
+                    function_name = list(function_entry.keys())[0]
+                    function_data = function_entry[function_name]
+
+                    # 提取 function 信息
+                    trigger = function_data.get("trigger")
+                    build = function_data.get("build", {})
+
+                    # 构建信息
+                    file = build.get("file", None)
+                    image = build.get("image", None)
+
+                    # 实例信息
+                    running_pods = function_data.get("running_pods", [])
+                    targets = []
+                    for pod in running_pods:
+                        targets.append(
+                            f"{pod.get('metadata').get('name')}: {pod.get('subnet_ip', None)}")
+                    targets_str = ", ".join(targets) if targets else "<unknown>"
+
+                    if all_namespaces:
+                        function_namespace = function_data.get("metadata", {}).get("namespace", "Unknown")
+                        rows.append(
+                            [function_name, function_namespace, trigger, file, image, targets_str])
+                    else:
+                        rows.append([function_name, trigger, file, image, targets_str])
+
+            print(self.format_table_output(headers, rows))
+
+        except Exception as e:
+            print(f"Error getting hpa: {e}")
+
+    def describe_function(self, function_name: str, namespace: str = None) -> None:
+        """描述特定 HPA 的详细信息"""
+        try:
+            ns = namespace or self.default_namespace
+            path = self.uri_config.FUNCTION_URL.format(namespace=ns, name=function_name)
+            response = self.api_client.get(path)
+
+            if not response:
+                print(f"Function '{function_name}' not found in namespace '{ns}'")
+                return
+
+            metadata = response.get("metadata", {})
+            trigger = response.get('trigger', 'Unknown')
+
+            print(f"Name:         {metadata.get('name', 'Unknown')}")
+            print(f"Namespace:    {metadata.get('namespace', 'Unknown')}")
+            print(f"Labels:       {metadata.get('labels', {})}")
+            print(f"Annotations:  {metadata.get('annotations', {})}")
+            print(f"Trigger:      {trigger}")
+
+            # 构建信息
+            build = response.get("build", {})
+            print(f"File:           {build.get('file', 'Unknown')}")
+            print(f"Image:          {build.get('image', 'Unknown')}")
+
+            # 实例信息
+            print("Running Pods:")
+            running_pods = response.get("running_pods", [])
+            if running_pods:
+                for i, pod in enumerate(running_pods):
+                    print(f"Pod {i}")
+                    print(f"    Name:         {pod.get('metadata', {}).get('name', 'Unknown')}")
+                    print(f"    Namespace:    {pod.get('metadata', {}).get('namespace', 'Unknown')}")
+                    print(f"    Priority:     {pod.get('spec', {}).get('priority', 0)}")
+                    print(f"    Node:         {pod.get('spec', {}).get('node_name', '<none>')}")
+                    print(f"    Start Time:   {pod.get('status', {}).get('start_time', '<unknown>')}")
+                    print(f"    Labels:       {pod.get('metadata', {}).get('labels', {})}")
+                    print(f"    Annotations:  {pod.get('metadata', {}).get('annotations', {})}")
+                    print(f"    Status:       {pod.get('status', {}).get('phase', 'Unknown')}")
+                    print(f"    IP:           {pod.get('status', {}).get('pod_ip', '<none>')}")
+                    print("")
+            else:
+                print("  <none>")
+
+        except Exception as e:
+            print(f"Error describing function '{function_name}': {e}")
+
+    def create_function_from_file(self, yaml_name: str, file_path: str) -> None:
+        """从文件创建 Function"""
+        try:
+            with open(yaml_name, 'r') as f:
+                if yaml_name.endswith('.yaml') or yaml_name.endswith('.yml'):
+                    function_data = yaml.safe_load(f)
+                else:
+                    function_data = json.load(f)
+
+            # 验证 Function 数据
+            if function_data.get("kind") != "Function":
+                print(f"Error: File does not contain a Function resource")
+                return
+
+            metadata = function_data.get("metadata", {})
+            name = metadata.get("name")
+            namespace = metadata.get("namespace", self.default_namespace)
+
+            if not name:
+                print("Error: Function name is required")
+                return
+
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+            files = {'file': (os.path.basename(file_path), file_data)}
+
+            # 创建 Function
+            path = self.uri_config.FUNCTION_SPEC_URL.format(namespace=namespace, name=name)
+            response = self.api_client.post(path, json=function_data, files=files)
+
+            if response:
+                print(f"serverless.function/{name} created")
+            else:
+                print(f"Error creating serverless.function/{name}")
+
+        except FileNotFoundError:
+            print(f"Error: File '{yaml_name}' or '{file_path}' not found")
+        except Exception as e:
+            print(f"Error creating function from file: {e}")
+
+    def delete_function(self, function_name: str, namespace: str = None) -> None:
+        """删除 Function"""
+        try:
+            ns = namespace or self.default_namespace
+            path = self.uri_config.FUNCTION_SPEC_URL.format(namespace=ns, name=function_name)
+            response = self.api_client.delete(path)
+
+            if response:
+                print(f"serverless.function \"{function_name}\" deleted")
+            else:
+                print(f"Error deleting hserverless.function \"{function_name}\"")
+
+        except Exception as e:
+            print(f"Error deleting function '{function_name}': {e}")
 
 def main():
     """主函数 - 解析命令行参数并执行相应操作"""
@@ -1004,13 +1186,13 @@ def main():
     
     # get 命令
     get_parser = subparsers.add_parser("get", help="显示一个或多个资源")
-    get_parser.add_argument("resource", choices=["nodes", "pods", "services", "svc", "replicasets", "rs", "hpa"], 
+    get_parser.add_argument("resource", choices=["nodes", "pods", "services", "svc", "replicasets", "rs", "hpa", "function"],
                            help="资源类型")
     get_parser.add_argument("name", nargs="?", help="资源名称")
     
     # describe 命令  
     describe_parser = subparsers.add_parser("describe", help="显示特定资源的详细信息")
-    describe_parser.add_argument("resource", choices=["node", "pod", "service", "svc", "replicaset", "rs", "hpa"], 
+    describe_parser.add_argument("resource", choices=["node", "pod", "service", "svc", "replicaset", "rs", "hpa", "function"],
                                 help="资源类型")
     describe_parser.add_argument("name", help="资源名称")
     
@@ -1029,7 +1211,7 @@ def main():
     
     # delete 命令
     delete_parser = subparsers.add_parser("delete", help="删除资源")
-    delete_parser.add_argument("resource", choices=["pod", "service", "svc", "replicaset", "rs", "hpa"], 
+    delete_parser.add_argument("resource", choices=["pod", "service", "svc", "replicaset", "rs", "hpa", "function"],
                               help="资源类型")
     delete_parser.add_argument("name", help="资源名称")
     
@@ -1063,6 +1245,8 @@ def main():
                 kubectl.get_replicasets(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["hpa"]:
                 kubectl.get_hpa(namespace=args.namespace, all_namespaces=args.all_namespaces)
+            elif args.resource in ["function"]:
+                kubectl.get_function(namespace=args.namespace, all_namespaces=args.all_namespaces)
                 
         elif args.command == "describe":
             if args.resource == "node":
@@ -1075,6 +1259,8 @@ def main():
                 kubectl.describe_replicaset(args.name, namespace=args.namespace)
             elif args.resource == "hpa":
                 kubectl.describe_hpa(args.name, namespace=args.namespace)
+            elif args.resource in ["function"]:
+                kubectl.describe_function(args.name, namespace=args.namespace)
                 
         elif args.command == "create":
             # 根据文件内容判断资源类型
@@ -1098,6 +1284,8 @@ def main():
                 kubectl.delete_replicaset(args.name, namespace=args.namespace)
             elif args.resource == "hpa":
                 kubectl.delete_hpa(args.name, namespace=args.namespace)
+            elif args.resource == "function":
+                kubectl.delete_function(args.name, namespace=args.namespace)
                 
         elif args.command == "scale":
             if args.resource in ["replicaset", "rs"]:

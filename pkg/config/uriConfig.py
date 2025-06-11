@@ -18,10 +18,9 @@ class URIConfig:
 
     if HOST is None:
         import sys
-        # HOST = "localhost"
-        HOST = "10.119.15.182"
+        HOST = "localhost"
+        # HOST = "10.119.15.182"
         if sys.platform == "darwin":
-            
             import socket
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             try:
@@ -33,6 +32,7 @@ class URIConfig:
                 s.close()
                 
     PREFIX = f"http://{HOST}:{PORT}"
+    COREDNS_IP = '10.5.53.5'
 
     # -------------------- 资源路径定义 --------------------
     # Node 相关 (集群级别)
@@ -61,13 +61,8 @@ class URIConfig:
     ENDPOINT_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/endpoints/<name>")
 
     # Job 相关
-    JOBS_URL = URIString("/apis/v1/namespaces/<namespace>/jobs")
-    JOB_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/jobs/<name>")
-    JOB_SPEC_STATUS_URL = URIString(
-        "/apis/v1/namespaces/<namespace>/jobs/<name>/status"
-    )
-    JOB_FILE_URL = URIString("/apis/v1/namespaces/<namespace>/jobfiles")
-    JOB_FILE_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/jobfiles/<name>")
+    JOBS_URL = URIString("/apis/v1/jobs")
+    JOB_SPEC_URL = URIString("/apis/v1/jobs/<name>")
 
     # ReplicaSet 相关
     GLOBAL_REPLICA_SETS_URL = URIString("/apis/v1/replicasets")

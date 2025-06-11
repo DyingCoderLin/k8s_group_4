@@ -4,8 +4,6 @@ metadata:
   name: pod2
   namespace: default
   labels:
-    # app: pod2-app
-    # env: production
     app: hello-world
 spec:
   containers:

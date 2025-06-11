@@ -1,6 +1,10 @@
 import json
 import pickle
 import docker
+import random
+import requests
+import os
+from readerwriterlock import rwlock
 from docker.errors import APIError
 from flask import Flask, request
 from confluent_kafka import Producer, KafkaException
@@ -9,10 +13,13 @@ import platform
 from time import time, sleep, ctime
 from threading import Thread
 
+from pkg.utils.atomicCounter import AtomicCounter
 from pkg.apiObject.pod import STATUS as POD_STATUS
 from pkg.apiObject.node import Node, STATUS as NODE_STATUS
+from pkg.apiObject.function import Function
 from pkg.apiServer.etcd import Etcd
 from pkg.controller.scheduler import Scheduler
+from pkg.apiObject.workflow import Workflow
 
 from pkg.config.uriConfig import URIConfig
 from pkg.config.etcdConfig import EtcdConfig
@@ -23,16 +30,19 @@ from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.config.dnsConfig import DNSConfig
-
+from pkg.config.serverlessConfig import ServerlessConfig
+from pkg.config.functionConfig import FunctionConfig
+from pkg.config.workflowConfig import WorkflowConfig
 
 class ApiServer:
     def __init__(
-        self, uri_config: URIConfig, etcd_config: EtcdConfig, kafka_config: KafkaConfig
+        self, uri_config: URIConfig, etcd_config: EtcdConfig, kafka_config: KafkaConfig, serverless_config: ServerlessConfig
     ):
         print("[INFO]ApiServer starting...")
         self.uri_config = uri_config
         self.etcd_config = etcd_config
         self.kafka_config = kafka_config
+        self.serverless_config = serverless_config
         self.NODE_TIMEOUT = 10
 
         # 创建 Flask 应用实例，用于提供 HTTP API 服务
@@ -62,6 +72,11 @@ class ApiServer:
             [self.kafka_config.SCHEDULER_TOPIC], operation_timeout=10
         )
         self.kafka_producer.flush()
+        # --- end ---
+
+        os.makedirs(serverless_config.PERSIST_BASE, exist_ok = True)
+        self.SLlock = rwlock.RWLockFair()
+        self.func_cnt = AtomicCounter()
 
         self.bind(uri_config)
         print("[INFO]ApiServer init success.")
@@ -96,35 +111,23 @@ class ApiServer:
         self.app.route(config.POD_SPEC_URL, methods=["DELETE"])(self.delete_pod)
         # 指定Pod状态改和查
         self.app.route(config.POD_SPEC_STATUS_URL, methods=["GET"])(self.get_pod_status)
-        self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(
-            self.update_pod_status
-        )
+        self.app.route(config.POD_SPEC_STATUS_URL, methods=["PUT"])(self.update_pod_status)
         self.app.route(config.POD_SPEC_IP_URL, methods=["PUT"])(self.update_pod_subnet_ip)
         self.app.route(config.POD_SPEC_IP_URL, methods=["GET"])(self.get_pod_subnet_ip)
 
         # replicaSet相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的rs，读取某个namespace下的rs，读取某个rs
-        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=["GET"])(
-            self.get_global_replica_sets
-        )
+        self.app.route(config.GLOBAL_REPLICA_SETS_URL, methods=["GET"])(self.get_global_replica_sets)
         # 这个有确定的namespace
         self.app.route(config.REPLICA_SETS_URL, methods=["GET"])(self.get_replica_sets)
         # 这个有确定的namespace和name
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["GET"])(
-            self.get_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["GET"])(self.get_replica_set)
         # 创建rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["POST"])(
-            self.create_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["POST"])(self.create_replica_set)
         # 更新rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["PUT"])(
-            self.update_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["PUT"])(self.update_replica_set)
         # 删除rs
-        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["DELETE"])(
-            self.delete_replica_set
-        )
+        self.app.route(config.REPLICA_SET_SPEC_URL, methods=["DELETE"])(self.delete_replica_set)
 
         # hpa相关
         # 三种不同的读取逻辑，可以先不着急写，读取全部的hpa，读取某个namespace下的hpa，读取某个hpa
@@ -160,6 +163,23 @@ class ApiServer:
         self.app.route(config.DNS_SPEC_URL, methods=["PUT"])(self.update_dns)
         # 删除
         self.app.route(config.DNS_SPEC_URL, methods=["DELETE"])(self.delete_dns)
+
+        # function相关
+        # 增删改查function
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['POST'])(self.add_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['DELETE'])(self.delete_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['PUT'])(self.update_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['GET'])(self.get_function)
+        # 调用function
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['PATCH'])(self.exec_function)
+
+        # workflow相关
+        # 创建workflow
+        self.app.route(config.WORKFLOW_SPEC_URL, methods=['POST'])(self.add_workflow)
+        # 调用workflow
+        self.app.route(config.WORKFLOW_SPEC_URL, methods=['PATCH'])(self.exec_workflow)
+
+
 
     def get_dns_list(self, namespace: str):
        """获取指定命名空间的 DNS 列表"""
@@ -287,7 +307,8 @@ class ApiServer:
     def run(self):
         print('[INFO]ApiServer running...')
         Thread(target = self.node_health).start()
-        self.app.run(host='0.0.0.0', port=self.uri_config.PORT, processes=True)
+        Thread(target = self.serverless_scale).start()
+        self.app.run(host='0.0.0.0', port=self.uri_config.PORT, threaded=True)
 
     def node_health(self):
         while True:
@@ -299,6 +320,39 @@ class ApiServer:
                     node.status = NODE_STATUS.OFFLINE
                     self.etcd.put(self.etcd_config.NODE_SPEC_KEY.format(name=node.name), node)
                     print(f'[INFO]Node {node.name} offline. Last heartbeat {ctime(node.heartbeat_time)}')
+
+    def serverless_scale(self):
+        while True:
+            sleep(self.serverless_config.CHECK_TIME)
+
+            with self.SLlock.gen_wlock():
+                functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
+                for function_config in functions:
+                    key = function_config.namespace + '/' + function_config.name
+                    pod_num = len(function_config.pod_list)
+                    # 如果存在函数实例，则看情况增加或者减少
+                    if pod_num != 0:
+                        function = Function(function_config, self.serverless_config, None)
+
+                        if self.func_cnt.get(key) / pod_num > self.serverless_config.MAX_REQUESTS_PER_POD:
+                            print(f'[INFO]Function {function_config.namespace}/{function_config.name} increse scale to {pod_num + 1}')
+                            pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num)
+                            url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                            response = requests.post(url, json=pod_yaml)
+                            function_config.pod_list.append(PodConfig(pod_yaml))
+                        elif self.func_cnt.get(key) / pod_num < self.serverless_config.MIN_REQUESTS_PER_POD:
+                            pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num - 1)
+                            url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                            print(f'[INFO]Function {function_config.namespace}/{function_config.name} decrease scale to {pod_num - 1}')
+                            response = requests.delete(url)
+                            del function_config.pod_list[-1]
+
+                        # 更新etcd中的function状态
+                        self.etcd.put(
+                            self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=function_config.namespace, name=function_config.name),
+                            function_config)
+                        # 清空计数器
+                        self.func_cnt.reset(key)
 
     def index(self):
         return "ApiServer Demo"
@@ -363,7 +417,7 @@ class ApiServer:
             # 创建Pod主题（用于kubelet）
             pod_topic = self.kafka_config.POD_TOPIC.format(name=name)
             # 创建ServiceProxy主题（用于ServiceProxy）
-            serviceproxy_topic = f"serviceproxy.{name}"
+            serviceproxy_topic = self.kafka_config.SERVICE_PROXY_TOPIC.format(name=name)
             
             # 批量创建主题
             topics_to_create = [
@@ -1266,7 +1320,193 @@ class ApiServer:
             print(f"[ERROR]Failed to get service status: {str(e)}")
             return json.dumps({"error": str(e)}), 500
 
+    def get_function(self, namespace: str, name : str):
+        """获取指定Service"""
+        print(f"[INFO]Get function {name} in namespace {namespace}")
+        try:
+            key = self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)
+            function = self.etcd.get(key)
+            if function is None:
+                return json.dumps({"error": "Function not found"}), 999
+            return json.dumps(function.to_dict())
+        except Exception as e:
+            print(f"[ERROR]Failed to get function: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def add_function(self, namespace : str, name : str):
+        print(f"[INFO]Add function {name} in namespace {namespace}")
+        if 'file' not in request.files or not request.files['file']:
+            return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
+
+        trigger = request.form.get('trigger', None)
+        if not trigger:
+            return json.dumps({"error": f"Fail to add function {name}. You should give trigger type in yaml"}), 409
+
+        if '/' in namespace or '/' in name:
+            return json.dumps({"error": f"Function name or namespace should not contain /."}), 409
+
+        if self.etcd.get(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)):
+            return json.dumps({"error": f"Function {namespace}/{name} already exists."}), 409
+
+        file = request.files['file']
+        code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
+        function_config = FunctionConfig(namespace, name, trigger, code_dir)
+        function = Function(function_config, self.serverless_config, file)
+
+        try:
+            # 检查并存入源代码
+            function.download_unzip_code()
+            # 检查并构建image
+            function.build_image()
+            # 上传dockerhub
+            function_config.target_image = function.push_image()
+            # 写etcd
+            self.etcd.put(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name), function_config)
+
+        except Exception as e:
+            return json.dumps({"error": str(e)}), 409
+        print(f"[INFO]Function {name} added successfully in namespace {namespace}")
+        return json.dumps({"message": "Successfully add function"}), 200
+
+    def update_function(self, namespace : str, name : str):
+        # 由于函数更改后，旧的Pod实例必须删除，所以逻辑就等价于增加再删除
+        try:
+            url = self.uri_config.PREFIX + self.uri_config.FUNCTION_SPEC_URL.format(namespace=namespace, name=name)
+            delete_reponse = requests.delete(url)
+            if not delete_reponse.ok():
+                raise ValueError(f'Delete failed {delete_reponse.json}')
+
+            url = self.uri_config.PREFIX + self.uri_config.FUNCTION_SPEC_URL.format(namespace=namespace, name=name)
+            add_response = requests.post(url, json=request.json, file=request.file)
+            if not delete_reponse.ok():
+                raise ValueError(f'Add failed {add_response.json}')
+        except Exception as e:
+            print(f"[ERROR]Failed to update function: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def delete_function(self, namespace: str, name: str):
+        """删除Function"""
+        print(f"[INFO]Delete function {name} in namespace {namespace}")
+        try:
+            # 先拿读锁，保证对该function的互斥访问，这样请求就不会转发，并且不会自动扩缩容
+            with self.SLlock.gen_wlock():
+                key = self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)
+                function_config = self.etcd.get(key)
+                if function_config is None:
+                    return json.dumps({"error": "Function not found"}), 404
+
+                # 在etcd删除function
+                self.etcd.delete(key)
+                # 然后再释放存活的Pod
+                while True:
+                    key = function_config.namespace + '/' + function_config.name
+                    pod_num = len(function_config.pod_list)
+                    if pod_num == 0:
+                        break
+                    function = Function(function_config, self.serverless_config, None)
+                    pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num - 1)
+                    url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                    response = requests.delete(url)
+                    del function_config.pod_list[-1]
+
+            return json.dumps({"message": f"Function {name} deleted successfully"})
+        except Exception as e:
+            print(f"[ERROR]Failed to delete service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def exec_function(self, namespace : str, name : str):
+        # 对于function_config资源获取读锁
+        rlock = self.SLlock.gen_rlock()
+        rlock.acquire()
+        self.func_cnt.increment(namespace + '/' + name)
+        function_config = self.etcd.get(self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+        if function_config is None:
+            rlock.release()
+            return json.dumps({"error": f"Function {namespace}/{name} does not exists."}), 404
+        if function_config.trigger != "http":
+            rlock.release()
+            return json.dumps({"error": f"Function {namespace}/{name} trigger type '{function_config.trigger}' is not http."}), 409
+
+        if len(function_config.pod_list) == 0:
+            # 对于function_config资源释放读锁获取写锁
+            rlock.release()
+            with self.SLlock.gen_wlock():
+                # double check条件
+                function_config = self.etcd.get(
+                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+                if function_config is None:
+                    return json.dumps({"error": f"Function {namespace}/{name} does not exists."}), 404
+                function_config = self.etcd.get(
+                    self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name))
+                if len(function_config.pod_list) == 0:
+                    function = Function(function_config, self.serverless_config, None)
+                    pod_namespace, pod_name, pod_yaml = function.pod_info(id=0)
+                    url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace,
+                                                                                       name=pod_name)
+                    print(f'[INFO]Starting a new function Pod {pod_namespace}/{pod_name}.')
+                    response = requests.post(url, json=pod_yaml)
+                    function_config.pod_list.append(PodConfig(pod_yaml))
+
+                    while True:
+                        sleep(0.5)
+                        pod = self.etcd.get(
+                            self.etcd_config.POD_SPEC_KEY.format(namespace=pod_namespace, name=pod_name))
+                        if pod.status == POD_STATUS.RUNNING:
+                            sleep(1.0)
+                            break
+                    self.etcd.put(
+                        self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name),
+                        function_config)
+            rlock.acquire()
+
+        # 获取读锁
+        try:
+            pod_config = random.choice(function_config.pod_list)
+            pod = self.etcd.get(
+                self.etcd_config.POD_SPEC_KEY.format(namespace=pod_config.namespace, name=pod_config.name))
+
+            print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
+            url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
+            response = requests.post(url, json=request.json)
+            rlock.release()
+            return response.json(), 200
+        except Exception as e:
+            print(f'[INFO]Unable to call function "{name}" to Pod {pod.namespace}/{pod.name}: {str(e)}')
+            rlock.release()
+            return json.dumps({"error": str(e)}), 409
+
+    def add_workflow(self, namespace: str, name: str):
+        workflow_json = request.json
+        new_workflow_config = WorkflowConfig(workflow_json)
+
+        workflow = self.etcd.get(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if workflow is not None:
+            return json.dumps({"error": "Workflow name already exists"}), 409
+        self.etcd.put(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name),
+            new_workflow_config,
+        )
+        return json.dumps({"message": "Successfully add workflow"}), 200
+
+    def exec_workflow(self, namespace: str, name: str):
+        context = request.json
+        workflow_config = self.etcd.get(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if workflow_config is None:
+            return json.dumps({"error": f"Workflow {namespace}:{name} not found."}), 404
+        
+        workflow = Workflow(workflow_config, self.uri_config)
+        try:
+            result = workflow.exec(context)
+            return json.dumps(result), 200
+        except Exception as e:
+            print(f'[ERROR]Error occur during workflow execution: {str(e)}')
+            return json.dumps({"error": f"Error occur during workflow execution: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
-    api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig)
+    api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig, ServerlessConfig)
     api_server.run()

@@ -397,6 +397,44 @@ docker run -d --name nginx-ingress \
 ### DNS表的实现
 每当更新时，写入 ./config/nginx.conf，同时写入/etc/hosts （<node-ip> example.com）
 
+## 配置coredns
+创建一个`Corefile`，注意etcd的ip不能使用etcd容器名，因为默认bridge网络不会提供服务发现功能，而我们的flannel建立在bridge网络之上
+```
+.:53 {
+    etcd {
+        path /skydns
+        endpoint http://<etcd内网ip>:2379
+        fallthrough
+    }
+    forward . 8.8.8.8
+    log
+    errors
+}
+```
+一键启动coredns，注意确保与etcd处于同一个网络。主机dns服务在53端口，我们映射到主机54端口
+```
+docker run -d \
+  --name coredns \
+  -p 54:53/udp \
+  -p 54:53/tcp \
+  -v $(pwd)/Corefile:/Corefile \
+  --network bridge \
+  coredns/coredns:latest
+```
+
+### 验证安装配置
+主机验证，往etcd插入记录看是否能够通过`dig`访问
+```
+dig @127.0.0.1 -p 54 www.example.com #查询，应该无回复
+
+docker exec -it etcd sh
+etcdctl put /skydns/com/example/www '{"host":"1.1.1.1","ttl":60}'
+exit
+
+dig @127.0.0.1 -p 54 www.example.com #查询，应该有回复
+```
+Pod验证
+
 ## 运行环境创建
 - 创建虚拟环境（也可以选择在本机上直接运行）并配置python包
   ```
@@ -430,3 +468,8 @@ sudo chown -R 1001:1001 /home/chenglianglin/actions-runner/_work/k8s_group_4/k8s
 
   ```
   - 然后根据github action中对于self host的指令进行配置，最后在该用户下运行./run.sh
+
+## hf下模型
+```
+git clone https://NytePlus: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@huggingface.co/distilbert/distilgpt2
+```
