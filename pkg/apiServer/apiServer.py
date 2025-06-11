@@ -1164,7 +1164,7 @@ class ApiServer:
             key = self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)
             function = self.etcd.get(key)
             if function is None:
-                return json.dumps({"error": "Function not found"}), 404
+                return json.dumps({"error": "Function not found"}), 999
             return json.dumps(function.to_dict())
         except Exception as e:
             print(f"[ERROR]Failed to get function: {str(e)}")
