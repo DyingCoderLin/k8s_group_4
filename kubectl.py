@@ -98,7 +98,7 @@ class KubectlClient:
                 print(f"Error: Missing resource name in '{filename}'")
                 return
             
-            print(f"Applying {kind} '{name}' in namespace '{namespace}'...")
+            print(f"Applying {kind} '{name}' in  '{namespace}'...")
             print(f"Applying{kind}hahahhaa\n")
             if kind == "DNS":
                 print("\nhahhaa\n")
