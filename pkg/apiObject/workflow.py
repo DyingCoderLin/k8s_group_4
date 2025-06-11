@@ -1,4 +1,5 @@
 import queue
+import requests
 
 class Node:
     def __init__(self, name, type, function_namespace, function_name):
@@ -116,11 +117,9 @@ class Workflow():
 
 if __name__ == '__main__':
     from pkg.config.uriConfig import URIConfig
-    from pkg.config.podConfig import PodConfig
     from pkg.config.globalConfig import GlobalConfig
     import os
     import yaml
-    import requests
     config = GlobalConfig()
 
     functions = ['chat', 'gen', 'ifelse', 'input']
