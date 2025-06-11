@@ -144,10 +144,13 @@ class ApiServer:
         self.app.route(config.SERVICE_SPEC_STATUS_URL, methods=["GET"])(self.get_service_status)
 
         # function相关
-        # 创建function
+        # 增删改查function
         self.app.route(config.FUNCTION_SPEC_URL, methods=['POST'])(self.add_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['DELETE'])(self.delete_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['PUT'])(self.update_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['GET'])(self.get_function)
         # 调用function
-        self.app.route(config.FUNCTION_SPEC_URL, methods=['PUT'])(self.exec_function)
+        self.app.route(config.FUNCTION_SPEC_URL, methods=['PATCH'])(self.exec_function)
 
     def run(self):
         print('[INFO]ApiServer running...')
@@ -1145,9 +1148,25 @@ class ApiServer:
             print(f"[ERROR]Failed to get service status: {str(e)}")
             return json.dumps({"error": str(e)}), 500
 
+    def get_function(self, namespace: str, name : str):
+        """获取指定Service"""
+        print(f"[INFO]Get function {name} in namespace {namespace}")
+        try:
+            key = self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)
+            function = self.etcd.get(key)
+            if function is None:
+                return json.dumps({"error": "Function not found"}), 404
+            return json.dumps(function.to_dict())
+        except Exception as e:
+            print(f"[ERROR]Failed to get function: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
     def add_function(self, namespace : str, name : str):
         if 'file' not in request.files or not request.files['file']:
             return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
+
+        if 'trigger' not in request.data:
+            return json.dumps({"error": f"Fail to add function {name}. You should give trigger type in yaml"}), 409
 
         if '/' in namespace or '/' in name:
             return json.dumps({"error": f"Function name or namespace should not contain /."}), 409
@@ -1157,7 +1176,7 @@ class ApiServer:
 
         file = request.files['file']
         code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
-        function_config = FunctionConfig(namespace, name, code_dir)
+        function_config = FunctionConfig(namespace, name, request.json["trigger"], code_dir)
         function = Function(function_config, self.serverless_config, file)
 
         try:
@@ -1174,6 +1193,52 @@ class ApiServer:
             return json.dumps({"error": str(e)}), 409
         return json.dumps({"message": "Successfully add function"}), 200
 
+    def update_function(self, namespace : str, name : str):
+        # 由于函数更改后，旧的Pod实例必须删除，所以逻辑就等价于增加再删除
+        try:
+            url = self.uri_config.PREFIX + self.uri_config.FUNCTION_SPEC_URL.format(namespace=namespace, name=name)
+            delete_reponse = requests.delete(url)
+            if not delete_reponse.ok():
+                raise ValueError(f'Delete failed {delete_reponse.json}')
+
+            url = self.uri_config.PREFIX + self.uri_config.FUNCTION_SPEC_URL.format(namespace=namespace, name=name)
+            add_response = requests.post(url, json=request.json, file=request.file)
+            if not delete_reponse.ok():
+                raise ValueError(f'Add failed {add_response.json}')
+        except Exception as e:
+            print(f"[ERROR]Failed to update function: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
+    def delete_function(self, namespace: str, name: str):
+        """删除Function"""
+        print(f"[INFO]Delete function {name} in namespace {namespace}")
+        try:
+            # 先拿读锁，保证对该function的互斥访问，这样请求就不会转发，并且不会自动扩缩容
+            with self.SLlock.gen_wlock():
+                key = self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name)
+                function_config = self.etcd.get(key)
+                if function_config is None:
+                    return json.dumps({"error": "Function not found"}), 404
+
+                # 在etcd删除function
+                self.etcd.delete(key)
+                # 然后再释放存活的Pod
+                while True:
+                    key = function_config.namespace + '/' + function_config.name
+                    pod_num = len(function_config.pod_list)
+                    if pod_num == 0:
+                        break
+                    function = Function(function_config, self.serverless_config, None)
+                    pod_namespace, pod_name, pod_yaml = function.pod_info(id = pod_num - 1)
+                    url = self.uri_config.PREFIX + self.uri_config.POD_SPEC_URL.format(namespace=pod_namespace, name=pod_name)
+                    response = requests.delete(url)
+                    del function_config.pod_list[-1]
+
+            return json.dumps({"message": f"Function {name} deleted successfully"})
+        except Exception as e:
+            print(f"[ERROR]Failed to delete service: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+
     def exec_function(self, namespace : str, name : str):
         # 对于function_config资源获取读锁
         rlock = self.SLlock.gen_rlock()
@@ -1183,6 +1248,9 @@ class ApiServer:
         if function_config is None:
             rlock.release()
             return json.dumps({"error": f"Function {namespace}/{name} does not exists."}), 404
+        if function_config.trigger != "http":
+            rlock.release()
+            return json.dumps({"error": f"Function {namespace}/{name} trigger type '{function_config.trigger}' is not http."}), 409
 
         if len(function_config.pod_list) == 0:
             # 对于function_config资源释放读锁获取写锁

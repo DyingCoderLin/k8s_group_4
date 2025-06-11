@@ -416,3 +416,8 @@ sudo chown -R 1001:1001 /home/chenglianglin/actions-runner/_work/k8s_group_4/k8s
 
   ```
   - 然后根据github action中对于self host的指令进行配置，最后在该用户下运行./run.sh
+
+## hf下模型
+```
+git clone https://NytePlus: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@huggingface.co/distilbert/distilgpt2
+```
