@@ -1225,7 +1225,8 @@ class ApiServer:
 
             print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
             url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
-            response = requests.post(url, json=request.json)
+            proxies = {"http": None, "https": None}
+            response = requests.post(url, json=request.json, proxies=proxies)
             rlock.release()
             return response.json(), 200
         except Exception as e:
