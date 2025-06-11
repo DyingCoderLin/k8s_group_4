@@ -32,9 +32,10 @@ class Node:
             response = requests.patch(url, json=final_input)
 
             if not response.ok:
-                raise ValueError(f'Function call "{self.function_namespace}/{self.function_name} failed: {response.text}"')
+                raise ValueError(f'Function call "{self.function_namespace}/{self.function_name}" failed: {response.text}')
 
             res = response.json()
+            print(f'[INFO]Function {self.function_namespace}/{self.function_name}- input: {final_input} output: {res}')
         else:
             if self.type == "IfElse":
                 res = {
@@ -45,7 +46,7 @@ class Node:
                 res = final_input
 
         if "error" in res:
-            raise ValueError(f'Error on function {self.function_namespace}:{self.function_names} on DAG node {self.name}: {res["error"]}')
+            raise ValueError(f'Error on function {self.function_namespace}:{self.function_name} on DAG node {self.name}: {res["error"]}')
 
         if self.type == "IfElse":
             bool_out = res["bool_out"]
