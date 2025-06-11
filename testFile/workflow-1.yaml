@@ -11,7 +11,7 @@ DAG:
       namespace: default
       name: input
     type: Foward
-    out: [node_B]
+    out: [redirect]
 
   - name: redirect
     function:

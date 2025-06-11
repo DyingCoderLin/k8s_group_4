@@ -1,5 +1,5 @@
 class WorkflowConfig:
-    def __init__(self, json):
+    def __init__(self, arg_json):
         metadata = arg_json.get("metadata")
         self.name = metadata.get("name")
         self.namespace = metadata.get("namespace", "default")
@@ -14,9 +14,15 @@ class WorkflowConfig:
 
     def node_args(self, i):
         node_json = self.DAG[i]
+        if node_json['type'] == 'ExactlyOne':
+            function_namespace, function_name = None, None
+        else:
+            function_namespace = node_json['function']['namespace']
+            function_name = node_json['function']['name']
+
         return {
             'name': node_json['name'],
             'type': node_json['type'],
-            'function_namespace': node_json['function']['namespace'],
-            'function_name': node_json['function']['name']
+            'function_namespace': function_namespace,
+            'function_name': function_name
         }

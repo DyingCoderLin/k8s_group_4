@@ -19,6 +19,7 @@ from pkg.apiObject.node import Node, STATUS as NODE_STATUS
 from pkg.apiObject.function import Function
 from pkg.apiServer.etcd import Etcd
 from pkg.controller.scheduler import Scheduler
+from pkg.apiObject.workflow import Workflow
 
 from pkg.config.uriConfig import URIConfig
 from pkg.config.etcdConfig import EtcdConfig
@@ -30,6 +31,7 @@ from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.config.serverlessConfig import ServerlessConfig
 from pkg.config.functionConfig import FunctionConfig
+from pkg.config.workflowConfig import WorkflowConfig
 
 class ApiServer:
     def __init__(
@@ -151,6 +153,13 @@ class ApiServer:
         self.app.route(config.FUNCTION_SPEC_URL, methods=['GET'])(self.get_function)
         # 调用function
         self.app.route(config.FUNCTION_SPEC_URL, methods=['PATCH'])(self.exec_function)
+
+        # workflow相关
+        # 暂时就写了这俩，真的绷不住了
+        # 创建workflow
+        self.app.route(config.WORKFLOW_SPEC_URL, methods=['POST'])(self.add_workflow)
+        # 调用workflow
+        self.app.route(config.WORKFLOW_SPEC_URL, methods=['PATCH'])(self.exec_workflow)
 
     def run(self):
         print('[INFO]ApiServer running...')
@@ -1165,7 +1174,8 @@ class ApiServer:
         if 'file' not in request.files or not request.files['file']:
             return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
 
-        if 'trigger' not in request.data:
+        trigger = request.form.get('trigger', None)
+        if not trigger:
             return json.dumps({"error": f"Fail to add function {name}. You should give trigger type in yaml"}), 409
 
         if '/' in namespace or '/' in name:
@@ -1176,7 +1186,7 @@ class ApiServer:
 
         file = request.files['file']
         code_dir = self.serverless_config.CODE_PATH.format(namespace=namespace, name=name)
-        function_config = FunctionConfig(namespace, name, request.json["trigger"], code_dir)
+        function_config = FunctionConfig(namespace, name, trigger, code_dir)
         function = Function(function_config, self.serverless_config, file)
 
         try:
@@ -1299,6 +1309,37 @@ class ApiServer:
             print(f'[INFO]Unable to call function "{name}" to Pod {pod.namespace}/{pod.name}: {str(e)}')
             rlock.release()
             return json.dumps({"error": str(e)}), 409
+
+    def add_workflow(self, namespace: str, name: str):
+        workflow_json = request.json
+        new_workflow_config = WorkflowConfig(workflow_json)
+
+        workflow = self.etcd.get(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if workflow is not None:
+            return json.dumps({"error": "Workflow name already exists"}), 409
+        self.etcd.put(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name),
+            new_workflow_config,
+        )
+        return json.dumps({"message": "Successfully add workflow"}), 200
+
+    def exec_workflow(self, namespace: str, name: str):
+        context = request.json
+        workflow_config = self.etcd.get(
+            self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name)
+        )
+        if workflow_config is None:
+            return json.dumps({"error": f"Workflow {namesapce}:{name} not found."}), 404
+        workflow = Workflow(workflow_config, self.uri_config)
+        try:
+            result = workflow.exec(context, True)
+            return json.dumps(result), 200
+        except Exception as e:
+            print(f'[ERROR]Error occur during workflow execution: {str(e)}')
+            return json.dumps({"error": f"Error occur during workflow execution: {str(e)}"}), 500
+
 
 if __name__ == "__main__":
     api_server = ApiServer(URIConfig, EtcdConfig, KafkaConfig, ServerlessConfig)

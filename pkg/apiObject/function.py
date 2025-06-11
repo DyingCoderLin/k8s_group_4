@@ -121,10 +121,10 @@ class Function:
             raise
 
     def docker_file_template(self, has_req):
-        pip_lines = "RUN pip install --break-system-packages -r requirements.txt" if has_req else ""
+        pip_lines = "RUN pip install --no-cache-dir --break-system-packages -r requirements.txt" if has_req else ""
 
         return f"""
-FROM ubuntu
+FROM python:3.9-slim
 MAINTAINER Minik8s <nyte_plus@sjtu.edu.cn>
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update
@@ -133,8 +133,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip
 ADD ./serverlessServer.py serverlessServer.py
 COPY ./ .
 
-# install python requirements
-{pip_lines}
+# install python requirements 
+{pip_lines} -i https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install --break-system-packages flask
 
 CMD ["python3","/serverlessServer.py"]

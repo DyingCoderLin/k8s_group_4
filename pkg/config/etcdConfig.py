@@ -4,6 +4,7 @@ from pkg.config.replicaSetConfig import ReplicaSetConfig
 from pkg.config.hpaConfig import HorizontalPodAutoscalerConfig
 from pkg.config.serviceConfig import ServiceConfig
 from pkg.config.functionConfig import FunctionConfig
+from pkg.config.workflowConfig import WorkflowConfig
 
 class EtcdConfig:
     # Etcd 地址
@@ -46,4 +47,10 @@ class EtcdConfig:
     FUNCTION_SPEC_KEY = "/api/v1/namespaces/functions/{namespace}/{name}"
     FUNCTION_VALUE = FunctionConfig
 
-    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_SERVICES_KEY, GLOBAL_FUNCTION_KEY]
+    # Workflow相关
+    GLOBAL_WORKFLOW_KEY = "/api/v1/namespaces/workflows"
+    WORKFLOW_KEY = "/api/v1/namespaces/workflows/{namespace}"
+    WORKFLOW_SPEC_KEY = "/api/v1/namespaces/workflows/{namespace}/{name}"
+    WORKFLOW_VALUE = WorkflowConfig
+
+    RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_SERVICES_KEY, GLOBAL_FUNCTION_KEY, GLOBAL_WORKFLOW_KEY]
