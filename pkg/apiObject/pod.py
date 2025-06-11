@@ -20,14 +20,14 @@ class STATUS:
     KILLED = "KILLED"
 
 class Pod:
-    def __init__(self, config,api_client: ApiClient = None,uri_config =None):
+    def __init__(self, config, api_client: ApiClient = None, uri_config =None):
         self.status = STATUS.CREATING
         self.config = config
         print(f"[INFO]Pod {config.namespace}:{config.name} init, status: {self.status}")
 
         if platform.system() == "Windows":
             self.client = docker.DockerClient(
-                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=5
+                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
             )
         else:
             self.client = docker.DockerClient(
@@ -36,20 +36,12 @@ class Pod:
         self.client.networks.prune()
         self.containers = []
 
-        # --- 不使用cni网络 ---
-        # self.network = self.client.networks.create(name = 'network_' + self.config.namespace, driver='bridge')
-        # self.containers = [self.client.containers.run(image = 'busybox', name = 'pause', detach = True,
-        #                            command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-        #                            network = self.network.name)]
-
-        # --- 使用cni网络 ---
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
-
         containers = self.client.containers.list(all=True, filters={"name": pause_docker_name})
         if len(containers) == 0:
             self.containers.append(self.client.containers.run(image = 'busybox', name = pause_docker_name, detach = True,
                                command = ['sh', '-c', 'echo [INFO]pod network init. && sleep 3600'],
-                               network = self.config.cni_name))
+                               network = self.config.cni_name, dns = [uri_config.COREDNS_IP]))
         else:
             self.containers.append(containers[0])
 
@@ -114,7 +106,7 @@ class Pod:
     def remove(self):
         self.status = STATUS.KILLED
         for container in self.containers:
-            self.client.api.stop(container.id)
+            self.client.api.kill(container.id)
             self.client.api.remove_container(container.id)
         print(f"[INFO]Pod {self.config.namespace}:{self.config.name} removed.")
 

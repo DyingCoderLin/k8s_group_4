@@ -123,10 +123,17 @@ if __name__ == "__main__":
         
     import yaml
     from pkg.config.globalConfig import GlobalConfig
+    import argparse
 
     global_config = GlobalConfig()
-    file_yaml = "node-1.yaml"
-    test_yaml = os.path.join(global_config.TEST_FILE_PATH, file_yaml)
+
+    # 解析命令行参数
+    parser = argparse.ArgumentParser(description="Start Node with integrated ServiceProxy.")
+    parser.add_argument("--node-config", type=str, default="node-1.yaml", help="YAML config file for the node")
+    args = parser.parse_args()
+
+    file_yaml = args.node_config
+    test_yaml = os.path.join(global_config.PROJECT_ROOT, file_yaml)
     print(
         f"[INFO]使用{file_yaml}作为测试配置，节点将自动启动ServiceProxy"
     )
@@ -136,6 +143,6 @@ if __name__ == "__main__":
     node_config = NodeConfig(data)
     print(f"[INFO]节点名称: {node_config.name}")
     print(f"[INFO]ServiceProxy将以节点名称 '{node_config.name}' 启动")
-    
+
     node = Node(node_config, URIConfig())
     node.run()

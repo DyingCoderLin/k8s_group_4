@@ -98,10 +98,7 @@ class KubectlClient:
                 print(f"Error: Missing resource name in '{filename}'")
                 return
             
-            print(f"Applying {kind} '{name}' in  '{namespace}'...")
-            print(f"Applying{kind}hahahhaa\n")
-            if kind == "DNS":
-                print("\nhahhaa\n")
+            print(f"Applying {kind} '{name}' in namespace '{namespace}'...")
 
             # 根据 kind 字段调用相应的创建方法
             if kind == "Pod":
@@ -262,7 +259,6 @@ class KubectlClient:
             cmd = [
                 sys.executable, "-m", "pkg.apiObject.node",
                 "--node-config", filename,
-                "--node-name", name
             ]
             
             print(f"Starting node '{name}' in background...")
@@ -289,7 +285,7 @@ class KubectlClient:
             print(f"Error: File '{filename}' not found")
         except Exception as e:
             print(f"Error adding node from file: {e}")
-    
+
     # ============= Node 相关操作 =============
     
     def get_nodes(self) -> None:
