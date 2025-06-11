@@ -34,7 +34,7 @@ docker exec -it pause_default_test-server-1 /bin/sh
 ./start.sh
 @REM ./kubectl add node ./testFile/node-2.yaml
 ./kubectl apply -f ./testFile/test-pod-server-1.yaml
-./kubectl apply -f ./testFile/test-dns-service.yaml
+./kubectl apply -f ./testFile/dns-service-1.yaml
 @REM test-dns-cloud.yaml
 
 python ./pkg/controller/dnsController.py

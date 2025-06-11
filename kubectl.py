@@ -99,7 +99,10 @@ class KubectlClient:
                 return
             
             print(f"Applying {kind} '{name}' in namespace '{namespace}'...")
-            
+            print(f"Applying{kind}hahahhaa\n")
+            if kind == "DNS":
+                print("\nhahhaa\n")
+
             # 根据 kind 字段调用相应的创建方法
             if kind == "Pod":
                 self._apply_pod(resource_data, name, namespace)
@@ -112,7 +115,6 @@ class KubectlClient:
             elif kind == "Node":
                 self._apply_node(resource_data, name)
             elif kind == "DNS":
-                print("\nhahhaa\n")
                 self._apply_dns(resource_data, name, namespace)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
