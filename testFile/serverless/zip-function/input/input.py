@@ -1,6 +1,6 @@
 from typing import Dict
 
-def input_handler(event: Dict, context: Dict) -> Dict:
+def handler(event: Dict, context: Dict) -> Dict:
     """
     输入节点handler，验证输入格式是否符合要求
 
