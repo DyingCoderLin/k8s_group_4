@@ -159,7 +159,7 @@ class DNSController:
             data = json.loads(result.stdout)
 
             # 获取 IPAddress
-            print(f"Inspect 结果: {data}")
+            # print(f"Inspect 结果: {data}")
             # ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
             # print(f"IPAddress: {ip_address}")
 
