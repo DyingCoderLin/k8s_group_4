@@ -1171,6 +1171,7 @@ class ApiServer:
             return json.dumps({"error": str(e)}), 500
 
     def add_function(self, namespace : str, name : str):
+        print(f"[INFO]Add function {name} in namespace {namespace}")
         if 'file' not in request.files or not request.files['file']:
             return json.dumps({"error": f"Fail to add function {name}. You should upload an *.zip or *.py."}), 409
 
@@ -1201,6 +1202,7 @@ class ApiServer:
 
         except Exception as e:
             return json.dumps({"error": str(e)}), 409
+        print(f"[INFO]Function {name} added successfully in namespace {namespace}")
         return json.dumps({"message": "Successfully add function"}), 200
 
     def update_function(self, namespace : str, name : str):
