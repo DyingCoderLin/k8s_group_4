@@ -43,52 +43,9 @@ class Job():
         os.makedirs(code_dir, exist_ok=False)
 
         # 解压文件并存储代码文件
-        if zipfile.is_zipfile(self.file):
-            self.file.seek(0)
-            with zipfile.ZipFile(self.file, "r") as zip_ref:
-                zip_ref.extractall(code_dir)
-            find_handler = False
-
-            if exists_in_dir(f"{self.config.name}.py", code_dir):
-                print(f'[INFO]Find {self.config.name}.py in the first layer.')
-                find_handler = True
-            else:
-                print(f'[INFO]Cannot find {self.config.name}.py in the first layer.')
-                sub_dirs = os.listdir(code_dir)
-                if len(sub_dirs) == 1:
-                    print(f'[INFO]Only one subdir. Finding in the subdir.')
-                    sub_dir = os.path.join(code_dir, sub_dirs[0])
-                    if exists_in_dir(f"{self.config.name}.py", sub_dir):
-                        base_path, sub_path = Path(code_dir), Path(sub_dir)
-                        temp_dir = base_path / "temp_migration"
-                        temp_dir.mkdir(exist_ok=True)
-
-                        try:
-                            for item in Path(sub_path).iterdir():
-                                shutil.move(str(item), str(temp_dir))
-                            sub_path.rmdir()
-                            for item in temp_dir.iterdir():
-                                shutil.move(str(item), str(base_path))
-                        finally:
-                            if temp_dir.exists():
-                                temp_dir.rmdir()
-                        print(f'[INFO]Find {self.config.name}.py in the second layer.')
-                        find_handler = True
-                    else:
-                        print(f'[INFO]Cannot find {self.config.name}.py in the second layer.')
-                else:
-                    print(f'[INFO]Multiple subdir. Stop finding.')
-
-            if not find_handler:
-                print(f'[INFO]Cannot find {self.config.name}.py in zip files.')
-                raise ValueError(f"Cannot find {self.config.name}.py in zip files")
-
-        elif self.file.filename[-3:] == '.py':
-            if os.path.splitext(self.file.filename)[0] != self.config.name:
-                print(f'[WARNING]Python file name {self.file.filename} does not equal to function name {self.config.name}. Renaming to {self.config.name}.py')
-            self.file.save(os.path.join(code_dir, {self.config.name} + '.py'))
-        else:
-            raise ValueError(f"File type {os.path.splitext(self.file.filename)[1]} is not supported. You should upload an *.zip or *.py.")
+        if os.path.splitext(self.file.filename)[0] != self.config.name:
+            print(f'[WARNING]Python file name {self.file.filename} does not equal to function name {self.config.name}. Renaming to {self.config.name}.py')
+        self.file.save(os.path.join(code_dir, {self.config.name} + '.py'))
 
         # 复制一份serverlessServer.py
         if exists_in_dir('serverlessServer.py', code_dir):
