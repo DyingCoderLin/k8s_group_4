@@ -200,7 +200,7 @@ class DNSController:
                     config_lines.append(f"        }}")
             config_lines.append(f"    }}")
 
-            # print(f"{config_lines}")
+            print(f"{config_lines}")
         config_lines.append(f"}}")
 
         return "\n".join(config_lines)

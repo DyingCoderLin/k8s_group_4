@@ -14,6 +14,7 @@ python .\pkg\controller\dnsController.py
 
 
 export PYTHONPATH=/root/workspace2/k8s_group_4:$PYTHONPATH
+
 docker ps
 docker ps -a 
 docker rm -f $(docker ps -aq)
@@ -21,13 +22,22 @@ docker start $(docker ps -aq)
 
 docker rm -f test-server-container-1  pause_default_test-server-1
 
+
+ps aux | grep kubectl
+kill -9 <第一行第二个参数>
+
 cd ./yamls
 docker compose down
+rm -rf zookeeper-log zookeeper-data kafka
+mkdir zookeeper-data zookeeper-log kafka
+mkdir kafka/data
+chmod -R 777 ./kafka zookeeper-data zookeeper-log
 docker compose up -d
 cd ../
 
 docker exec -it etcd /bin/sh
 etcdctl put /coreos.com/network/config '{ "Network": "10.5.0.0/16", "Backend": {"Type": "vxlan"}}'
+etcdctl put /skydns/com/example/www '{"host":"10.5.53.7","ttl":60}'
 systemctl restart flanneld.service （三个都要）
 
 
