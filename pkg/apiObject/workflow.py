@@ -153,5 +153,16 @@ if __name__ == '__main__':
 
     input('Press Enter To Continue.')
     print(f'[INFO]测试执行')
-    response = requests.patch(uri, json={'input': 'test'})
+    gen_input = {
+        "text": "The future of AI is ",
+    }
+    response = requests.patch(uri, json=gen_input)
+    print(response.json())
+
+    input('Press Enter To Continue.')
+    chat_input = {
+        "text": "How are you?",
+        "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
+    }
+    response = requests.patch(uri, json=chat_input)
     print(response.json())

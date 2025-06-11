@@ -1337,7 +1337,7 @@ class ApiServer:
         
         workflow = Workflow(workflow_config, self.uri_config)
         try:
-            result = workflow.exec(context, True)
+            result = workflow.exec(context)
             return json.dumps(result), 200
         except Exception as e:
             print(f'[ERROR]Error occur during workflow execution: {str(e)}')
