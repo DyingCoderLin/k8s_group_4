@@ -29,7 +29,7 @@ class Node:
 
         if not debug:
             url = uri_config.PREFIX + uri_config.FUNCTION_SPEC_URL.format(namespace=self.function_namespace, name=self.function_name)
-            response = requests.put(url, json=final_input)
+            response = requests.patch(url, json=final_input)
 
             if not response.ok:
                 raise ValueError(f'Function call "{self.function_namespace}/{self.function_name} failed: {response.text}"')
