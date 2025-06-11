@@ -27,11 +27,11 @@ class Node:
             final_input = inputs[0]
 
         if not debug:
-            url = uri_config.FUNCTION_SPEC_URL.format(self.function_namspace, self.function_name)
+            url = uri_config.FUNCTION_SPEC_URL.format(self.function_namespace, self.function_name)
             response = requests.put(url, json=final_input)
 
             if not response.ok:
-                raise ValueError(f'Function call "{self.function_namspace}/{self.function_name} failed: {response.text}"')
+                raise ValueError(f'Function call "{self.function_namespace}/{self.function_name} failed: {response.text}"')
 
             res = response.json()
         else:
