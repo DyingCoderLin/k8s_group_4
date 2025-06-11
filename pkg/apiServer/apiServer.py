@@ -1203,9 +1203,6 @@ class ApiServer:
                     print(f'[INFO]Starting a new function Pod {pod_namespace}/{pod_name}.')
                     response = requests.post(url, json=pod_yaml)
                     function_config.pod_list.append(PodConfig(pod_yaml))
-                    self.etcd.put(
-                        self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name),
-                        function_config)
 
                     while True:
                         sleep(0.5)
@@ -1214,6 +1211,9 @@ class ApiServer:
                         if pod.status == POD_STATUS.RUNNING:
                             sleep(1.0)
                             break
+                    self.etcd.put(
+                        self.etcd_config.FUNCTION_SPEC_KEY.format(namespace=namespace, name=name),
+                        function_config)
             rlock.acquire()
 
         # 获取读锁

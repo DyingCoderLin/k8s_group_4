@@ -192,7 +192,7 @@ class Scheduler:
                     # 执行调度
                     self.strategy.update(node_response)
                     select_node = self.strategy.schedule(pod_config)
-                    self.consumer.commit(asynchronous=False)
+                    # self.consumer.commit(asynchronous=False)
                     if select_node is None:
                         print(
                             f"[ERROR]Schedule is impossible: no suitable nodes to choose from"
