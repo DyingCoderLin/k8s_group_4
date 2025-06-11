@@ -134,8 +134,14 @@ class DNSController:
         """更新 Nginx 配置文件并重载"""
         try:
             config_content = self._generate_nginx_config()
+            # print(f"{config_content}")
+            for line in config_content:
+                print(f"{line}")
+
             nginx_conf = os.path.join(config.CONFIG_FILE_PATH, "nginx.conf")
 
+            print(f"[INFO] Nginx 配置文件路径: {nginx_conf}")
+            
             with open(nginx_conf, "w") as f:
                 f.write(config_content)
 
@@ -200,7 +206,6 @@ class DNSController:
                     config_lines.append(f"        }}")
             config_lines.append(f"    }}")
 
-            print(f"{config_lines}")
         config_lines.append(f"}}")
 
         return "\n".join(config_lines)
