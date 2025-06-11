@@ -80,6 +80,7 @@ class Workflow():
                 if n_input[i] == node.num_input():
                     q.put(i)
                     if start:
+                        print(3)
                         raise ValueError('DAG should only have one start node.')
                     start = i
 
@@ -104,8 +105,11 @@ class Workflow():
             for i, node in enumerate(self.nodes):
                 if node.num_output() == 0:
                     if f_output[i] is None:
+                        print(f"1")
                         raise ValueError("DAG path did not reach destination.")
                     return f_output[i]
+                
+            print(f"2")
             raise ValueError("DAG does not have an destination.")
         except Exception as e:
             raise ValueError(f"Workflow {self.config.namespace}:{self.config.name} failed: {str(e)}")
