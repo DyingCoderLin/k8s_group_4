@@ -1331,7 +1331,8 @@ class ApiServer:
             self.etcd_config.WORKFLOW_SPEC_KEY.format(namespace=namespace, name=name)
         )
         if workflow_config is None:
-            return json.dumps({"error": f"Workflow {namesapce}:{name} not found."}), 404
+            return json.dumps({"error": f"Workflow {namespace}:{name} not found."}), 404
+        
         workflow = Workflow(workflow_config, self.uri_config)
         try:
             result = workflow.exec(context, True)
