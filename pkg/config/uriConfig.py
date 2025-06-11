@@ -61,13 +61,8 @@ class URIConfig:
     ENDPOINT_SPEC_URL = URIString("/api/v1/namespaces/<namespace>/endpoints/<name>")
 
     # Job 相关
-    JOBS_URL = URIString("/apis/v1/namespaces/<namespace>/jobs")
-    JOB_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/jobs/<name>")
-    JOB_SPEC_STATUS_URL = URIString(
-        "/apis/v1/namespaces/<namespace>/jobs/<name>/status"
-    )
-    JOB_FILE_URL = URIString("/apis/v1/namespaces/<namespace>/jobfiles")
-    JOB_FILE_SPEC_URL = URIString("/apis/v1/namespaces/<namespace>/jobfiles/<name>")
+    JOBS_URL = URIString("/apis/v1/jobs")
+    JOB_SPEC_URL = URIString("/apis/v1/jobs/<name>")
 
     # ReplicaSet 相关
     GLOBAL_REPLICA_SETS_URL = URIString("/apis/v1/replicasets")

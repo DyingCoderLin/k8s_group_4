@@ -2,8 +2,9 @@ import os
 
 class ServerlessConfig:
     # 存储路径，项目根目录的serverlessPersist目录
-    PERSIST_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'serverlessPersist')
+    PERSIST_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'Persist')
     CODE_PATH = os.path.join(PERSIST_BASE, 'code/{namespace}/{name}')
+    JOB_PATH = os.path.join(PERSIST_BASE, 'job/{namespace}/{name}') # Job的抽象我真不想再写一个新的了，就掐这儿
 
     # 必要的文件路径，pkg目录下的serverless目录
     SRC_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'serverless')
