@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Workflow
+metadata:
+  name: slm_pipline
+  namespace: default
+  labels:
+    app: hello-world
+DAG:
+  - name: input
+    function:
+      namespace: default
+      name: input
+    type: Foward
+    out: [node_B]
+
+  - name: redirect
+    function:
+      namespace: default
+      name: ifelse
+    type: IfElse
+    out: [gen, chat]
+
+  - name: gen
+    function:
+      namespace: default
+      name: gen
+    type: Foward
+    out: [output]
+
+  - name: chat
+    function:
+      namespace: default
+      name: chat
+    type: Foward
+    out: [output]
+
+  - name: output
+    type: ExactlyOne # ExactlyOne是一个总结节点，不绑定函数
+    out: []

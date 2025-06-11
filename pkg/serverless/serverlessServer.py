@@ -12,7 +12,7 @@ class ServerlessServer():
 
     def exec(self, function_name : str):
         module = importlib.import_module(function_name)
-        event = {"method": "http"}
+        event = {"trigger": "http"}
         context = request.get_json()
         result = module.handler(event, context)
         return json.dumps(result), 200

@@ -29,7 +29,13 @@ class Function:
     def download_unzip_code(self):
         code_dir = self.config.code_dir
         if os.path.exists(code_dir):
-            raise ValueError(f"Function {self.config.namespace}/{self.config.name} already exists.")
+            # 删除该目录
+            try:
+                shutil.rmtree(code_dir)  # 递归删除目录及其所有内容
+                print(f"[INFO]Overwrite {code_dir}")
+            except Exception as e:
+                print(f"[INFO]{code_dir} already exists and cannot overwrite: {e}")
+
         os.makedirs(code_dir, exist_ok=False)
 
         # 解压文件并存储代码文件
@@ -190,13 +196,16 @@ if __name__ == '__main__':
     from pkg.config.uriConfig import URIConfig
 
     print('测试函数上传')
+    yaml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../testFile/function-1.yaml')
+    with open(yaml_path, "r", encoding="utf-8") as file:
+        data = yaml.safe_load(file)
     file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../testFile/serverless/zip-function/pkgs(文件在第一层).zip')
     with open(file_path, 'rb') as f:
         file_data = f.read()
 
     files = {'file': (os.path.basename(file_path), file_data)}
     url = URIConfig.PREFIX + URIConfig.FUNCTION_SPEC_URL.format(namespace='default', name='hello')
-    response = requests.post(url, files=files)
+    response = requests.post(url, files=files, data=data)
     print(response.json())
     input('Press Enter To Continue.')
 
