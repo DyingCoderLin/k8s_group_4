@@ -23,4 +23,4 @@ class ServerlessConfig:
     # 扩容策略
     MAX_REQUESTS_PER_POD = 4
     MIN_REQUESTS_PER_POD = 1
-    CHECK_TIME = 10.0
+    CHECK_TIME = 5.0

@@ -170,7 +170,7 @@ metadata:
   namespace: {namespace}
 spec:
   containers:
-  - name: server
+  - name: {name}-server
     image: {self.config.target_image}
     ports:
     - containerPort: {self.serverless_config.POD_PORT}
