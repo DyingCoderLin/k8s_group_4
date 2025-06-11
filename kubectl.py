@@ -262,7 +262,6 @@ class KubectlClient:
             cmd = [
                 sys.executable, "-m", "pkg.apiObject.node",
                 "--node-config", filename,
-                "--node-name", name
             ]
             
             print(f"Starting node '{name}' in background...")
