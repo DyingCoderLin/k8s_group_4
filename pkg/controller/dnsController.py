@@ -139,13 +139,14 @@ class DNSController:
                 --network bridge \
                 nginx:latest"""
             ]
-            try:
-                result = subprocess.run(commands, shell=True, check=True, text=True, capture_output=True)
-                print(f"命令执行成功: {commands}")
-                print(result.stdout)
-            except subprocess.CalledProcessError as e:
-                print(f"命令执行失败: {commands}")
-                print(f"错误信息: {e.stderr}")
+            # 依次执行命令
+            for cmd in commands:
+                try:
+                    result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True)
+                    print(result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print(f"命令执行失败: {cmd}")
+                    print(f"错误信息: {e.stderr}")
 
             # 执行 docker inspect 命令
             container_name = "nginx-ingress"
@@ -157,11 +158,11 @@ class DNSController:
 
             # 解析 JSON 输出
             data = json.loads(result.stdout)
-            print(f"Inspect 结果: {data}")
+            # print(f"Inspect 结果: {data}")
             # 获取 IPAddress
             # print(f"Inspect 结果: {data}")
-            # ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
-            # print(f"IPAddress: {ip_address}")
+            ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
+            print(f"IPAddress: {ip_address}")
 
         except Exception as e:
             self.logger.error(f"DNS 记录同步失败: {e}")
