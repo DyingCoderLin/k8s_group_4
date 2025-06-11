@@ -1219,7 +1219,7 @@ class ApiServer:
 
         # 获取读锁
         try:
-            pod_config = random.select(function_config.pod_list)
+            pod_config = random.choice(function_config.pod_list)
             pod = self.etcd.get(
                 self.etcd_config.POD_SPEC_KEY.format(namespace=pod_config.namespace, name=pod_config.name))
 
