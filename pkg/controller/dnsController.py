@@ -10,6 +10,11 @@ from pkg.apiObject.dns import DNS
 from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
 from pkg.config.globalConfig import GlobalConfig
+from pkg.config.etcdConfig import etcd_config
+from pkg.apiServer.etcd import Etcd
+
+import etcd3
+from pkg.config.etcdConfig import EtcdConfig
 
 class DNSController:
     """DNSController 类，负责管理 DNS 资源并生成 Nginx 配置文件"""
@@ -169,8 +174,12 @@ class DNSController:
             value = '{"host":"' + ip_address + '","ttl":60}'
 
             print(f"DNS 记录: {key} -> {value}")
-            
-            response = self.api_client.post(key, value)
+
+            etcd = etcd3.client(host=etcd_config.HOST, port=etcd_config.PORT)
+            # etcd = Etcd(host=etcd_config.HOST, port=etcd_config.PORT)
+
+            etcd.put(key, value)
+            # response = self.api_client.post(key, value)
 
 # etcdctl put /skydns/com/example/www '{"host":"10.5.53.7","ttl":60}'
 
