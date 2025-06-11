@@ -55,7 +55,6 @@ class Node:
         if self.type == "IfElse":
             bool_out = res["bool_out"]
             invalid_out = [self.out_i[0] if bool_out else self.out_i[1]]
-            print(self.config.name_dict)
 
             print (f'[INFO]IfElse node {self.name} - bool_out: {bool_out}, invalid_out: {invalid_out}')
 
@@ -66,6 +65,7 @@ class Node:
 class Workflow():
     def __init__(self, config, uri_config):
         self.config = config
+        print(config.name_dict)
         self.uri_config = uri_config
 
         self.nodes = []
