@@ -158,7 +158,7 @@ class Scheduler:
             self.consumer = Consumer(
                 {
                     "bootstrap.servers": self.kafka_server,
-                    "group.id": "1",
+                    "group.id": "group-1",
                     "auto.offset.reset": "latest",
                     "enable.auto.commit": True,
                     "debug": "consumer",

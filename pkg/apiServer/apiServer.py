@@ -170,7 +170,6 @@ class ApiServer:
         while True:
             sleep(self.serverless_config.CHECK_TIME)
 
-            continue
             with self.SLlock.gen_wlock():
                 functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
                 for function_config in functions:
@@ -1225,8 +1224,7 @@ class ApiServer:
 
             print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
             url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
-            proxies = {"http": None, "https": None}
-            response = requests.post(url, json=request.json, proxies=proxies)
+            response = requests.post(url, json=request.json)
             rlock.release()
             return response.json(), 200
         except Exception as e:
