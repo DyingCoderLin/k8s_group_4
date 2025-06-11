@@ -6,6 +6,7 @@ kubectl - Kubernetes 命令行工具
 
 import argparse
 import json
+import os
 import sys
 import yaml
 
@@ -1047,7 +1048,7 @@ class KubectlClient:
             rows = []
 
             for function_entry in response:
-                if isinstance(function_entry, dict) and len(hpa_entry) == 1:
+                if isinstance(function_entry, dict) and len(function_entry) == 1:
                     function_name = list(function_entry.keys())[0]
                     function_data = function_entry[function_name]
 
