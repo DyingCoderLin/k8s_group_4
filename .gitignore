@@ -15,3 +15,7 @@ logs/
 # Zookeeper 数据和日志文件
 yamls/zookeeper-data/
 yamls/zookeeper-logs/
+yamls/zookeeper-log/
+
+# kafka数据和日志文件
+yamls/kafka
