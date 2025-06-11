@@ -18,7 +18,7 @@ DAG:
       namespace: default
       name: ifelse
     type: IfElse
-    out: [gen, chat]
+    out: [chat, gen]
 
   - name: gen
     function:
