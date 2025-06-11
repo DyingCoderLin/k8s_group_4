@@ -19,6 +19,8 @@ docker ps -a
 docker rm -f $(docker ps -aq)
 docker start $(docker ps -aq)
 
+docker rm -f test-server-container-1  pause_default_test-server-1
+
 cd ./yamls
 docker compose down
 docker compose up -d
