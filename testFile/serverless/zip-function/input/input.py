@@ -25,10 +25,6 @@ def input_handler(event: Dict, context: Dict) -> Dict:
         context
         {"error": "invalid input context"}
     """
-    if not isinstance(context.get('text'), str):
-        return {
-            "error": "invalid input context",
-        }
 
     # 如果是generation格式
     # if 'max_length' in context or 'temperature' in context:
