@@ -1219,10 +1219,13 @@ class ApiServer:
 
         # 获取读锁
         try:
+            pod_config = random.select(function_config.pod_list)
+            pod = self.etcd.get(
+                self.etcd_config.POD_SPEC_KEY.format(namespace=pod_config.namespace, name=pod_config.name))
+
             print(f'[INFO]Forwarding function call "{name}" to Pod {pod.namespace}/{pod.name}')
             url = self.serverless_config.POD_URL.format(host=pod.subnet_ip, port=self.serverless_config.POD_PORT, function_name = name)
             response = requests.post(url, json=request.json)
-            print(request.json, response.json())
             rlock.release()
             return response.json(), 200
         except Exception as e:
