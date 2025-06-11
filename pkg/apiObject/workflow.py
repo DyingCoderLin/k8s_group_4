@@ -28,6 +28,7 @@ class Node:
             final_input = inputs[0]
 
         if not debug:
+            print(f'[INFO]Calling function type: {self.type}, namespace: {self.function_namespace}, name: {self.function_name}, input: {final_input}')
             if self.type == "ExactlyOne":
                 res = final_input
             else:
