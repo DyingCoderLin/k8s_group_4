@@ -28,13 +28,16 @@ class Node:
             final_input = inputs[0]
 
         if not debug:
-            url = uri_config.PREFIX + uri_config.FUNCTION_SPEC_URL.format(namespace=self.function_namespace, name=self.function_name)
-            response = requests.patch(url, json=final_input)
+            if self.type == "ExactlyOne":
+                res = final_input
+            else:
+                url = uri_config.PREFIX + uri_config.FUNCTION_SPEC_URL.format(namespace=self.function_namespace, name=self.function_name)
+                response = requests.patch(url, json=final_input)
 
-            if not response.ok:
-                raise ValueError(f'Function call "{self.function_namespace}/{self.function_name}" failed: {response.text}')
+                if not response.ok:
+                    raise ValueError(f'Function call "{self.function_namespace}/{self.function_name}" failed: {response.text}')
 
-            res = response.json()
+                res = response.json()
             print(f'[INFO]Function {self.function_namespace}/{self.function_name}- input: {final_input} output: {res}')
         else:
             if self.type == "IfElse":
@@ -53,7 +56,7 @@ class Node:
             invalid_out = [self.out_i[0] if bool_out else self.out_i[1]]
 
             print (f'[INFO]IfElse node {self.name} - bool_out: {bool_out}, invalid_out: {invalid_out}')
-            
+
             return res["origin_in"], invalid_out
         else:
             return res, []
