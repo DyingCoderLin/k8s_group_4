@@ -135,8 +135,6 @@ class DNSController:
         try:
             config_content = self._generate_nginx_config()
             print(f"{config_content}")
-            # for line in config_content:
-            #     print(f"{line}")
 
             nginx_conf = os.path.join(config.CONFIG_FILE_PATH, "nginx.conf")
 
@@ -172,7 +170,7 @@ class DNSController:
             #     return False
 
         except Exception as e:
-            self.logger.error(f"更新 Nginx 配置失败: {e}")
+            print(f"更新 Nginx 配置失败: {e}")
             return False
         
     def _generate_nginx_config(self) -> str:
