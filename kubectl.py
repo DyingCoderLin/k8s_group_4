@@ -112,6 +112,7 @@ class KubectlClient:
             elif kind == "Node":
                 self._apply_node(resource_data, name)
             elif kind == "DNS":
+                print("\nhahhaa\n")
                 self._apply_dns(resource_data, name, namespace)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
