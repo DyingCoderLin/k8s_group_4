@@ -159,8 +159,9 @@ class DNSController:
             data = json.loads(result.stdout)
 
             # 获取 IPAddress
-            ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
-            print(f"IPAddress: {ip_address}")
+            print(f"Inspect 结果: {data}")
+            # ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
+            # print(f"IPAddress: {ip_address}")
 
         except Exception as e:
             self.logger.error(f"DNS 记录同步失败: {e}")
