@@ -9,6 +9,7 @@ from pkg.config.dnsConfig import DNSConfig
 from pkg.apiObject.dns import DNS
 from pkg.apiServer.apiClient import ApiClient
 from pkg.config.uriConfig import URIConfig
+from pkg.config.globalConfig import GlobalConfig
 
 class DNSController:
     """DNSController 类，负责管理 DNS 资源并生成 Nginx 配置文件"""
