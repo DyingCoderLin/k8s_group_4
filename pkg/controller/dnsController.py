@@ -137,6 +137,7 @@ class DNSController:
             config_content = self._generate_nginx_config()
             print(f"{config_content}")
 
+            config = GlobalConfig()
             nginx_conf = os.path.join(config.CONFIG_FILE_PATH, "nginx.conf")
 
             print(f"[INFO] Nginx 配置文件路径: {nginx_conf}")
