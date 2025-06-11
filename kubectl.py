@@ -1168,7 +1168,7 @@ class KubectlClient:
             print(f"Error creating function from file: {e}")
 
     def delete_function(self, function_name: str, namespace: str = None) -> None:
-        """删除 HPA"""
+        """删除 Function"""
         try:
             ns = namespace or self.default_namespace
             path = self.uri_config.FUNCTION_SPEC_URL.format(namespace=ns, name=function_name)
