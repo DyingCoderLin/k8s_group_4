@@ -143,6 +143,7 @@ class DNSController:
             for cmd in commands:
                 try:
                     result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True)
+                    print(f"命令执行成功: {cmd}")
                     print(result.stdout)
                 except subprocess.CalledProcessError as e:
                     print(f"命令执行失败: {cmd}")
@@ -163,6 +164,15 @@ class DNSController:
             # print(f"Inspect 结果: {data}")
             ip_address = data[0]["NetworkSettings"]["Networks"]["bridge"]["IPAddress"]
             print(f"IPAddress: {ip_address}")
+
+            key = "/skydns/com/example/www"
+            value = '{"host":"' + ip_address + '","ttl":60}'
+
+            print(f"DNS 记录: {key} -> {value}")
+            
+            response = self.api_client.post(key, value)
+
+# etcdctl put /skydns/com/example/www '{"host":"10.5.53.7","ttl":60}'
 
         except Exception as e:
             self.logger.error(f"DNS 记录同步失败: {e}")
