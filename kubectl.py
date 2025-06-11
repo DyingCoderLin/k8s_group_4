@@ -15,6 +15,9 @@ from pkg.apiServer.apiClient import ApiClient
 from pkg.apiObject.node import Node
 from pkg.config.nodeConfig import NodeConfig
 
+from pkg.config.dnsConfig import DNSConfig
+from pkg.controller.dnsController import DNSController
+
 
 class KubectlClient:
     """kubectl 客户端主类"""
@@ -108,6 +111,8 @@ class KubectlClient:
                 self._apply_hpa(resource_data, name, namespace)
             elif kind == "Node":
                 self._apply_node(resource_data, name)
+            elif kind == "DNS":
+                self._apply_dns(resource_data, name, namespace)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
                 return
@@ -200,6 +205,18 @@ class KubectlClient:
         except Exception as e:
             print(f"Error creating node/{name}: {e}")
     
+    def _apply_dns(self, dns_data: dict, name: str, namespace: str) -> None:
+        try:
+            dns_controller = DNSController()
+            
+            dns_url = dns_controller.uri_config.DNS_SPEC_URL.format(namespace = namespace, name = name)
+            response = dns_controller.api_client.post(dns_url, dns_data)
+
+            dns_controller.sync_dns_records()
+        
+        except Exception as e:
+            print(f"Error creating dns/{name}: {e}")    
+        
     def add_node_from_file(self, filename: str) -> None:
         """专门用于节点加入的命令"""
         try:
