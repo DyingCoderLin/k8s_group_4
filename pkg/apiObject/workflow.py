@@ -28,7 +28,7 @@ class Node:
             final_input = inputs[0]
 
         if not debug:
-            print(f'[INFO]Calling function type: {self.type}, namespace: {self.function_namespace}, name: {self.function_name}, input: {final_input}')
+            print(f'\n[INFO]Calling function type: {self.type}, namespace: {self.function_namespace}, name: {self.function_name}, input: {final_input}')
             if self.type == "ExactlyOne":
                 res = final_input
             else:
@@ -39,7 +39,7 @@ class Node:
                     raise ValueError(f'Function call "{self.function_namespace}/{self.function_name}" failed: {response.text}')
 
                 res = response.json()
-            print(f'[INFO]Function {self.function_namespace}/{self.function_name}- input: {final_input} output: {res}')
+            print(f'\n[INFO]Function {self.function_namespace}/{self.function_name}- input: {final_input} output: {res}')
         else:
             if self.type == "IfElse":
                 res = {
@@ -55,6 +55,7 @@ class Node:
         if self.type == "IfElse":
             bool_out = res["bool_out"]
             invalid_out = [self.out_i[0] if bool_out else self.out_i[1]]
+            print(self.config.name_dict)
 
             print (f'[INFO]IfElse node {self.name} - bool_out: {bool_out}, invalid_out: {invalid_out}')
 
