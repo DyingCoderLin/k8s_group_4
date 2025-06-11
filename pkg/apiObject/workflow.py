@@ -125,8 +125,8 @@ if __name__ == '__main__':
         print(f'上传函数{yaml_path}')
         with open(yaml_path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
-        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 f'../../testFile/serverless/zip-function/{func}.zip')
+        file_path = os.path.join(config.TEST_FILE_PATH,
+                                 f'serverless/zip-function/{func}.zip')
         with open(file_path, 'rb') as f:
             file_data = f.read()
 
