@@ -22,3 +22,5 @@ serverlessPersist/
 # testFile中的模型文件
 testFile/serverless/zip-function/chat/DialoGPT-small
 testFile/serverless/zip-function/gen/distilgpt2
+testFile/serverless/zip-function/chat.zip
+testFile/serverless/zip-function/gen.zip
