@@ -1,22 +1,23 @@
-from pkg.config.containerConfig import ContainerConfig
-
+from pkg.config.containerConfig import ContainerConfig # 确保这个导入是正确的
 
 class PodConfig:
     def __init__(self, arg_json):
         # --- static information ---
-        metadata = arg_json.get("metadata")
+        metadata = arg_json.get("metadata", {}) # 确保metadata是字典，避免KeyError
         self.name = metadata.get("name")
         self.namespace = metadata.get("namespace", "default")
-        # lcl: 之前遗漏了labels属性，添加上，方便selector进行
-        # wcc: 是的忘了。label的key不固定是app和env，只能保存一个json
         self.labels = metadata.get("labels", {})
         self.app = self.labels.get("app", None)
         self.env = self.labels.get("env", None)
 
-        spec = arg_json.get("spec")
+        spec = arg_json.get("spec", {}) # 确保spec是字典，避免KeyError
         self.volumes = spec.get("volumes", [])
         containers = spec.get("containers", [])
         self.node_selector = spec.get("nodeSelector", {})
+
+        # 新增：解析 Pod 级别的 securityContext
+        self.security_context = spec.get("securityContext", {}) 
+
         self.volume, self.containers = dict(), []
 
         # 目前只支持hostPath，并且忽略type字段
@@ -38,8 +39,13 @@ class PodConfig:
 
             self.volume[volume_name] = path
 
-        for container in containers:
-            self.containers.append(ContainerConfig(self.volume, container))
+        # for container in containers:
+        #     self.containers.append(ContainerConfig(self.volume, container))
+
+        for container_json in containers: # 遍历原始的容器 JSON 配置
+            # 在这里，你需要将 Pod 级别的 securityContext 传递给 ContainerConfig
+            # 这样 ContainerConfig 才能知道如何合并或覆盖
+            self.containers.append(ContainerConfig(self.volume, container_json, pod_security_context=self.security_context))
 
         # --- running information ---
         self.cni_name = None
@@ -57,6 +63,8 @@ class PodConfig:
             "spec": {
                 "volumes": self.volumes,
                 "containers": [container.to_dict() for container in self.containers],
+                # "nodeSelector": self.node_selector, # 确保 nodeSelector 也在 to_dict 中
+                "securityContext": self.security_context, # 新增：将 securityContext 序列化回字典
             },
             "cni_name": self.cni_name,
             "subnet_ip": self.subnet_ip,
