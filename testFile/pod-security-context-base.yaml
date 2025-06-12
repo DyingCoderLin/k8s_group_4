@@ -32,10 +32,10 @@ spec:
     resources:
       requests:
         cpu: 0.5
-        memory: 64Mi
+        memory: 134217728
       limits:
         cpu: 1
-        memory: 128Mi
+        memory: 268435456
     volumeMounts:
     - name: shared-data-volume
       mountPath: /mnt/data # 挂载点
@@ -46,10 +46,10 @@ spec:
     resources:
       requests:
         cpu: 0.2
-        memory: 32Mi
+        memory: 134217728
       limits:
         cpu: 0.5
-        memory: 64Mi
+        memory: 268435456
     volumeMounts:
     - name: shared-data-volume
       mountPath: /mnt/data # 挂载点
