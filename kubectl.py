@@ -1082,7 +1082,7 @@ class KubectlClient:
             
             print(f"Found {len(response)} functions.")
             print(f"{response}")
-            
+
             if not response:
                 print("No functions found.")
                 return
@@ -1276,6 +1276,7 @@ def main():
             elif args.resource in ["hpa"]:
                 kubectl.get_hpa(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["function"]:
+                print("Fetching functions...")
                 kubectl.get_functions()
                 
         elif args.command == "describe":
