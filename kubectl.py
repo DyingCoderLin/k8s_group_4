@@ -1087,18 +1087,15 @@ class KubectlClient:
             
             from .pkg.config.functionConfig import FunctionConfig
 
-            print(f"Found {len(response)} functions.")
-            print(f"{response}")
-
             headers = ["NAME", "NAMESPACE", "PATH"]
             rows = []
 
             for func_entry in response:
                 print(f"Node: {func_entry}")
-                # name = func_entry.get("metadata").get("name")
-                # namespace = func_entry.get("metadata").get("namespace")
-                # path = func_entry.get("metadata").get("file_path")
-                # rows.append([name, namespace, path])
+                name = func_entry.get("metadata").get("name")
+                namespace = func_entry.get("metadata").get("namespace")
+                path = func_entry.get("metadata").get("file_path")
+                rows.append([name, namespace, path])
             
             print(self.format_table_output(headers, rows))
 
