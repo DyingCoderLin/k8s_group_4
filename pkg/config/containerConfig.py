@@ -96,51 +96,45 @@ class ContainerConfig:
         }
         if 'cpu_quota' in container_args and isinstance(container_args['cpu_quota'], float):
             container_args['cpu_quota'] = int(container_args['cpu_quota'])
-
-        # 添加 Security Context 相关的 Docker 参数
-        host_config_params = {}
-
+            
+        # 添加 Security Context 相关的 Docker 参数 (直接作为顶层参数)
+        # user 参数
         if self.run_as_user is not None:
             user_str = str(self.run_as_user)
             if self.run_as_group is not None:
                 user_str += f":{self.run_as_group}"
             container_args['user'] = user_str
-
         elif self.run_as_group is not None:
             # 如果只设置了 runAsGroup 但没有 runAsUser，Docker 的 'user' 参数通常需要用户ID。
-            # 为了简化，这里将 runAsGroup 作为附加组处理。更复杂的场景可能需要修改镜像或运行时用户。
+            # 为了简化，这里将 runAsGroup 作为附加组处理。
             if self.run_as_group not in self.supplemental_groups:
                 self.supplemental_groups.append(self.run_as_group)
             print(f"[WARNING] Container '{self.name}': runAsGroup specified without runAsUser. Adding to supplemental groups. Docker 'user' parameter not set with only group.")
 
-        # privileged
+        # privileged 参数
         if self.privileged:
-            host_config_params['privileged'] = True
+            container_args['privileged'] = True
 
-        # readOnlyRootFilesystem
-        if self.read_only_root_filesystem:
-            host_config_params['read_only'] = True
+        # read_only 参数 (对应 readOnlyRootFilesystem)
+        if self.read_only:
+            container_args['read_only'] = True
 
-        # capabilities (cap_add / cap_drop)
+        # cap_add 参数
         if self.cap_add:
-            host_config_params['cap_add'] = [c.upper() for c in self.cap_add] # Docker expects uppercase
-        if self.cap_drop:
-            host_config_params['cap_drop'] = [c.upper() for c in self.cap_drop] # Docker expects uppercase
+            container_args['cap_add'] = [c.upper() for c in self.cap_add] # Docker expects uppercase
 
-        # supplementalGroups (group_add)
+        # cap_drop 参数
+        if self.cap_drop:
+            container_args['cap_drop'] = [c.upper() for c in self.cap_drop] # Docker expects uppercase
+
+        # group_add 参数 (对应 supplementalGroups)
         if self.supplemental_groups:
             # Docker's group_add expects a list of group names or GIDs (as strings)
-            host_config_params['group_add'] = [str(g) for g in self.supplemental_groups]
+            container_args['group_add'] = [str(g) for g in self.supplemental_groups]
 
-        # 将所有 host_config 参数添加到 container_args
-        if host_config_params:
-            container_args['host_config'] = host_config_params
-        
         # fsGroup: Kubernetes 的 fsGroup 主要影响挂载卷的权限。
         # Docker 没有直接的 'fsGroup' 参数用于 `run()`。
-        # 对于 hostPath 卷，权限由宿主机决定。对于其他类型的卷，可能需要通过 init 容器
-        # 或容器内的命令（如 `chown`）来设置挂载点的所有权。
-        # 我们将其存储在 self.fs_group 中，但不直接映射到 Docker run 参数。
+        # 我们将其存储在 self.fs_group 中，但不直接映射到 dockerapi_args。
         
         return container_args
 
