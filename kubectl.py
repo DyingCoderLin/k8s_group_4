@@ -194,18 +194,8 @@ class KubectlClient:
     def _apply_function(self, function_data: dict, name: str, namespace: str):
         """应用Function资源"""
         try:
-            print(f"Applying function '{name}' in namespace '{namespace}'...")
-
-            # TODO 这里存etcd
-            # func_url = self.uri_config.FUNCTION_SPEC_URL.format(
-            #     namespace = namespace,
-            #     name = name
-            # )
-            # response = self.api_client.post(func_url, function_data)
-
-
             print(f"function_data:\n {function_data}")
-            print(f"function_name: {function_data.get('metadata', {}).get('name')}")
+            # print(f"function_name: {function_data.get('metadata', {}).get('name')}")
 
             from pkg.config.globalConfig import GlobalConfig
             import requests
