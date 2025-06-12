@@ -1334,9 +1334,9 @@ class ApiServer:
             print(f"[ERROR]Failed to get function: {str(e)}")
             return json.dumps({"error": str(e)}), 500
     
-    def get_functions(self, namespace: str, name : str):
+    def get_functions(self):
         """获取指定Funcctions"""
-        print(f"[INFO]Get functions in namespace {namespace}")
+        print(f"[INFO]Get functions")
         try:
             functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
             
