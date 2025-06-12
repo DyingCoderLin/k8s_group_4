@@ -51,7 +51,14 @@ docker exec -it pause_default_test-server-1 /bin/sh
 @REM test-dns-cloud.yaml
 
 
+docker exec test-security-context-container-1 ps -o user,uid,group,gid,comm
 
+
+
+docker inspect test-security-context-container-1 | grep User
+docker inspect test-security-context-container-1 | grep GroupAdd
+docker inspect test-security-context-container-1 | grep Privileged
+docker inspect test-security-context-container-1 | grep ReadonlyRootfs
 
 ./kubectl apply -f ./testFile/test-pod-security-context.yaml
 
