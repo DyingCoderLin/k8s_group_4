@@ -1077,7 +1077,7 @@ class KubectlClient:
         """获取所有 Function 信息"""
         try:
             if all_namespaces:
-                response = self.api_client.get(self.uri_config.GLOBAL_SERVICES_URL)
+                response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
             else:
                 ns = namespace or self.default_namespace
                 path = self.uri_config.SERVICE_URL.format(namespace=ns)
