@@ -1073,19 +1073,25 @@ class KubectlClient:
 
     # ============= Function 相关操作 =============
 
-    def get_functions(self) -> None:
+    def get_functions(self, namespace: str = None, all_namespaces: bool = False) -> None:
         """获取所有 Function 信息"""
         try:
+            if all_namespaces:
+                response = self.api_client.get(self.uri_config.GLOBAL_SERVICES_URL)
+            else:
+                ns = namespace or self.default_namespace
+                path = self.uri_config.SERVICE_URL.format(namespace=ns)
+                response = self.api_client.get(path)
+            
+            if not response:
+                ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
+                print(f"No functions found in {ns_info}.")
+                return
+            
             from .pkg.config.functionConfig import FunctionConfig
 
-            response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
-            
             print(f"Found {len(response)} functions.")
             print(f"{response}")
-
-            if not response:
-                print("No functions found.")
-                return
 
             headers = ["NAME", "NAMESPACE", "PATH"]
             rows = []
@@ -1277,7 +1283,7 @@ def main():
                 kubectl.get_hpa(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["function"]:
                 print("Fetching functions...")
-                kubectl.get_functions()
+                kubectl.get_functions(namespace=args.namespace, all_namespaces=args.all_namespaces)
                 
         elif args.command == "describe":
             if args.resource == "node":
