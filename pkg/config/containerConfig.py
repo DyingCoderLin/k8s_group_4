@@ -112,12 +112,10 @@ class ContainerConfig:
             print(f"[WARNING] Container '{self.name}': runAsGroup specified without runAsUser. Adding to supplemental groups. Docker 'user' parameter not set with only group.")
 
         # privileged 参数
-        if self.privileged:
-            container_args['privileged'] = True
+        container_args['privileged'] = self.privileged
 
         # read_only 参数 (对应 readOnlyRootFilesystem)
-        if self.read_only:
-            container_args['read_only'] = True
+        container_args['read_only'] = self.read_only_root_filesystem
 
         # cap_add 参数
         if self.cap_add:
