@@ -223,8 +223,8 @@ class KubectlClient:
                     file_data = f.read()
 
                 files = {'file': (os.path.basename(file_path), file_data)}
-                print(f'[INFO]上传函数 {func} 到 {url}进行中')
                 url = URIConfig.PREFIX + URIConfig.FUNCTION_SPEC_URL.format(namespace='default', name=func)
+                print(f'[INFO]上传函数 {func} 到 {url}进行中')
                 response = requests.post(url, files=files, data=data)
                 print(response.json())
 
