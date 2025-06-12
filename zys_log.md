@@ -55,11 +55,19 @@ docker exec test-security-context-container-1 ps -o user,uid,group,gid,comm
 
 cat ./testFile/pod-security-context-base.yaml
 ./kubectl apply -f ./testFile/pod-security-context-base.yaml
-docker exec container-1-inherited ps -o user,uid,group,gid,comm
+docker exec container-1-inherited ps -o user,group,comm
+docker exec container-2-inherited ps -o user,group,comm
 
 cat ./testFile/pod-security-context-override.yaml
 ./kubectl apply -f ./testFile/pod-security-context-override.yaml
-docker exec container-1-inherited ps -o user,uid,group,gid,comm
+docker exec container-1-overridden ps -o user,group,comm
+docker exec container-2-overridden ps -o user,group,comm
+
+
+cat ./testFile/pod-base.yaml
+./kubectl apply -f ./testFile/pod-base.yaml
+
+
 
 
 docker inspect test-security-context-container-1 | grep User

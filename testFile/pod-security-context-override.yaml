@@ -36,19 +36,19 @@ spec:
     - name: shared-data-volume-override
       mountPath: /mnt/data-override # 挂载点
 
-    # 容器级别的Security Context，将覆盖Pod级别的同名字段
-    securityContext:
-      runAsUser: 1001       # 覆盖Pod级别的5000
-      runAsGroup: 2001      # 覆盖Pod级别的6000
-      # 注意：fsGroup是Pod级别的，通常不会在容器级别被覆盖，
-      # 但runAsUser/Group会影响容器内创建文件时的所有者。
-      # 如果要演示fsGroup的覆盖，需要为该容器单独挂载一个卷，并由Kubelet重新chown。
-      # 这里我们主要演示runAsUser/Group和privileged的覆盖。
-      privileged: true      # 覆盖Pod级别的false，启用特权模式
-      capabilities:         # 演示capabilities
-        add: ["NET_ADMIN", "SYS_TIME"] # 添加网络管理和系统时间修改能力
-        drop: ["MKNOD"]                # 移除创建设备文件的能力
-      readOnlyRootFilesystem: true # 演示只读根文件系统
+    # # 容器级别的Security Context，将覆盖Pod级别的同名字段
+    # securityContext:
+    #   runAsUser: 1001       # 覆盖Pod级别的5000
+    #   runAsGroup: 2001      # 覆盖Pod级别的6000
+    #   # 注意：fsGroup是Pod级别的，通常不会在容器级别被覆盖，
+    #   # 但runAsUser/Group会影响容器内创建文件时的所有者。
+    #   # 如果要演示fsGroup的覆盖，需要为该容器单独挂载一个卷，并由Kubelet重新chown。
+    #   # 这里我们主要演示runAsUser/Group和privileged的覆盖。
+    #   privileged: true      # 覆盖Pod级别的false，启用特权模式
+    #   capabilities:         # 演示capabilities
+    #     add: ["NET_ADMIN", "SYS_TIME"] # 添加网络管理和系统时间修改能力
+    #     drop: ["MKNOD"]                # 移除创建设备文件的能力
+    #   readOnlyRootFilesystem: true # 演示只读根文件系统
 
   - name: container-2-overridden # 第二个容器，覆盖Pod级别设置
     image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
