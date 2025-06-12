@@ -1092,7 +1092,7 @@ class KubectlClient:
                 # print(f"Node: {func_entry}")
                 name = func_entry.get("metadata").get("name")
                 namespace = func_entry.get("metadata").get("namespace")
-                path = func_entry.get("metadata").get("file")
+                path = func_entry.get("build").get("file")
                 rows.append([name, namespace, path])
             
             print(self.format_table_output(headers, rows))
