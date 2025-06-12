@@ -236,56 +236,31 @@ class KubectlClient:
     def _apply_workflow(self, workflow_data: dict, name: str, namespace: str):
         """应用Function资源"""
         try:
-            from pkg.config.globalConfig import GlobalConfig
+            import requests
 
             print(f"workflow_data: \n{workflow_data}")
+            uri = URIConfig.PREFIX + URIConfig.WORKFLOW_SPEC_URL.format(
+                namespace=workflow_data["metadata"]["namespace"],
+                name=workflow_data["metadata"]["name"],
+            )
+            response = requests.post(uri, json = workflow_data)
+            print(response.json())
 
-            # config = GlobalConfig()
-            # yaml_path = os.path.join(config.TEST_FILE_PATH, 'workflow-1.yaml')
-            # with open(yaml_path, "r", encoding="utf-8") as file:
-            #     data = yaml.safe_load(file)
+            input('Press Enter To Continue.')
+            print(f'[INFO]测试执行')
+            gen_input = {
+                "text": "The future of AI is ",
+            }
+            response = requests.patch(uri, json=gen_input)
+            print(response.json())
 
-            # print(f'[INFO]测试创建')
-            # uri = URIConfig.PREFIX + URIConfig.WORKFLOW_SPEC_URL.format(
-            #     namespace=data["metadata"]["namespace"],
-            #     name=data["metadata"]["name"],
-            # )
-            # response = requests.post(uri, json=data)
-            # print(response.json())
-
-            # input('Press Enter To Continue.')
-            # print(f'[INFO]测试执行')
-            # gen_input = {
-            #     "text": "The future of AI is ",
-            # }
-            # response = requests.patch(uri, json=gen_input)
-            # print(response.json())
-
-            # input('Press Enter To Continue.')
-            # chat_input = {
-            #     "text": "How are you?",
-            #     "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
-            # }
-            # response = requests.patch(uri, json=chat_input)
-            # print(response.json())
-
-
-
-            # # 使用 FunctionConfig 创建配置对象
-            # path = self.uri_config.FUNCTION_SPEC_URL.format(
-            #     namespace=namespace, name=name
-            # )
-
-            # file_path = function_data["file_path"]
-            # with open(file_path, 'rb') as f:
-            #     file_data = f.read()
-            # files = {'file': (os.path.basename(file_path), file_data)}
-
-            # response = self.api_client.post(path, data=function_data, files=files)
-
-            # 调用创建方法
-            # if response:
-            #     print(f"serverless.function/{name} created")
+            input('Press Enter To Continue.')
+            chat_input = {
+                "text": "How are you?",
+                "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
+            }
+            response = requests.patch(uri, json=chat_input)
+            print(response.json())
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
