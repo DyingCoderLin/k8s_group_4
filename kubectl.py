@@ -1084,6 +1084,9 @@ class KubectlClient:
                 path = self.uri_config.SERVICE_URL.format(namespace=ns)
                 response = self.api_client.get(path)
             
+            print(f"Response: {response}")
+
+            
             if not response:
                 ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
                 print(f"No functions found in {ns_info}.")
