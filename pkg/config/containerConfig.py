@@ -90,7 +90,7 @@ class ContainerConfig:
             'image': self.image,
             'name': self.name,
             'command': self.command + self.args,
-            **self.volumes,
+            # **self.volumes,
             **self.port,
             **self.resources,
         }
@@ -111,6 +111,9 @@ class ContainerConfig:
                 self.supplemental_groups.append(self.run_as_group)
             print(f"[WARNING] Container '{self.name}': runAsGroup specified without runAsUser. Adding to supplemental groups. Docker 'user' parameter not set with only group.")
 
+        if "volumes" in self.volumes: # 检查 self.volumes 中是否有 'volumes' 键
+            container_args['volumes'] = self.volumes["volumes"]
+            
         # privileged 参数
         container_args['privileged'] = self.privileged
 
