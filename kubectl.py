@@ -1084,8 +1084,6 @@ class KubectlClient:
                 ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
                 print(f"No functions found in {ns_info}.")
                 return
-            
-            from .pkg.config.functionConfig import FunctionConfig
 
             headers = ["NAME", "NAMESPACE", "PATH"]
             rows = []
