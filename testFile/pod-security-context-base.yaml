@@ -7,25 +7,23 @@ metadata:
     app: myapp-base
     version: "1.0"
 spec:
-  # Pod-level Security Context
-  # 这将应用于Pod中的所有容器，除非容器自身有覆盖
   securityContext:
-    runAsUser: 1000       # 所有容器进程的UID
-    runAsGroup: 2000      # 所有容器进程的主GID
-    fsGroup: 3000         # 挂载卷的GID
-    supplementalGroups: [4000, 5000] # 附加组
-    privileged: false     # 非特权模式
+    runAsUser: 1000
+    runAsGroup: 2000
+    fsGroup: 3000 # 挂载卷的GID
+    supplementalGroups: [4000, 5000]
+    privileged: false
 
   volumes:
-  - name: shared-data-volume # 定义一个卷
+  - name: shared-data-volume
     hostPath:
-      path: /tmp/pod-data-base # 宿主机上的路径，请确保该路径存在或你的Kubelet会创建
-      type: DirectoryOrCreate # 如果路径不存在则创建
+      path: /tmp/pod-data-base # 宿主机上的路径
+      type: DirectoryOrCreate
 
   containers:
-  - name: container-1-inherited # 第一个容器，继承Pod级别设置
+  - name: container-1-inherited
     image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
-    command: ["sleep", "3600"] # 保持容器运行
+    command: ["sleep", "3600"]
     ports:
     - containerPort: 9090
       protocol: TCP
@@ -38,11 +36,11 @@ spec:
         memory: 268435456
     volumeMounts:
     - name: shared-data-volume
-      mountPath: /mnt/data # 挂载点
+      mountPath: /mnt/data # 容器内的挂载点
 
-  - name: container-2-inherited # 第二个容器，同样继承Pod级别设置
-    image: busybox # 使用一个更小的镜像
-    command: ["tail", "-f", "/dev/null"] # 保持容器运行
+  - name: container-2-inherited
+    image: busybox
+    command: ["tail", "-f", "/dev/null"]
     resources:
       requests:
         cpu: 0.2
@@ -52,4 +50,4 @@ spec:
         memory: 268435456
     volumeMounts:
     - name: shared-data-volume
-      mountPath: /mnt/data # 挂载点
+      mountPath: /mnt/data
