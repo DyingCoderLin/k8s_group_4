@@ -76,6 +76,8 @@ docker exec container-2-overridden ps -o user,group,comm
 cat ./testFile/pod-base.yaml
 ./kubectl apply -f ./testFile/pod-base.yaml
 
+docker exec container-2-overridden touch /mnt/data-override/my-test-file.txt
+docker exec container-2-overridden ls -l /mnt/data-override/my-test-file.txt
 
 
 
