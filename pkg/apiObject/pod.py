@@ -40,11 +40,13 @@ class Pod:
 
         if platform.system() == "Windows":
             self.client = docker.DockerClient(
-                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
+                # base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
+                base_url="npipe:////./pipe/docker_engine", version="auto", timeout=20
             )
         else:
             self.client = docker.DockerClient(
-                base_url="unix://var/run/docker.sock", version="1.25", timeout=5
+                # base_url="unix://var/run/docker.sock", version="1.25", timeout=5
+                base_url="unix://var/run/docker.sock", version="auto", timeout=5
             )
         self.client.networks.prune()
         self.containers = []
@@ -75,13 +77,15 @@ class Pod:
                             # -1 表示不改变用户所有权，只改变组所有权
                             os.chown(host_path, -1, pod_fs_group)
                             
-                            # 设置setgid位，确保新创建的文件继承目录的组ID
-                            # os.stat(host_path).st_mode 获取当前权限
-                            # stat.S_ISGID 是os.stat()返回的mode中的一个位，表示setgid
-                            # os.chmod 会在原有权限基础上添加setgid位
-                            current_mode = os.stat(host_path).st_mode
-                            # 0o2000 是八进制的setgid位，等同于 stat.S_ISGID
-                            os.chmod(host_path, current_mode | 0o2000) 
+                            os.chmod(host_path, 0o2775)
+
+                            # # 设置setgid位，确保新创建的文件继承目录的组ID
+                            # # os.stat(host_path).st_mode 获取当前权限
+                            # # stat.S_ISGID 是os.stat()返回的mode中的一个位，表示setgid
+                            # # os.chmod 会在原有权限基础上添加setgid位
+                            # current_mode = os.stat(host_path).st_mode
+                            # # 0o2000 是八进制的setgid位，等同于 stat.S_ISGID
+                            # os.chmod(host_path, current_mode | 0o2000) 
                             
                             print(f"[INFO]Successfully applied fsGroup {pod_fs_group} to host path: {host_path}")
                         except OSError as e:

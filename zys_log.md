@@ -61,6 +61,7 @@ docker exec container-2-inherited ps -o user,group,comm
 docker exec container-1-inherited touch /mnt/data-override/testfile-c1-ov
 docker exec container-1-inherited ls -l /mnt/data-override/testfile-c1-ov
 
+ls -ld /tmp/pod-data-base
 docker exec container-1-inherited touch /mnt/data/my-test-file.txt
 docker exec container-1-inherited ls -l /mnt/data/my-test-file.txt
 ls -l /tmp/pod-data-base/my-test-file.txt
