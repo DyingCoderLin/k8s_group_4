@@ -1077,16 +1077,17 @@ class KubectlClient:
         """获取所有 Function 信息"""
         print("Getting functions...")
         try:
-            if all_namespaces:
-                response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
-            else:
-                ns = namespace or self.default_namespace
-                path = self.uri_config.SERVICE_URL.format(namespace=ns)
-                response = self.api_client.get(path)
+            response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
+            # if all_namespaces:
+                
+            # else:
+            #     ns = namespace or self.default_namespace
+            #     path = self.uri_config.SERVICE_URL.format(namespace=ns)
+            #     response = self.api_client.get(path)
             
             print(f"Response: {response}")
 
-            
+
             if not response:
                 ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
                 print(f"No functions found in {ns_info}.")
