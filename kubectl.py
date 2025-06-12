@@ -201,6 +201,7 @@ class KubectlClient:
             import requests
 
             config = GlobalConfig()
+            name = function_data.get('metadata', {}).get('name')
 
             def upload_function(func):
                 yaml_path = os.path.join(config.TEST_FILE_PATH, f'function-{func}.yaml')
@@ -216,9 +217,13 @@ class KubectlClient:
                 url = URIConfig.PREFIX + URIConfig.FUNCTION_SPEC_URL.format(namespace='default', name=func)
                 print(f'[INFO]上传函数 {func} 到 {url}进行中')
                 response = requests.post(url, files=files, data=data)
+                if(response.status_code != 200):
+                    print(f'function name {func} 已经存在，要update')
+                    response = requests.delete(url, files=files, data=data)
+                    response = requests.post(url, files=files, data=data)
                 print(response.json())
 
-            upload_function(function_data.get('metadata', {}).get('name'))
+            upload_function(name)
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
