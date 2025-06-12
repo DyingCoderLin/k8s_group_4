@@ -58,6 +58,10 @@ cat ./testFile/pod-security-context-base.yaml
 docker exec container-1-inherited ps -o user,group,comm
 docker exec container-2-inherited ps -o user,group,comm
 
+docker exec container-1-inherited touch /mnt/data-override/testfile-c1-ov
+docker exec container-1-inherited ls -l /mnt/data-override/testfile-c1-ov
+
+
 cat ./testFile/pod-security-context-override.yaml
 ./kubectl apply -f ./testFile/pod-security-context-override.yaml
 docker exec container-1-overridden ps -o user,group,comm
