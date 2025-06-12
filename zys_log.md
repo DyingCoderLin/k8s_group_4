@@ -52,7 +52,8 @@ docker exec -it pause_default_test-server-1 /bin/sh
 
 
 docker exec test-security-context-container-1 ps -o user,uid,group,gid,comm
-
+cat ./testFile/pod-security-context-base.yaml
+cat ./testFile/pod-security-context-override.yaml
 
 
 docker inspect test-security-context-container-1 | grep User
