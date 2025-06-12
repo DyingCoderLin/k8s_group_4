@@ -246,21 +246,21 @@ class KubectlClient:
             response = requests.post(uri, json = workflow_data)
             print(response.json())
 
-            input('Press Enter To Continue.')
-            print(f'[INFO]测试执行')
-            gen_input = {
-                "text": "The future of AI is ",
-            }
-            response = requests.patch(uri, json=gen_input)
-            print(response.json())
+            # input('Press Enter To Continue.')
+            # print(f'[INFO]测试执行')
+            # gen_input = {
+            #     "text": "The future of AI is ",
+            # }
+            # response = requests.patch(uri, json=gen_input)
+            # print(response.json())
 
-            input('Press Enter To Continue.')
-            chat_input = {
-                "text": "How are you?",
-                "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
-            }
-            response = requests.patch(uri, json=chat_input)
-            print(response.json())
+            # input('Press Enter To Continue.')
+            # chat_input = {
+            #     "text": "How are you?",
+            #     "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
+            # }
+            # response = requests.patch(uri, json=chat_input)
+            # print(response.json())
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
@@ -1073,59 +1073,32 @@ class KubectlClient:
 
     # ============= Function 相关操作 =============
 
-    def get_function(self, namespace: str = None, all_namespaces: bool = False) -> None:
-        """获取 HPA 列表"""
+    def get_functions(self) -> None:
+        """获取所有 Function 信息"""
         try:
-            if all_namespaces:
-                response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
-            else:
-                ns = namespace or self.default_namespace
-                path = self.uri_config.FUNCTION_URL.format(namespace=ns)
-                response = self.api_client.get(path)
+            from .pkg.config.functionConfig import FunctionConfig
 
+            response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
             if not response:
-                ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
-                print(f"No function found in {ns_info}.")
+                print("No functions found.")
                 return
 
-            headers = ["NAME", "TRIGGER", "FILE", "IMAGE", "RUNNING_PODS"]
-            if all_namespaces:
-                headers.insert(1, "NAMESPACE")
-
+            headers = ["NAME", "NAMESPACE", "PATH"]
             rows = []
 
-            for function_entry in response:
-                if isinstance(function_entry, dict) and len(function_entry) == 1:
-                    function_name = list(function_entry.keys())[0]
-                    function_data = function_entry[function_name]
+            for func_entry in response:
+                # print(f"Node: {func_entry}")
+                if isinstance(func_entry, FunctionConfig):
+                    name = func_entry.get("metadata").get("name")
+                    namespace = func_entry.get("metadata").get("namespace")
+                    path = func_entry.get("metadata").get("file_path")
 
-                    # 提取 function 信息
-                    trigger = function_data.get("trigger")
-                    build = function_data.get("build", {})
-
-                    # 构建信息
-                    file = build.get("file", None)
-                    image = build.get("image", None)
-
-                    # 实例信息
-                    running_pods = function_data.get("running_pods", [])
-                    targets = []
-                    for pod in running_pods:
-                        targets.append(
-                            f"{pod.get('metadata').get('name')}: {pod.get('subnet_ip', None)}")
-                    targets_str = ", ".join(targets) if targets else "<unknown>"
-
-                    if all_namespaces:
-                        function_namespace = function_data.get("metadata", {}).get("namespace", "Unknown")
-                        rows.append(
-                            [function_name, function_namespace, trigger, file, image, targets_str])
-                    else:
-                        rows.append([function_name, trigger, file, image, targets_str])
-
+                    rows.append([name, namespace, path])
+            
             print(self.format_table_output(headers, rows))
 
         except Exception as e:
-            print(f"Error getting hpa: {e}")
+            print(f"Error getting functions: {e}")
 
     def describe_function(self, function_name: str, namespace: str = None) -> None:
         try:
@@ -1299,7 +1272,7 @@ def main():
             elif args.resource in ["hpa"]:
                 kubectl.get_hpa(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["function"]:
-                kubectl.get_function(namespace=args.namespace, all_namespaces=args.all_namespaces)
+                kubectl.get_functions()
                 
         elif args.command == "describe":
             if args.resource == "node":
