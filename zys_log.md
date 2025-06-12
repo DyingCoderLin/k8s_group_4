@@ -26,6 +26,7 @@ docker rm -f test-server-container-1  pause_default_test-server-1
 ps aux | grep kubectl
 kill -9 <第一行第二个参数>
 
+./start.sh --stop
 cd ./yamls
 docker compose down
 rm -rf zookeeper-log zookeeper-data kafka
@@ -48,6 +49,13 @@ docker exec -it pause_default_test-server-1 /bin/sh
 ./kubectl apply -f ./testFile/test-pod-server-1.yaml
 ./kubectl apply -f ./testFile/dns-service-1.yaml
 @REM test-dns-cloud.yaml
+
+
+
+
+./kubectl apply -f ./testFile/test-pod-security-context.yaml
+
+
 
 python ./pkg/controller/dnsController.py
 cat ./config/nginx.conf
