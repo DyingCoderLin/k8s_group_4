@@ -1338,9 +1338,8 @@ class ApiServer:
         """获取指定Funcctions"""
         print(f"[INFO]Get functions in namespace {namespace}")
         try:
-            functions = self.etcd.get_prefix(
-                self.etcd_config.GLOBAL_FUNCTION_KEY.format(namespace=namespace)
-            )
+            functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
+            
             result = []
             for func in functions:
                 result.append(func.to_dict())
