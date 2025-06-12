@@ -1079,6 +1079,10 @@ class KubectlClient:
             from .pkg.config.functionConfig import FunctionConfig
 
             response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
+            
+            print(f"Found {len(response)} functions.")
+            print(f"{response}")
+            
             if not response:
                 print("No functions found.")
                 return
