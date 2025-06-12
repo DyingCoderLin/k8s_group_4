@@ -1077,16 +1077,8 @@ class KubectlClient:
         """获取所有 Function 信息"""
         print("Getting functions...")
         try:
-            response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
-            # if all_namespaces:
-                
-            # else:
-            #     ns = namespace or self.default_namespace
-            #     path = self.uri_config.SERVICE_URL.format(namespace=ns)
-            #     response = self.api_client.get(path)
-            
+            response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)            
             print(f"Response: {response}")
-
 
             if not response:
                 ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
@@ -1102,13 +1094,11 @@ class KubectlClient:
             rows = []
 
             for func_entry in response:
-                # print(f"Node: {func_entry}")
-                if isinstance(func_entry, FunctionConfig):
-                    name = func_entry.get("metadata").get("name")
-                    namespace = func_entry.get("metadata").get("namespace")
-                    path = func_entry.get("metadata").get("file_path")
-
-                    rows.append([name, namespace, path])
+                print(f"Node: {func_entry}")
+                # name = func_entry.get("metadata").get("name")
+                # namespace = func_entry.get("metadata").get("namespace")
+                # path = func_entry.get("metadata").get("file_path")
+                # rows.append([name, namespace, path])
             
             print(self.format_table_output(headers, rows))
 
