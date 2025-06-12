@@ -219,7 +219,7 @@ class KubectlClient:
                 response = requests.post(url, files=files, data=data)
                 if(response.status_code != 200):
                     print(f'function name {func} 已经存在，要update')
-                    response = requests.delete(url, files=files, data=data)
+                    response = requests.delete(url)
                     response = requests.post(url, files=files, data=data)
                 print(response.json())
 
