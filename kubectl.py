@@ -1075,6 +1075,7 @@ class KubectlClient:
 
     def get_functions(self, namespace: str = None, all_namespaces: bool = False) -> None:
         """获取所有 Function 信息"""
+        print("Getting functions...")
         try:
             if all_namespaces:
                 response = self.api_client.get(self.uri_config.GLOBAL_FUNCTIONS_URL)
