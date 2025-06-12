@@ -116,6 +116,8 @@ class KubectlClient:
                 self._apply_dns(resource_data, name, namespace)
             elif kind == "Function":
                 self._apply_function(resource_data, name, namespace)
+            elif kind == "Workflow":
+                self._apply_workflow(resource_data, name, namespace)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
                 return
@@ -194,6 +196,7 @@ class KubectlClient:
         try:
             print(f"Applying function '{name}' in namespace '{namespace}'...")
 
+            # TODO 这里存etcd
             # func_url = self.uri_config.FUNCTION_SPEC_URL.format(
             #     namespace = namespace,
             #     name = name
@@ -220,30 +223,24 @@ class KubectlClient:
                     file_data = f.read()
 
                 files = {'file': (os.path.basename(file_path), file_data)}
+                print(f'[INFO]上传函数 {func} 到 {url}进行中')
                 url = URIConfig.PREFIX + URIConfig.FUNCTION_SPEC_URL.format(namespace='default', name=func)
-                print(f'[INFO]上传函数 {func} 到 {url}')
                 response = requests.post(url, files=files, data=data)
                 print(response.json())
 
             upload_function(function_data.get('metadata', {}).get('name'))
-        
-            # if response:
-            #     print(f"serverless.function/{name} created")
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
-    def _apply_workflow(self, function_data: dict, name: str, namespace: str):
+            
+    def _apply_workflow(self, workflow_data: dict, name: str, namespace: str):
         """应用Function资源"""
         try:
+            from pkg.config.globalConfig import GlobalConfig
 
-            func_url = self.uri_config.uri_config.FUNCTION_SPEC_URL.format(
-                namespace = namespace,
-                name = name
-            )
-            response = self.uri_config.api_client.post(func_url, function_data)
+            print(f"workflow_data: \n{workflow_data}")
 
-            print(f"function_data:\n {function_data}")
-            
+            # config = GlobalConfig()
             # yaml_path = os.path.join(config.TEST_FILE_PATH, 'workflow-1.yaml')
             # with open(yaml_path, "r", encoding="utf-8") as file:
             #     data = yaml.safe_load(file)
@@ -287,8 +284,8 @@ class KubectlClient:
             # response = self.api_client.post(path, data=function_data, files=files)
 
             # 调用创建方法
-            if response:
-                print(f"serverless.function/{name} created")
+            # if response:
+            #     print(f"serverless.function/{name} created")
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
