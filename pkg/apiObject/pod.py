@@ -48,11 +48,17 @@ class Pod:
         for container in self.config.containers:
             try:
                 args = container.dockerapi_args()
+                host_config_params = args.pop('host_config', {})
+
                 containers = self.client.containers.list(all=True, filters={"name": args['name']})
                 if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
-                    for container in containers: container.remove(force=True)
+                    for container in containers: 
+                        container.remove(force=True)
+
+                # 启动容器
                 self.containers.append(self.client.containers.run(
                     **args,
+                    host_config=self.client.create_host_config(**host_config_params),
                     detach=True,
                     network_mode=f'container:{pause_docker_name}'
                 ))
