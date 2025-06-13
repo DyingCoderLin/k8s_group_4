@@ -18,7 +18,7 @@ from pkg.config.nodeConfig import NodeConfig
 
 from pkg.config.dnsConfig import DNSConfig
 from pkg.controller.dnsController import DNSController
-
+from pkg.config.globalConfig import GlobalConfig
 
 class KubectlClient:
     """kubectl 客户端主类"""
@@ -116,6 +116,8 @@ class KubectlClient:
                 self._apply_dns(resource_data, name, namespace)
             elif kind == "Function":
                 self._apply_function(resource_data, name)
+            elif kind == "Job":
+                self._apply_job(resource_data, name)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
                 return
@@ -210,7 +212,95 @@ class KubectlClient:
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
+
+    def _apply_job(self, function_data: dict, name: str):
+        """应用Job资源"""
+        try:
+            # 使用 FunctionConfig 创建配置对象
+
+            # TODO 测试路径是否正确
+            file_name = function_data["metadata"]["name"]on
+            # namespace = function_data["metadata"].get("namespace", "default")
+
+            config = GlobalConfig()
+            file_path = os.path.join(global_config.TEST_FILE_PATH, "job", f"{file_name}.zip")
+
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+
+            form = {
+                "name": data.get('metadata').get('name'),
+                "command": data.get('args').get('command'),
+            }
+
+            files = {'file': (os.path.basename(file_path), file_data)}
+
+            url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=job)
+            response = requests.post(url, files=files, data=form)
+            # print(response.json())
+
+            # 调用创建方法
+            if response:
+                print(f"serverless.function/{name} created")
+
+        except Exception as e:
+            print(f"Error creating serverless.function/{name}: {e}")
     
+    def get_job(self, name, namespace: str = None) -> None:
+        """获取 JOB 列表"""
+        try:
+            from pkg.config.uriConfig import URIConfig
+
+            url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=name)
+            response = requests.get(url, files=files, data=form)
+            print(response.json())
+            
+            # response = self.api_client.get(self.uri_config.JOBS_URL)
+
+            # if not response:
+            #     ns_info = "all namespaces" if all_namespaces else (namespace or self.default_namespace)
+            #     print(f"No function found in {ns_info}.")
+            #     return
+
+            # headers = ["NAME", "TRIGGER", "FILE", "IMAGE", "RUNNING_PODS"]
+            # if all_namespaces:
+            #     headers.insert(1, "NAMESPACE")
+
+            # rows = []
+
+            # for function_entry in response:
+            #     if isinstance(function_entry, dict) and len(function_entry) == 1:
+            #         function_name = list(function_entry.keys())[0]
+            #         function_data = function_entry[function_name]
+
+            #         # 提取 function 信息
+            #         trigger = function_data.get("trigger")
+            #         build = function_data.get("build", {})
+
+            #         # 构建信息
+            #         file = build.get("file", None)
+            #         image = build.get("image", None)
+
+            #         # 实例信息
+            #         running_pods = function_data.get("running_pods", [])
+            #         targets = []
+            #         for pod in running_pods:
+            #             targets.append(
+            #                 f"{pod.get('metadata').get('name')}: {pod.get('subnet_ip', None)}")
+            #         targets_str = ", ".join(targets) if targets else "<unknown>"
+
+            #         if all_namespaces:
+            #             function_namespace = function_data.get("metadata", {}).get("namespace", "Unknown")
+            #             rows.append(
+            #                 [function_name, function_namespace, trigger, file, image, targets_str])
+            #         else:
+            #             rows.append([function_name, trigger, file, image, targets_str])
+
+            # print(self.format_table_output(headers, rows))
+
+        except Exception as e:
+            print(f"Error getting hpa: {e}")
+
     def _apply_node(self, node_data: dict, name: str) -> None:
         """应用Node资源（特殊处理）"""
         try:
@@ -1186,7 +1276,7 @@ def main():
     
     # get 命令
     get_parser = subparsers.add_parser("get", help="显示一个或多个资源")
-    get_parser.add_argument("resource", choices=["nodes", "pods", "services", "svc", "replicasets", "rs", "hpa", "function"],
+    get_parser.add_argument("resource", choices=["nodes", "pods", "services", "svc", "replicasets", "rs", "hpa", "function", "job"],
                            help="资源类型")
     get_parser.add_argument("name", nargs="?", help="资源名称")
     
@@ -1247,6 +1337,8 @@ def main():
                 kubectl.get_hpa(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["function"]:
                 kubectl.get_function(namespace=args.namespace, all_namespaces=args.all_namespaces)
+            elif args.resource in ["job"]:
+                kubectl.get_job(args.name, namespace=args.namespace)
                 
         elif args.command == "describe":
             if args.resource == "node":

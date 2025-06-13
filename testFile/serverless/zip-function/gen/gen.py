@@ -14,7 +14,7 @@ def handler(event: Dict, context: Dict) -> Dict:
         print("Loading generation model...")
         _gen_pipe = pipeline(
             'text-generation',
-            model='./distilgpt2',
+            model='./GPT-Neo-50m',
             device=0 if torch.cuda.is_available() else -1,
             torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
         )

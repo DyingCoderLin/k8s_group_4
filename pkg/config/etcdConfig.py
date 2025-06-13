@@ -6,14 +6,15 @@ from pkg.config.serviceConfig import ServiceConfig
 from pkg.config.dnsConfig import DNSConfig
 from pkg.config.functionConfig import FunctionConfig
 from pkg.config.workflowConfig import WorkflowConfig
+from pkg.config.jobConfig import JobConfig
 
 class EtcdConfig:
     # Etcd 地址
 
     # HOST = '10.119.11.171' # 这是哪个
-    HOST = "10.119.15.182"  # server
+    # HOST = "10.119.15.182"  # server
     # HOST='10.181.22.193' #mac
-    # HOST = 'localhost'
+    HOST = 'localhost'
     PORT = "2379"
 
     # -------------------- 资源键值定义 --------------------
@@ -60,6 +61,11 @@ class EtcdConfig:
     WORKFLOW_KEY = "/api/v1/namespaces/workflows/{namespace}"
     WORKFLOW_SPEC_KEY = "/api/v1/namespaces/workflows/{namespace}/{name}"
     WORKFLOW_VALUE = WorkflowConfig
+
+    # Job相关
+    JOBS_KEY = "/api/v1/jobs"
+    JOB_SPEC_KEY = "/api/v1/jobs/{name}"
+    JOBS_VALUE = JobConfig
 
     # 清除列表
     RESET_PREFIX = [NODES_KEY, GLOBAL_PODS_KEY, GLOBAL_REPLICA_SETS_KEY, GLOBAL_HPA_KEY, GLOBAL_DNS_KEY, GLOBAL_SERVICES_KEY, GLOBAL_FUNCTION_KEY, GLOBAL_WORKFLOW_KEY]

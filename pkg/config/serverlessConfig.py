@@ -4,11 +4,12 @@ class ServerlessConfig:
     # 存储路径，项目根目录的serverlessPersist目录
     PERSIST_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'Persist')
     CODE_PATH = os.path.join(PERSIST_BASE, 'code/{namespace}/{name}')
-    JOB_PATH = os.path.join(PERSIST_BASE, 'job/{namespace}/{name}') # Job的抽象我真不想再写一个新的了，就掐这儿
+    JOB_PATH = os.path.join(PERSIST_BASE, 'job/{name}') # Job的抽象我真不想再写一个新的了，就掐这儿
 
     # 必要的文件路径，pkg目录下的serverless目录
-    SRC_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'serverless')
-    SERVER_PATH = os.path.join(SRC_BASE, 'serverlessServer.py')
+    SRC_BASE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    SERVER_PATH = os.path.join(SRC_BASE, 'serverless', 'serverlessServer.py')
+    UPLOADER_PATH = os.path.join(SRC_BASE, 'job', 'uploader.py')
 
     # 镜像管理
     REGISTRY_URL = '10.119.15.182:7000'

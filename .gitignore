@@ -21,6 +21,7 @@ yamls/kafka
 
 # ApiServer持久化文件
 serverlessPersist/
+Persist/
 
 # testFile中的模型文件
 testFile/serverless/zip-function/chat/DialoGPT-small

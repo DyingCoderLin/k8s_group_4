@@ -13,6 +13,8 @@ import platform
 from time import time, sleep, ctime
 from threading import Thread
 
+from pkg.apiObject.job import Job
+from pkg.config.jobConfig import JobConfig
 from pkg.utils.atomicCounter import AtomicCounter
 from pkg.apiObject.pod import STATUS as POD_STATUS
 from pkg.apiObject.node import Node, STATUS as NODE_STATUS
@@ -179,7 +181,9 @@ class ApiServer:
         # 调用workflow
         self.app.route(config.WORKFLOW_SPEC_URL, methods=['PATCH'])(self.exec_workflow)
 
-
+        # job相关
+        self.app.route(config.JOB_SPEC_URL, methods=['POST'])(self.add_job)
+        self.app.route(config.JOB_SPEC_URL, methods=['GET'])(self.get_job)
 
     def get_dns_list(self, namespace: str):
        """获取指定命名空间的 DNS 列表"""
@@ -1328,7 +1332,7 @@ class ApiServer:
             function = self.etcd.get(key)
             if function is None:
                 return json.dumps({"error": "Function not found"}), 999
-            return json.dumps(function.to_dict())
+            return json.dumps(function.to_dict()), 200
         except Exception as e:
             print(f"[ERROR]Failed to get function: {str(e)}")
             return json.dumps({"error": str(e)}), 500
@@ -1505,6 +1509,33 @@ class ApiServer:
         except Exception as e:
             print(f'[ERROR]Error occur during workflow execution: {str(e)}')
             return json.dumps({"error": f"Error occur during workflow execution: {str(e)}"}), 500
+
+    def add_job(self, name : str):
+        job_json = request.form
+        file = request.files['file']
+        job_config = JobConfig(job_json)
+        job = Job(job_config, self.serverless_config, self.uri_config, file)
+        try:
+            # 检查并存入源代码
+            job.download_code()
+            # 检查并构建image
+            job.build_image()
+            # 上传dockerhub
+            job.push_image()
+            # 写etcd
+            self.etcd.put(self.etcd_config.JOB_SPEC_KEY.format(name=name), job_config)
+            # 启动docker运行
+            job.run()
+        except Exception as e:
+            return json.dumps({"error": str(e)}), 409
+        print(f"[INFO]Job {name} added successfully")
+        return json.dumps({"message": "Successfully add job"}), 200
+
+    def get_job(self, name: str):
+        job = self.etcd.get(self.etcd_config.JOB_SPEC_KEY.format(name=name))
+        if job is None:
+            return json.dumps({"error": f"Job {name} not found"}), 404
+        return json.dumps(job.to_dict()), 200
 
 
 if __name__ == "__main__":
