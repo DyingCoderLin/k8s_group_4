@@ -117,8 +117,8 @@ class KubectlClient:
             elif kind == "Function":
                 self._apply_function(resource_data, name)
             elif kind == "Job":
+                print('[INFO]Job is called.')
                 self._apply_job(resource_data, name)
-                self._apply_function(resource_data, name, namespace)
             elif kind == "Workflow":
                 self._apply_workflow(resource_data, name, namespace)
             else:
