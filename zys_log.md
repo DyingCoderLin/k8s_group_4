@@ -26,6 +26,7 @@ docker rm -f test-server-container-1  pause_default_test-server-1
 ps aux | grep kubectl
 kill -9 <第一行第二个参数>
 
+./start.sh --stop
 cd ./yamls
 docker compose down
 rm -rf zookeeper-log zookeeper-data kafka
@@ -48,6 +49,46 @@ docker exec -it pause_default_test-server-1 /bin/sh
 ./kubectl apply -f ./testFile/test-pod-server-1.yaml
 ./kubectl apply -f ./testFile/dns-service-1.yaml
 @REM test-dns-cloud.yaml
+
+
+docker exec test-security-context-container-1 ps -o user,uid,group,gid,comm
+
+cat ./testFile/pod-security-context-base.yaml
+./kubectl apply -f ./testFile/pod-security-context-base.yaml
+docker exec container-1-inherited ps -o user,group,comm
+docker exec container-2-inherited ps -o user,group,comm
+
+docker exec container-1-inherited touch /mnt/data-override/testfile-c1-ov
+docker exec container-1-inherited ls -l /mnt/data-override/testfile-c1-ov
+
+ls -ld /tmp/pod-data-base
+docker exec container-1-inherited touch /mnt/data/my-test-file.txt
+docker exec container-1-inherited ls -l /mnt/data/my-test-file.txt
+<!-- ls -l /tmp/pod-data-base/my-test-file.txt -->
+
+
+cat ./testFile/pod-security-context-override.yaml
+./kubectl apply -f ./testFile/pod-security-context-override.yaml
+docker exec container-1-overridden ps -o user,group,comm
+docker exec container-2-overridden ps -o user,group,comm
+
+
+cat ./testFile/pod-base.yaml
+./kubectl apply -f ./testFile/pod-base.yaml
+
+docker exec container-2-overridden touch /mnt/data-override/my-test-file.txt
+docker exec container-2-overridden ls -l /mnt/data-override/my-test-file.txt
+
+
+
+docker inspect test-security-context-container-1 | grep User
+docker inspect test-security-context-container-1 | grep GroupAdd
+docker inspect test-security-context-container-1 | grep Privileged
+docker inspect test-security-context-container-1 | grep ReadonlyRootfs
+
+./kubectl apply -f ./testFile/test-pod-security-context.yaml
+
+
 
 python ./pkg/controller/dnsController.py
 cat ./config/nginx.conf

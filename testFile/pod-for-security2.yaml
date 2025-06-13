@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-container-security-context
+  namespace: default
+  labels:
+    app: secure-nginx
+spec:
+  # (可选) Pod 级别的 securityContext
+  # 如果这里设置了 runAsUser: 1000，而下面的 container 级别设置了 runAsUser: 1001，
+  # 那么该容器将以 1001 运行，Pod 级别的 1000 会被覆盖。
+  # 如果 Pod 中有其他容器没有自己的 securityContext，它们会继承这里的设置。
+  # 注意：fsGroup 总是 Pod 级别的，即使在容器中指定，其效果也是 Pod 范围的。
+  # securityContext:
+  #   runAsUser: 1000
+  #   runAsGroup: 1000
+  #   fsGroup: 2000
+
+  containers:
+  - name: my-secure-app-container
+    image: nginx:latest # 示例镜像
+    ports:
+    - containerPort: 80
+      name: http-port
+    
+    # 核心部分：Container 级别的 securityContext
+    # 这里的设置仅应用于 'my-secure-app-container' 这个容器
+    securityContext:
+      runAsUser: 1001 # 指定容器内进程以 UID 1001 运行
+      runAsGroup: 1002 # 指定容器内进程以 GID 1002 运行
+      allowPrivilegeEscalation: false # 禁止容器进程获取比其父进程更多的权限 (例如，禁止设置 SUID/SGID 位)
+      readOnlyRootFilesystem: true # 将容器的根文件系统设置为只读，提高安全性
+      capabilities: # 管理 Linux Capabilities
+        drop: # 移除默认的 Capabilities，提高安全性
+        - ALL # 移除所有默认 Capabilities
+        add: # 添加特定的 Capabilities (在 ALL 被移除后，如果需要某些特定功能)
+        - NET_BIND_SERVICE # 允许绑定到 1024 以下的端口 (例如，Nginx 绑定 80 端口需要此权限)
+      # seccompProfile: # 配置 Seccomp 配置文件，限制系统调用
+      #   type: RuntimeDefault # 使用容器运行时的默认 Seccomp 配置文件
+      # privileged: false # 不以特权模式运行容器 (默认就是 false，通常不建议设置为 true)
+
+  - name: another-container # 另一个容器，它将继承 Pod 级别的 securityContext (如果存在)
+    image: busybox
+    command: ["sh", "-c", "sleep 3600"]
+    # 这个容器没有定义 securityContext，它将：
+    # 1. 如果 Pod 级别有 securityContext，则继承 Pod 级别的设置。
+    # 2. 如果 Pod 级别也没有定义，则使用容器运行时的默认设置。

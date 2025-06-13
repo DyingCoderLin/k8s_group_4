@@ -13,6 +13,19 @@ import os
 import yaml
 from pkg.apiServer.apiClient import ApiClient
 
+import os
+import docker
+from docker.errors import APIError
+import platform
+import argparse
+import sys
+import yaml
+import requests
+import json
+import stat # <-- 新增导入 stat 模块，用于处理文件权限
+from pkg.apiServer.apiClient import ApiClient
+from pkg.config.podConfig import PodConfig # 确保导入 PodConfig
+
 class STATUS:
     CREATING = "CREATING"
     STOPPED = "STOPPED"
@@ -27,15 +40,62 @@ class Pod:
 
         if platform.system() == "Windows":
             self.client = docker.DockerClient(
-                base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
+                # base_url="npipe:////./pipe/docker_engine", version="1.25", timeout=20
+                base_url="npipe:////./pipe/docker_engine", version="auto", timeout=20
             )
         else:
             self.client = docker.DockerClient(
-                base_url="unix://var/run/docker.sock", version="1.25", timeout=5
+                # base_url="unix://var/run/docker.sock", version="1.25", timeout=5
+                base_url="unix://var/run/docker.sock", version="auto", timeout=5
             )
         self.client.networks.prune()
         self.containers = []
 
+        
+        # --- 新增 fsGroup 处理逻辑 ---
+        # 检查Pod级别是否有fsGroup设置
+        pod_fs_group = self.config.security_context.get('fsGroup')
+        if pod_fs_group is not None:
+            # 确保 fsGroup 是整数类型
+            try:
+                pod_fs_group = int(pod_fs_group)
+            except ValueError:
+                print(f"[ERROR]fsGroup value '{self.config.security_context.get('fsGroup')}' is not a valid integer. Skipping fsGroup application.")
+                pod_fs_group = None # 设为None，跳过后续处理
+
+            if pod_fs_group is not None:
+                print(f"[INFO]Pod has fsGroup set: {pod_fs_group}. Applying to volumes...")
+                # 遍历PodConfig中解析的volumes_map（即self.config.volume）
+                for volume_name, host_path in self.config.volume.items():
+                    if host_path: # 确保host_path不为空
+                        try:
+                            # 确保目录存在，因为hostPath类型可能是DirectoryOrCreate
+                            # 这与Kubernetes的行为一致，如果目录不存在，Kubelet会创建
+                            os.makedirs(host_path, exist_ok=True)
+                            
+                            # 更改目录的组所有权
+                            # -1 表示不改变用户所有权，只改变组所有权
+                            os.chown(host_path, -1, pod_fs_group)
+                            
+                            os.chmod(host_path, 0o2775)
+
+                            # # 设置setgid位，确保新创建的文件继承目录的组ID
+                            # # os.stat(host_path).st_mode 获取当前权限
+                            # # stat.S_ISGID 是os.stat()返回的mode中的一个位，表示setgid
+                            # # os.chmod 会在原有权限基础上添加setgid位
+                            # current_mode = os.stat(host_path).st_mode
+                            # # 0o2000 是八进制的setgid位，等同于 stat.S_ISGID
+                            # os.chmod(host_path, current_mode | 0o2000) 
+                            
+                            print(f"[INFO]Successfully applied fsGroup {pod_fs_group} to host path: {host_path}")
+                        except OSError as e:
+                            print(f"[ERROR]Failed to apply fsGroup {pod_fs_group} to {host_path}: {e}")
+                            print(f"[ERROR]Please ensure your Kubelet process (running this script) has sufficient permissions (e.g., run as root or with sudo) to chown/chmod the host path: {host_path}")
+                    else:
+                        print(f"[WARNING]Volume '{volume_name}' has no hostPath specified. Cannot apply fsGroup.")
+        # --- fsGroup 处理逻辑结束 ---
+
+        
         pause_docker_name = "pause_" + self.config.namespace + "_" + self.config.name
         containers = self.client.containers.list(all=True, filters={"name": pause_docker_name})
         if len(containers) == 0:
@@ -48,9 +108,13 @@ class Pod:
         for container in self.config.containers:
             try:
                 args = container.dockerapi_args()
+
                 containers = self.client.containers.list(all=True, filters={"name": args['name']})
                 if len(containers) > 0: # Node重启，由于不确定容器状态是否发生改变，统一删除后重建
-                    for container in containers: container.remove(force=True)
+                    for container in containers: 
+                        container.remove(force=True)
+
+                # 启动容器
                 self.containers.append(self.client.containers.run(
                     **args,
                     detach=True,
@@ -264,7 +328,8 @@ if __name__ == "__main__":
 
         config = GlobalConfig()
         # test_file = "pod-1 copy.yaml"
-        test_file = "test-pod-server-1.yaml"
+        # test_file = "test-pod-server-1.yaml"
+        test_file = "test-pod-security-context.yaml"
         test_yaml = os.path.join(config.TEST_FILE_PATH, test_file)
         print(
             f"[INFO]使用{test_file}作为测试配置，测试Pod的创建和删除。目前没有使用volume绑定"

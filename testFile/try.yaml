@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: security-context-base-pod
+  namespace: default
+  labels:
+    app: myapp-base
+    version: "1.0"
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 2000
+    fsGroup: 3000 # 挂载卷的GID
+    supplementalGroups: [4000, 5000]
+    privileged: false
+
+  volumes:
+  - name: shared-data-volume
+    hostPath:
+      path: /tmp/pod-data-base # 宿主机上的路径
+      type: DirectoryOrCreate
+
+  containers:
+  - name: container-1-inherited
+    image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
+    command: ["sleep", "3600"]
+    ports:
+    - containerPort: 9090
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 0.5
+        memory: 134217728
+      limits:
+        cpu: 1
+        memory: 268435456
+    volumeMounts:
+    - name: shared-data-volume
+      mountPath: /mnt/data # 容器内的挂载点
+
+  - name: container-2-inherited
+    image: busybox
+    command: ["tail", "-f", "/dev/null"]
+    resources:
+      requests:
+        cpu: 0.2
+        memory: 134217728
+      limits:
+        cpu: 0.5
+        memory: 268435456
+    volumeMounts:
+    - name: shared-data-volume
+      mountPath: /mnt/data

@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod1
+  namespace: default
+  labels:
+    app: hello-world
+spec:
+  # 1. Pod 级别的 securityContext
+  # 这里设置的 runAsUser 将应用于 Pod 中的所有容器
+  # 除非容器自身有明确的 securityContext 覆盖
+  securityContext:
+    runAsUser: 1000 # 设置 Pod 中所有容器的进程都以 UID 1000 运行
+    runAsGroup: 2000 # 可以同时设置 runAsGroup
+    fsGroup: 3000 # 对于挂载的 Volume，设置其文件系统所有权
+
+  containers:
+  - name: pod1-container1
+    image: registry.cn-hangzhou.aliyuncs.com/tanjunchen/network-multitool:v1
+    command: ["sh", "-c"]
+    args: ["echo 'Hello, Kubernetes!'"]
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    - containerPort: 8081
+      hostPort: 8081
+      protocol: UDP
+    resources:
+      requests:
+        cpu: 1
+        memory: 134217728
+      limits:
+        cpu: 2
+        memory: 268435456
+    # 2. Container 级别的 securityContext
+    # 如果这里设置了 runAsUser，它将覆盖 Pod 级别设置的 runAsUser
+    # 例如，如果这里设置为 5000，那么 pod1-container1 将以 UID 5000 运行
+    # 而 Pod 级别的 1000 将对其他没有覆盖的容器生效
+    # securityContext:
+    #   runAsUser: 5000 

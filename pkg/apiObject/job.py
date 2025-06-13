@@ -164,9 +164,11 @@ if __name__ == '__main__':
     yaml_path = os.path.join(config.TEST_FILE_PATH, f'job-1.yaml')
     with open(yaml_path, "r", encoding="utf-8") as file:
         data = yaml.safe_load(file)
+    
     file_path = os.path.join(config.TEST_FILE_PATH, f'job/CUDA_mm.zip')
     with open(file_path, 'rb') as f:
         file_data = f.read()
+
     form = {
         "name": data.get('metadata').get('name'),
         "command": data.get('args').get('command'),
@@ -174,6 +176,7 @@ if __name__ == '__main__':
 
     # post
     files = {'file': (os.path.basename(file_path), file_data)}
+    
     url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=job)
     response = requests.post(url, files=files, data=form)
     print(response.json())
