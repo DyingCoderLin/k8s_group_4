@@ -77,7 +77,7 @@ class Job():
 FROM python:3.9-slim
 MAINTAINER Minik8s <nyte_plus@sjtu.edu.cn>
 
-ENV APISERVER_URL={apiserver_url} APISERVER_PORT={apiserver_port}
+ENV APISERVER_URL={apiserver_url} APISERVER_PORT={apiserver_port} JOB_NAME={self.config.name}
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y update
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install python3 python3-pip
@@ -113,9 +113,6 @@ CMD ["python3","./uploader.py"]
             print(f"[INFO]镜像构建成功")
         except docker.errors.BuildError as e:
             print(f"[ERROR]构建失败: {e.msg}")
-            for line in e.build_log:
-                if "error" in line.lower():
-                    print(line.get('stream', '').strip())
             raise
         except docker.errors.APIError as e:
             print(f"[ERROR]Docker API 错误: {e}")
@@ -150,6 +147,11 @@ CMD ["python3","./uploader.py"]
 
     def run(self):
         self.client.containers.run(image=self.target_image, name=f'Job-{self.config.name}', detach=True)
+
+    def delete(self):
+        containers = self.client.containers.list(all=True, filters={"name": self.config.name})
+        if len(containers) > 0:
+            for container in containers: container.remove(force=True)
 
 if __name__ == '__main__':
     import yaml

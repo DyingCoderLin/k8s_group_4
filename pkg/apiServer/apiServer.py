@@ -18,6 +18,7 @@ from pkg.config.jobConfig import JobConfig
 from pkg.utils.atomicCounter import AtomicCounter
 from pkg.apiObject.pod import STATUS as POD_STATUS
 from pkg.apiObject.node import Node, STATUS as NODE_STATUS
+from pkg.apiObject.job import STATUS as JOB_STATUS
 from pkg.apiObject.function import Function
 from pkg.apiServer.etcd import Etcd
 from pkg.controller.scheduler import Scheduler
@@ -183,6 +184,7 @@ class ApiServer:
 
         # job相关
         self.app.route(config.JOB_SPEC_URL, methods=['POST'])(self.add_job)
+        self.app.route(config.JOB_SPEC_URL, methods=['PUT'])(self.update_job)
         self.app.route(config.JOB_SPEC_URL, methods=['GET'])(self.get_job)
 
     def get_dns_list(self, namespace: str):
@@ -1530,6 +1532,20 @@ class ApiServer:
             return json.dumps({"error": str(e)}), 409
         print(f"[INFO]Job {name} added successfully")
         return json.dumps({"message": "Successfully add job"}), 200
+
+    def update_job(self, name: str):
+        json = request.json
+        job_config = self.etcd.get(self.etcd_config.JOB_SPEC_KEY.format(name=name))
+        if job is None:
+            return json.dumps({"error": f"Job {name} not found"}), 404
+        job_config.err = json['err']
+        job_config.out = json['out']
+        job_config.status = JOB_STATUS.FINISHED
+
+        job = Job(job_config, self.serverless_config, self.uri_config, None)
+        job.delete()
+        self.etcd.put(self.etcd_config.JOB_SPEC_KEY.format(name=name), job_config)
+        return json.dumps(job.to_dict()), 200
 
     def get_job(self, name: str):
         job = self.etcd.get(self.etcd_config.JOB_SPEC_KEY.format(name=name))

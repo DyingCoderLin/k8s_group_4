@@ -1,7 +1,8 @@
 import paramiko
 import os
 from io import BytesIO
-
+import requests
+from time import sleep
 
 def upload(ssh_client, zip_path, script_path, remote_dir):
     """
@@ -75,17 +76,40 @@ def exec(ssh_client, command):
 
     return output
 
-def check_slurm_output_files(ssh, job_id):
-    """检查作业的 .err 和 .out 文件是否存在"""
-    stdout_files = ssh.exec_command(f"ls ~/ | grep '{job_id}.out'")[1].read().decode().strip()
-    stderr_files = ssh.exec_command(f"ls ~/ | grep '{job_id}.err'")[1].read().decode().strip()
 
-    if stdout_files and stderr_files:
-        return True
+def check_slurm_output_files(ssh, job_id):
+    """检查作业的 .err 和 .out 文件是否存在，并返回文件内容
+
+    Args:
+        ssh: paramiko.SSHClient 连接对象
+        job_id: SLURM 作业ID
+
+    Returns:
+        tuple: (stdout_content, stderr_content) 如果文件存在
+        None: 如果任一文件不存在
+    """
+    # 检查并读取 stdout 文件
+    stdout_file = f"{job_id}.out"
+    stdin, stdout, stderr = ssh.exec_command(f"cat ~/{stdout_file} 2>/dev/null")
+    stdout_content = stdout.read().decode().strip()
+
+    # 检查并读取 stderr 文件
+    stderr_file = f"{job_id}.err"
+    stdin, stdout, stderr = ssh.exec_command(f"cat ~/{stderr_file} 2>/dev/null")
+    stderr_content = stdout.read().decode().strip()
+
+    # 如果两个文件都有内容或至少存在
+    if stdout_content or stderr_content:
+        return True, stdout_content, stderr_content
+    else:
+        return False, '', ''
 
 
 if __name__ == "__main__":
     job_name = os.getenv('JOB_NAME', 'DEFAULT')
+    ip = os.getenv('APISERVER_URL', '10.115.191.182')
+    port = os.getenv('APISERVER_PORT', 5050)
+
     file_server = "data.hpc.sjtu.edu.cn"
     compute_server = "pilogin.hpc.sjtu.edu.cn"
     port = 22
@@ -138,8 +162,15 @@ if __name__ == "__main__":
             print("作业提交失败")
 
         while True:
-            sleep(60.0)
-            if check_slurm_output_files(ssh, job_id):
+            sleep(30.0)
+            print('检查作业完成情况')
+            flag, out, err = check_slurm_output_files(ssh, job_id)
+            if flag:
+                json = {
+                    'err': err,
+                    'out': out
+                }
+                requests.put(f'http://{ip}:{port}/apis/v1/jobs/{job_name}', json=json)
                 break
     except Exception as e:
         print(f"发生错误: {str(e)}")
