@@ -266,7 +266,7 @@ class KubectlClient:
             # 使用 FunctionConfig 创建配置对象
 
             # TODO 测试路径是否正确
-            file_name = function_data["metadata"]["name"]on
+            file_name = function_data["metadata"]["name"]
             # namespace = function_data["metadata"].get("namespace", "default")
 
             config = GlobalConfig()
