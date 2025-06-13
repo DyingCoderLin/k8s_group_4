@@ -9,6 +9,7 @@ import json
 import os
 import sys
 import yaml
+import requests
 
 # 导入项目依赖
 from pkg.config.uriConfig import URIConfig
@@ -200,9 +201,6 @@ class KubectlClient:
             print(f"function_data:\n {function_data}")
             # print(f"function_name: {function_data.get('metadata', {}).get('name')}")
 
-            from pkg.config.globalConfig import GlobalConfig
-            import requests
-
             config = GlobalConfig()
             name = function_data.get('metadata', {}).get('name')
 
@@ -234,7 +232,6 @@ class KubectlClient:
     def _apply_workflow(self, workflow_data: dict, name: str, namespace: str):
         """应用Function资源"""
         try:
-            import requests
 
             response = self.api_client.post(path, data=function_data, files=files)
 
@@ -276,13 +273,13 @@ class KubectlClient:
                 file_data = f.read()
 
             form = {
-                "name": data.get('metadata').get('name'),
-                "command": data.get('args').get('command'),
+                "name": function_data.get('metadata').get('name'),
+                "command": function_data.get('args').get('command'),
             }
 
             files = {'file': (os.path.basename(file_path), file_data)}
 
-            url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=job)
+            url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=name)
             response = requests.post(url, files=files, data=form)
             # print(response.json())
 
