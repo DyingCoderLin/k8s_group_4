@@ -281,14 +281,14 @@ class KubectlClient:
 
             url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=name)
             response = requests.post(url, files=files, data=form)
-            # print(response.json())
+            print(f'1\n{response.json()}')
 
             # 调用创建方法
             if response:
-                print(f"serverless.function/{name} created")
+                print(f"serverless.job/{name} created")
 
         except Exception as e:
-            print(f"Error creating serverless.function/{name}: {e}")
+            print(f"Error creating serverless.job/{name}: {e}")
     
     def get_job(self, name, namespace: str = None) -> None:
         """获取 JOB 列表"""
@@ -296,7 +296,7 @@ class KubectlClient:
             from pkg.config.uriConfig import URIConfig
 
             url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=name)
-            response = requests.get(url, files=files, data=form)
+            response = requests.get(url, data=name)
             print(response.json())
 
             # response = self.api_client.get(self.uri_config.JOBS_URL)
