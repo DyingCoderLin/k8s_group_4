@@ -185,3 +185,8 @@ if __name__ == '__main__':
     url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=job)
     response = requests.get(url, files=files, data=form)
     print(response.json())
+
+    input('Press Enter to continue.')
+    url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=job)
+    response = requests.get(url, files=files, data=form)
+    print(response.json())
