@@ -210,6 +210,28 @@ class KubectlClient:
 
         except Exception as e:
             print(f"Error creating serverless.function/{name}: {e}")
+
+    def _apply_job(self, function_data: dict, name: str, namespace: str):
+        """应用Function资源"""
+        try:
+            # 使用 FunctionConfig 创建配置对象
+            path = self.uri_config.FUNCTION_SPEC_URL.format(
+                namespace=namespace, name=name
+            )
+
+            file_path = function_data["file_path"]
+            with open(file_path, 'rb') as f:
+                file_data = f.read()
+            files = {'file': (os.path.basename(file_path), file_data)}
+
+            response = self.api_client.post(path, data=function_data, files=files)
+
+            # 调用创建方法
+            if response:
+                print(f"serverless.function/{name} created")
+
+        except Exception as e:
+            print(f"Error creating serverless.function/{name}: {e}")
     
     def _apply_node(self, node_data: dict, name: str) -> None:
         """应用Node资源（特殊处理）"""

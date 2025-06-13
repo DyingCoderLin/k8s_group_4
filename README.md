@@ -22,6 +22,7 @@ docker run -d \
   --listen-client-urls http://0.0.0.0:2379 \
   --advertise-client-urls http://localhost:2379
 ```
+
 直接使用host网络，因为bridge网络会被修改为flannel网络，然而flannel的修改依赖于etcd。可能会出问题？
 ```docker
 docker run -d \
