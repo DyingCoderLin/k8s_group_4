@@ -269,7 +269,7 @@ class KubectlClient:
             file_name = function_data["metadata"]["name"]
             # namespace = function_data["metadata"].get("namespace", "default")
 
-            config = GlobalConfig()
+            global_config = GlobalConfig()
             file_path = os.path.join(global_config.TEST_FILE_PATH, "job", f"{file_name}.zip")
 
             with open(file_path, 'rb') as f:
