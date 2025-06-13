@@ -118,6 +118,9 @@ class KubectlClient:
                 self._apply_function(resource_data, name)
             elif kind == "Job":
                 self._apply_job(resource_data, name)
+                self._apply_function(resource_data, name, namespace)
+            elif kind == "Workflow":
+                self._apply_workflow(resource_data, name, namespace)
             else:
                 print(f"Error: Unsupported resource kind '{kind}'")
                 return
@@ -194,18 +197,62 @@ class KubectlClient:
     def _apply_function(self, function_data: dict, name: str, namespace: str):
         """应用Function资源"""
         try:
-            # 使用 FunctionConfig 创建配置对象
-            path = self.uri_config.FUNCTION_SPEC_URL.format(
-                namespace=namespace, name=name
-            )
+            print(f"function_data:\n {function_data}")
+            # print(f"function_name: {function_data.get('metadata', {}).get('name')}")
 
-            file_path = function_data["file_path"]
-            with open(file_path, 'rb') as f:
-                file_data = f.read()
-            files = {'file': (os.path.basename(file_path), file_data)}
+            from pkg.config.globalConfig import GlobalConfig
+            import requests
+
+            config = GlobalConfig()
+            name = function_data.get('metadata', {}).get('name')
+
+            def upload_function(func):
+                yaml_path = os.path.join(config.TEST_FILE_PATH, f'function-{func}.yaml')
+                print(f'上传函数{yaml_path}')
+                with open(yaml_path, "r", encoding="utf-8") as file:
+                    data = yaml.safe_load(file)
+                file_path = os.path.join(config.TEST_FILE_PATH,
+                                        f'serverless/zip-function/{func}.zip')
+                with open(file_path, 'rb') as f:
+                    file_data = f.read()
+
+                files = {'file': (os.path.basename(file_path), file_data)}
+                url = URIConfig.PREFIX + URIConfig.FUNCTION_SPEC_URL.format(namespace='default', name=func)
+                print(f'[INFO]上传函数 {func} 到 {url}进行中')
+                response = requests.post(url, files=files, data=data)
+                if(response.status_code != 200):
+                    print(f'function name {func} 已经存在，要update')
+                    response = requests.delete(url)
+                    response = requests.post(url, files=files, data=data)
+                print(response.json())
+
+            upload_function(name)
+
+        except Exception as e:
+            print(f"Error creating serverless.function/{name}: {e}")
+
+    def _apply_workflow(self, workflow_data: dict, name: str, namespace: str):
+        """应用Function资源"""
+        try:
+            import requests
 
             response = self.api_client.post(path, data=function_data, files=files)
 
+            # input('Press Enter To Continue.')
+            # print(f'[INFO]测试执行')
+            # gen_input = {
+            #     "text": "The future of AI is ",
+            # }
+            # response = requests.patch(uri, json=gen_input)
+            # print(response.json())
+
+            # input('Press Enter To Continue.')
+            # chat_input = {
+            #     "text": "How are you?",
+            #     "chat_history": [ "The future of AI is bright.", "I think AI will change the world."]
+            # }
+            # response = requests.patch(uri, json=chat_input)
+            # print(response.json())
             # 调用创建方法
             if response:
                 print(f"serverless.function/{name} created")
@@ -254,7 +301,7 @@ class KubectlClient:
             url = URIConfig.PREFIX + URIConfig.JOB_SPEC_URL.format(name=name)
             response = requests.get(url, files=files, data=form)
             print(response.json())
-            
+
             # response = self.api_client.get(self.uri_config.JOBS_URL)
 
             # if not response:
@@ -1339,7 +1386,7 @@ def main():
                 kubectl.get_function(namespace=args.namespace, all_namespaces=args.all_namespaces)
             elif args.resource in ["job"]:
                 kubectl.get_job(args.name, namespace=args.namespace)
-                
+
         elif args.command == "describe":
             if args.resource == "node":
                 kubectl.describe_node(args.name)

@@ -173,6 +173,7 @@ class ApiServer:
         self.app.route(config.FUNCTION_SPEC_URL, methods=['DELETE'])(self.delete_function)
         self.app.route(config.FUNCTION_SPEC_URL, methods=['PUT'])(self.update_function)
         self.app.route(config.FUNCTION_SPEC_URL, methods=['GET'])(self.get_function)
+        self.app.route(config.GLOBAL_FUNCTIONS_URL, methods=['GET'])(self.get_functions)
         # 调用function
         self.app.route(config.FUNCTION_SPEC_URL, methods=['PATCH'])(self.exec_function)
 
@@ -1338,7 +1339,21 @@ class ApiServer:
         except Exception as e:
             print(f"[ERROR]Failed to get function: {str(e)}")
             return json.dumps({"error": str(e)}), 500
-
+    
+    def get_functions(self):
+        """获取指定Funcctions"""
+        print(f"[INFO]Get functions")
+        try:
+            functions = self.etcd.get_prefix(self.etcd_config.GLOBAL_FUNCTION_KEY)
+            
+            result = []
+            for func in functions:
+                result.append(func.to_dict())
+            return json.dumps(result)
+        except Exception as e:
+            print(f"[ERROR]Failed to get functions: {str(e)}")
+            return json.dumps({"error": str(e)}), 500
+    
     def add_function(self, namespace : str, name : str):
         print(f"[INFO]Add function {name} in namespace {namespace}")
         if 'file' not in request.files or not request.files['file']:

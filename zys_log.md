@@ -121,3 +121,17 @@ curl clusterip:port
 
 ./kubectl apply -f ./testFile/test-pod-server-1.yaml
 ./kubectl apply -f ./testFile/test-service-clusterip.yaml
+
+
+
+./start.sh --stop
+cd ./yamls
+docker compose down
+rm -rf zookeeper-log zookeeper-data kafka
+mkdir zookeeper-data zookeeper-log kafka
+mkdir kafka/data
+chmod -R 777 ./kafka zookeeper-data zookeeper-log
+docker compose up -d
+cd ../
+git pull origin feature/auto_serverless
+./start.sh
