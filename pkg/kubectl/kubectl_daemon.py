@@ -14,7 +14,7 @@ from pathlib import Path
 current_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, current_dir)
 
-from kubectl import KubectlClient
+from pkg.kubectl.kubectl import KubectlClient
 
 class KubectlDaemon:
     def __init__(self, socket_path: str = "/tmp/kubectl_daemon.sock"):
@@ -70,7 +70,7 @@ class KubectlDaemon:
                 sys.argv = ['kubectl'] + args
                 
                 # 导入并执行main函数
-                from kubectl import main
+                from pkg.kubectl.kubectl import main
                 main()
             
             stdout_content = output.getvalue()
